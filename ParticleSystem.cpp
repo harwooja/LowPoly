@@ -1,7 +1,7 @@
 /*
- CS 3GC3 Assignment 2
+ CS 3GC3 Final Assignment
  Stuart Douglas - 1214422
- 
+
  November 6th, 2014
  
  ParticleSystem.cpp
@@ -22,6 +22,7 @@
     #  include <OpenGL/glu.h>
     #  include <GLUT/glut.h>
     #else
+	#  include <windows.h>
     #  include <GL/gl.h>
     #  include <GL/glu.h>
     #  include <GL/freeglut.h>
