@@ -19,6 +19,7 @@
 #include <math.h>
 #endif
 
+#include "Terrain.h"
 /*****************************************
  *    FUNCTION DECLARATIONS
  ****************************************/
@@ -27,8 +28,9 @@
 /*****************************************
  *    GLOBAL VARIABLES
  ****************************************/
+Terrain terrain;
 bool paused = false;
-
+float camPos[3] = {-10,50,-10};
 
 /*****************************************
  * displays all objects
@@ -41,18 +43,13 @@ void display(void) {
     glLoadIdentity();
     
     //point camera
-    gluLookAt(-10,10,-10, 0,0,0, 0,1,0);
+    gluLookAt(camPos[0],camPos[1],camPos[2], 75,0,75, 0,1,0);
     
-    float diffuse[4] = {1,0.8,0, 1.0};
-    float ambient[4] = {1,0.8,0, 1.0};
-    float specular[4] = {0.9,0.9,0.9, 1.0};
     
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 40);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_CULL_FACE);
+    terrain.drawTerrain();
     
-    glPopMatrix();
     glutSwapBuffers();
 }
 
@@ -62,9 +59,43 @@ void display(void) {
 void keyboard(unsigned char key, int x, int y) {
     
     switch (key) {
-            
+       case 'q':
+            exit(0);
+            break;
+        case '[':
+            camPos[2] -= 1;
+            break;
+        case ']':
+            camPos[2] += 1;
+            break;
     }
     
+    glutPostRedisplay();
+}
+
+/*****************************************
+ * handles arrow key presses (to move cam)
+ ****************************************/
+void special(int key, int x, int y) {
+    
+    //move camera w/ arrow keys
+    switch(key) {
+        case GLUT_KEY_LEFT:
+            camPos[0] -= 1;
+            break;
+            
+        case GLUT_KEY_RIGHT:
+            camPos[0] += 1;
+            break;
+            
+        case GLUT_KEY_UP:
+            camPos[1] += 1;
+            break;
+            
+        case GLUT_KEY_DOWN:
+            camPos[1] -= 1;
+            break;
+    }
     glutPostRedisplay();
 }
 
@@ -98,9 +129,9 @@ void reshapeFunc(int w, int h) {
 void init() {
     
     //enable back face culling
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     
-    glClearColor(0, 0, 0, 0);
+    glClearColor(0.1, 0.5, 0.1, 0);
     
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
@@ -114,7 +145,9 @@ void init() {
     //set projection matrix, using perspective w/ correct aspect ratio
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 100);
+    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 400);
+    
+    terrain = Terrain();
 }
 
 /*****************************************
@@ -135,6 +168,7 @@ int main(int argc, char** argv) {
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshapeFunc);
+    glutSpecialFunc(special);
     
     //setting up depth test & lighting normalization
     glEnable(GL_DEPTH_TEST);
