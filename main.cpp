@@ -30,7 +30,7 @@
  ****************************************/
 Terrain terrain;
 bool paused = false;
-float camPos[3] = {-10,50,-10};
+float camPos[3] = {-50,50,-50};
 
 /*****************************************
  * displays all objects
@@ -46,7 +46,7 @@ void display(void) {
     gluLookAt(camPos[0],camPos[1],camPos[2], 75,0,75, 0,1,0);
     
     
-    glDisable(GL_LIGHTING);
+//    glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
     terrain.drawTerrain();
     
@@ -131,15 +131,15 @@ void init() {
     //enable back face culling
     //glEnable(GL_CULL_FACE);
     
-    glClearColor(0.1, 0.5, 0.1, 0);
-    
+    glClearColor(0.1, 0.1, 0.1, 0);
+    glShadeModel(GL_FLAT);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
-    float lightPos[4] = {-5,4.5,0.5,1};
+    float lightPos[4] = {5,30,5,1};
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
     
     //set projection matrix, using perspective w/ correct aspect ratio

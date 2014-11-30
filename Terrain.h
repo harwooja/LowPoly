@@ -10,7 +10,7 @@
 #define __LowPoly__Terrain__
 #include <stdio.h>
 
-class Terrain{
+class Terrain {
 
 public:
     
@@ -21,8 +21,25 @@ public:
     float getHeight(float x, float z);
     float getColour(int polygonIndex);
     void setColour(int polygonIndex, float position[3]);
-    void generateTerrain();
+//    void generateTerrain();
+  //  void drawTerrain();
+    
+    //Terrain(int size); //constructor
+    
     void drawTerrain();
+    void generateTerrain();
+    void smoothTerrain(float);
+    void changeWireframeMode();
+//    void changeTerrainAlgorithm(TerrainAlgorithm);
+    void calculateVertexNormals();
+    void calculateFaceNormals();
+    char* getWireframeMode();
+    char* getAlgorithm();
+    
+    /***************************************
+     *    PUBLIC GLOBAL VARIABLES
+     *****/
+
     
 private:
 
