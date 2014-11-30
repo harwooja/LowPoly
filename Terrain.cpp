@@ -73,10 +73,8 @@ void Terrain::generateTerrain() {
         displacement = displacement > 0.2 ? displacement-0.001 : 0.2;
     }
     
-    
     smoothTerrain(0.5);
     calculateVertexNormals();
-
 }
 
 /*****************************************
@@ -212,9 +210,21 @@ void Terrain::calculateVertexNormals() {
 
 
 float Terrain::getHeight(float x, float z) {
-    int xInt = (int) x;
-    int zInt = (int) z;
-    return heightMap[xInt][zInt];
+
+    //we didn't do full bilinear interpolation, instead we took two opposite points of
+    //the quad (a and b) and interpolated our current height from the distance
+    //down that line. This makes his height movement a little less jumpy
+    float xIndexInHeightmap = x + TERRAIN_SIZE/2.0;
+    float zIndexInHeightmap = z + TERRAIN_SIZE/2.0;
+    
+    float aHeight = heightMap[(int)floor(xIndexInHeightmap)][(int)floor(zIndexInHeightmap)];
+    float bHeight = heightMap[(int)floor(xIndexInHeightmap+1)][(int)floor(zIndexInHeightmap+1)];
+    
+    float xPercent = xIndexInHeightmap-floor(xIndexInHeightmap);
+    float zPercent = zIndexInHeightmap-floor(zIndexInHeightmap);
+    float distOnABLine = sqrtf(xPercent*xPercent + zPercent*zPercent);
+    
+    return aHeight+distOnABLine*(bHeight-aHeight);
 }
 
 float Terrain::getColour(int polygonIndex) {

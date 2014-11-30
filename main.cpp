@@ -26,7 +26,7 @@ void drawAxes();
 Terrain terrain;
 bool paused = false;
 float camPos[3] = {-100,60,-100};
-float camLookAt[3] = {0,0,0};
+float camLookAt[3] = {100,5,100};
 float lightPos[4] = {0,50,0, 1};
 
 /*****************************************
@@ -81,6 +81,28 @@ void keyboard(unsigned char key, int x, int y) {
         case ']':
             camPos[2] += 1;
             break;
+            
+        case 'w':
+        case 'W':
+            camPos[0] += 1;
+            camPos[1] = terrain.getHeight(camPos[0], camPos[2]);
+            break;
+        case 's':
+        case 'S':
+            camPos[0] -= 1;
+            camPos[1] = terrain.getHeight(camPos[0], camPos[2]);
+            break;
+        case 'a':
+        case 'A':
+            camPos[2] -= 1;
+            camPos[1] = terrain.getHeight(camPos[0], camPos[2]);
+            break;
+        case 'd':
+        case 'D':
+            camPos[2] += 1;
+            camPos[1] = terrain.getHeight(camPos[0], camPos[2]);
+            break;
+
     }
     
     glutPostRedisplay();
@@ -158,6 +180,10 @@ void init() {
     gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 100);
     
     terrain = Terrain();
+    
+    camPos[0] = 0;
+    camPos[2] = 0;
+    camPos[1] = terrain.getHeight(camPos[0], camPos[2])+5;
 }
 
 /*****************************************
