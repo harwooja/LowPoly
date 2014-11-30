@@ -32,6 +32,7 @@ float currX = 0;
 float currY = 0;
 float rot = 0;
 float rotY = 0;
+
 /*****************************************
  * displays all objects
  ****************************************/
@@ -46,7 +47,7 @@ void display(void) {
     gluLookAt(camPos[0],camPos[1],camPos[2], camLookAt[0],camLookAt[1],camLookAt[2], 0,1,0);
 
     glRotatef(rot, 0, 1, 0);
-    glRotatef(rotY, 1, 0, 0);
+
     drawAxes();
     terrain.drawTerrain();
     
@@ -141,22 +142,31 @@ void special(int key, int x, int y) {
 
 void passive(int x, int y) {
     
-    printf("currX: %f x: %d currY: %f, y: %d\n",currX, x, currY, y);
+    //*********************
+    //NOT a good solution, we should be modifying the camLookAt instead of rotating the
+    //entire scene
+    // - STU
+    //*********************
     
+    //right
     if (x-currX > 0) {
-//        glMatrixMode(GL_MODELVIEW);
-  //      glRotatef(3, 1, 0, 0);
         rot += 1;
     }
+    //left
     if (x - currX < 0) {
         rot -= 1;
     }
+    
+    //up
     if (y-currY > 0) {
         rotY += 1;
     }
+    //down
     if (y-currY < 0) {
         rotY -= 1;
     }
+    
+    //update current x,y
     currX = x;
     currY = y;
     
