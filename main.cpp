@@ -30,8 +30,8 @@ float camLookAt[3] = {100,5,100};
 float lightPos[4] = {0,50,0, 1};
 float currX = 0;
 float currY = 0;
-
-
+float rot = 0;
+float rotY = 0;
 /*****************************************
  * displays all objects
  ****************************************/
@@ -45,6 +45,8 @@ void display(void) {
     //point camera
     gluLookAt(camPos[0],camPos[1],camPos[2], camLookAt[0],camLookAt[1],camLookAt[2], 0,1,0);
 
+    glRotatef(rot, 0, 1, 0);
+    glRotatef(rotY, 1, 0, 0);
     drawAxes();
     terrain.drawTerrain();
     
@@ -142,11 +144,18 @@ void passive(int x, int y) {
     printf("currX: %f x: %d currY: %f, y: %d\n",currX, x, currY, y);
     
     if (x-currX > 0) {
-        glMatrixMode(GL_MODELVIEW);
-        glRotatef(3, 1, 0, 0);
+//        glMatrixMode(GL_MODELVIEW);
+  //      glRotatef(3, 1, 0, 0);
+        rot += 1;
+    }
+    if (x - currX < 0) {
+        rot -= 1;
     }
     if (y-currY > 0) {
-        glRotatef(3, 0, 0, 1);
+        rotY += 1;
+    }
+    if (y-currY < 0) {
+        rotY -= 1;
     }
     currX = x;
     currY = y;
@@ -187,7 +196,7 @@ void init() {
     //enable back face culling
     //glEnable(GL_CULL_FACE);
     
-    glClearColor(0.1, 0.1, 0.7, 1);
+    glClearColor(0.1, 0.1, 0.1, 1);
 
     glShadeModel(GL_FLAT);
     
