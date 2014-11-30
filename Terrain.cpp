@@ -44,7 +44,6 @@ void Terrain::generateTerrain() {
         }
     }
     
-    
     int iterations = (TERRAIN_SIZE*TERRAIN_SIZE*TERRAIN_SIZE)/10000+200, v;
     float displacement = 1.2, a, b, c, d;
     
@@ -62,9 +61,8 @@ void Terrain::generateTerrain() {
             for (int z = 0; z < TERRAIN_SIZE; z++) {
                 
                 //increase the height
-                if (a*x + b*z - c < 0) {
+                if (a*x + b*z - c < 0)
                     heightMap[x][z] = heightMap[x][z]+displacement < MAX_HEIGHT ? heightMap[x][z] += displacement : MAX_HEIGHT;
-                }
                 
                 //decrease the height
                 else
@@ -116,30 +114,7 @@ void Terrain::smoothTerrain(float smooth) {
 }
 
 void Terrain::drawTerrain() {
-//
-//    for (int x = 0; x < TERRAIN_SIZE-1; x++) {
-//        for (int z = 0; z < TERRAIN_SIZE-1; z++) {
-//            glBegin(GL_TRIANGLES);
-//                glColor3f(heightMap[x][z]/40, heightMap[x][z]/40, heightMap[x][z]/40);
-//                glVertex3f(x, heightMap[x][z], z);
-//                glColor3f(heightMap[x+1][z]/40, heightMap[x+1][z]/40, heightMap[x+1][z]/40);
-//                glVertex3f(x+1, heightMap[x+1][z], z);
-//                glColor3f(heightMap[x+1][z+1]/40, heightMap[x+1][z+1]/40, heightMap[x+1][z+1]/40);
-//                glVertex3f(x+1, heightMap[x+1][z+1], z+1);
-//            glEnd();
-//            
-//            glBegin(GL_TRIANGLES);
-//                glColor3f(heightMap[x][z]/40, heightMap[x][z]/40, heightMap[x][z]/40);
-//                glVertex3f(x, heightMap[x][z], z);
-//                glColor3f(heightMap[x+1][z]/40, heightMap[x+1][z]/40, heightMap[x+1][z]/40);
-//                glVertex3f(x+1, heightMap[x+1][z+1], z+1);
-//                glColor3f(heightMap[x][z+1]/40, heightMap[x][z+1]/40, heightMap[x][z+1]/40);
-//                glVertex3f(x, heightMap[x][z+1], z+1);
-//            glEnd();
-//            
-//        }
-//    }
-    
+
     float specular[4] = {0.1,0.1,0.1, 0.5};
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 2);
@@ -203,8 +178,8 @@ void Terrain::drawTerrain() {
 void Terrain::calculateVertexNormals() {
     
     //calculate normals
-    for (int x = 0; x < TERRAIN_SIZE-1; x++) {
-        for (int z = 0; z < TERRAIN_SIZE-1; z++) {
+    for (int x = 0; x < TERRAIN_SIZE; x++) {
+        for (int z = 0; z < TERRAIN_SIZE; z++) {
             
             //x, z
             float t1[3];

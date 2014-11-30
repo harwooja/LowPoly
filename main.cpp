@@ -1,5 +1,3 @@
-#ifndef _OPENGL_
-#define _OPENGL_
 #ifdef __APPLE__
 #  include <OpenGL/gl.h>
 #  include <OpenGL/glu.h>
@@ -10,16 +8,13 @@
 #  include <GL/glu.h>
 #  include <GL/freeglut.h>
 #endif
-#endif
 
-#ifndef _STANDARD_
-#define _STANDARD_
 #include <vector>
 #include <stdlib.h>
 #include <math.h>
-#endif
-
 #include "Terrain.h"
+
+
 /*****************************************
  *    FUNCTION DECLARATIONS
  ****************************************/
@@ -31,8 +26,8 @@ void drawAxes();
 Terrain terrain;
 bool paused = false;
 float camPos[3] = {-100,60,-100};
-float camLookAt[3] = {75,0,75};
-float lightPos[4] = {75,50,75, 1};
+float camLookAt[3] = {0,0,0};
+float lightPos[4] = {0,50,0, 1};
 
 /*****************************************
  * displays all objects
