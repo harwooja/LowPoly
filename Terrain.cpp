@@ -40,7 +40,7 @@ void Terrain::generateTerrain() {
     //reset heightmap
     for (int x = 0; x < TERRAIN_SIZE; x++) {
         for (int z = 0; z < TERRAIN_SIZE; z++) {
-            heightMap[x][z] = 10;
+            heightMap[x][z] = 30;
         }
     }
     
@@ -74,7 +74,7 @@ void Terrain::generateTerrain() {
     }
     
     
-    smoothTerrain(TERRAIN_SIZE/600.0+0.1);
+    smoothTerrain(0.5);
     calculateVertexNormals();
 
 }
