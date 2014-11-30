@@ -23,7 +23,7 @@
 /*****************************************
  *    FUNCTION DECLARATIONS
  ****************************************/
-
+void drawAxes();
 
 /*****************************************
  *    GLOBAL VARIABLES
@@ -31,6 +31,8 @@
 Terrain terrain;
 bool paused = false;
 float camPos[3] = {-50,50,-50};
+float camLookAt[3] = {75,0,75};
+float lightPos[4] = {30,30,30, 1};
 
 /*****************************************
  * displays all objects
@@ -43,16 +45,32 @@ void display(void) {
     glLoadIdentity();
     
     //point camera
-    gluLookAt(camPos[0],camPos[1],camPos[2], 75,0,75, 0,1,0);
-    
-    
-//    glDisable(GL_LIGHTING);
-    glDisable(GL_CULL_FACE);
+    gluLookAt(camPos[0],camPos[1],camPos[2], camLookAt[0],camLookAt[1],camLookAt[2], 0,1,0);
+
+    drawAxes();
     terrain.drawTerrain();
     
     glutSwapBuffers();
 }
 
+void drawAxes() {
+    glDisable(GL_LIGHTING);
+
+    glBegin(GL_LINES);
+    glColor3f(1, 0, 0);
+    glVertex3f(0,0,0);
+    glVertex3f(500, 0, 0);
+    
+    glColor3f(0, 1, 0);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 500, 0);
+
+    glColor3f(0, 0, 1);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 0, 500);
+    glEnd();
+    glEnable(GL_LIGHTING);
+}
 /********************************************
  * handles key presses for program functions
  *******************************************/
@@ -132,20 +150,17 @@ void init() {
     //glEnable(GL_CULL_FACE);
     
     glClearColor(0.1, 0.1, 0.1, 0);
+
     glShadeModel(GL_FLAT);
+    
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-    
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    
-    float lightPos[4] = {5,30,5,1};
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
     
     //set projection matrix, using perspective w/ correct aspect ratio
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 400);
+    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 100);
     
     terrain = Terrain();
 }
@@ -160,7 +175,7 @@ int main(int argc, char** argv) {
     
     //making our window
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(800, 800);
+    glutInitWindowSize(800, 600);
     glutInitWindowPosition(10, 10);
     glutCreateWindow("Volcano");
     
