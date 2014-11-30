@@ -25,8 +25,8 @@ void drawAxes();
  ****************************************/
 Terrain terrain;
 bool paused = false;
-float camPos[3] = {-100,60,-100};
-float camLookAt[3] = {100,5,100};
+float camPos[3] = {-100,100,-100};
+float camLookAt[3] = {0,5,0};
 float lightPos[4] = {0,50,0, 1};
 float currX = 0;
 float currY = 0;
@@ -192,7 +192,7 @@ void reshape(int w, int h) {
         
         //set up viewport
         glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1, 500);
+        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1,400);
     }
     
     glutPostRedisplay();
@@ -221,9 +221,10 @@ void init() {
     
     terrain = Terrain();
     
-    camPos[0] = 0;
-    camPos[2] = 0;
-    camPos[1] = terrain.getHeight(camPos[0], camPos[2])+5;
+    camPos[0] = -100;
+    camPos[2] = -100;
+    camPos[1] = 60;
+//    camPos[1] = terrain.getHeight(camPos[0], camPos[2])+5;
 }
 
 /*****************************************

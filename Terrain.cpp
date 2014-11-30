@@ -1,17 +1,10 @@
+// Terrain.cpp
+// LowPoly
 //
-//  Terrain.cpp
-//  LowPoly
-//
-//  Created by Jake Harwood on 2014-11-16.
-//  Copyright (c) 2014 Jake Harwood. All rights reserved.
-//
+// Created by Jake Harwood on 2014-11-16.
+// Copyright (c) 2014 Jake Harwood. All rights reserved.
 
 //** Stores all vertices of terrain & volcano, vertex orderings, normals, and colours **//
-
-#include "Terrain.h"
-#include <vector>
-#include <stdlib.h>
-#include <math.h>
 
 #ifdef __APPLE__
 #  include <OpenGL/gl.h>
@@ -24,30 +17,41 @@
 #  include <GL/freeglut.h>
 #endif
 
-#define TERRAIN_SIZE 150
+#include "Terrain.h"
+#include <vector>
+#include <stdlib.h>
+#include <math.h>
 
-float triangles[2][3][3];
-float heightMap[TERRAIN_SIZE][TERRAIN_SIZE];
-float vertexNormals[TERRAIN_SIZE][TERRAIN_SIZE][3];
+
+/***************************************
+ *    GLOBAL VARIABLES
+ **************************************/
+float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
+float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
 const float MAX_HEIGHT = 40;
 
+/***************************************
+ * Constructor
+ **************************************/
 Terrain::Terrain(){
     generateTerrain();
 }
 
+/***************************************
+* uses fault line algorithm to create
+* the terrain, stored in heightMap
+**************************************/
 void Terrain::generateTerrain() {
     
     //reset heightmap
-    for (int x = 0; x < TERRAIN_SIZE; x++) {
-        for (int z = 0; z < TERRAIN_SIZE; z++) {
-            heightMap[x][z] = 30;
-        }
-    }
+    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++)
+        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++)
+            heightMap[x][z] = 0;
     
-    int iterations = (TERRAIN_SIZE*TERRAIN_SIZE*TERRAIN_SIZE)/10000+200, v;
+    int v;
     float displacement = 1.2, a, b, c, d;
     
-    for (int i = 0; i < iterations; i++) {
+    for (int i = 0; i < 550; i++) {
         
         //choose random line
         v = rand();
@@ -56,9 +60,9 @@ void Terrain::generateTerrain() {
         d = sqrtf(2.0*(TERRAIN_SIZE*TERRAIN_SIZE));
         c = ((double) rand()/RAND_MAX) * d - d/2.0;
         
-        //iterate over all points in heightmap
-        for (int x = 0; x < TERRAIN_SIZE; x++) {
-            for (int z = 0; z < TERRAIN_SIZE; z++) {
+        //iterate over all points in heightmap (not incl. water)
+        for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
+            for (int z = WATER_WIDTH; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
                 
                 //increase the height
                 if (a*x + b*z - c < 0)
@@ -66,15 +70,41 @@ void Terrain::generateTerrain() {
                 
                 //decrease the height
                 else
-                    heightMap[x][z] = heightMap[x][z]-displacement > 0 ? heightMap[x][z] -= displacement : 0;
+                    heightMap[x][z] -= displacement;
             }
             
         }
         displacement = displacement > 0.2 ? displacement-0.001 : 0.2;
     }
     
-    smoothTerrain(0.5);
-    calculateVertexNormals();
+    //generate the water
+    float choppiness = 3;
+    for (int x = TERRAIN_SIZE; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
+        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++) {
+            a = rand();
+            heightMap[x][z] = choppiness*cosf(a);
+        }
+    }
+    for (int x = 0; x < WATER_WIDTH; x++) {
+        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++) {
+            a = rand();
+            heightMap[x][z] = choppiness*cosf(a);
+        }
+    }
+    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
+        for (int z = TERRAIN_SIZE; z < TERRAIN_SIZE+WATER_WIDTH; z++) {
+            a = rand();
+            heightMap[x][z] = choppiness*cosf(a);
+        }
+    }
+    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
+        for (int z = 0; z < WATER_WIDTH; z++) {
+            a = rand();
+            heightMap[x][z] = choppiness*cosf(a);
+        }
+    }
+    smoothTerrain(0.4);
+    calculateFaceNormals();
 }
 
 /*****************************************
@@ -90,94 +120,101 @@ void Terrain::smoothTerrain(float smooth) {
         smooth = 0.9;
     
     //rows, left to right
-    for (int x = 1; x < TERRAIN_SIZE; x++)
-        for (int z = 0; z < TERRAIN_SIZE; z++)
+    for (int x = 1; x < TERRAIN_SIZE+WATER_WIDTH; x++)
+        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++)
             heightMap[x][z] = heightMap[x-1][z]*smooth + heightMap[x][z]*(1-smooth);
     
     //rows, right to left
-    for (int x = TERRAIN_SIZE-2; x > -1; x--)
-        for (int z = 0; z < TERRAIN_SIZE; z++)
+    for (int x = TERRAIN_SIZE+WATER_WIDTH-2; x > -1; x--)
+        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++)
             heightMap[x][z] = heightMap[x+1][z]*smooth + heightMap[x][z]*(1-smooth);
     
     //columns, bottom to top
-    for (int x = 0; x < TERRAIN_SIZE; x++)
-        for (int z = 1; z < TERRAIN_SIZE; z++)
+    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++)
+        for (int z = 1; z < TERRAIN_SIZE+WATER_WIDTH; z++)
             heightMap[x][z] = heightMap[x][z-1]*smooth + heightMap[x][z]*(1-smooth);
     
     //columns, top to bottom
-    for (int x = 0; x < TERRAIN_SIZE; x++)
-        for (int z = TERRAIN_SIZE-2; z > -1; z--)
+    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++)
+        for (int z = TERRAIN_SIZE+WATER_WIDTH-2; z > -1; z--)
             heightMap[x][z] = heightMap[x][z+1]*smooth + heightMap[x][z]*(1-smooth);
     
 }
 
+
+/**************************************************************
+* draws our generated terrain
+**************************************************************/
 void Terrain::drawTerrain() {
 
     float specular[4] = {0.1,0.1,0.1, 0.5};
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 2);
     
-    float terrainOffset = TERRAIN_SIZE/2.0;
+    float terrainOffset = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
     
     //iterate over all values in heightmap
-    for (int x = 0; x < TERRAIN_SIZE-1; x++) {
-        for (int z = 0; z < TERRAIN_SIZE-1; z++) {
+    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
+        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
             
-            //set snow and water materials
-            if (heightMap[x][z] <= 4){
+            if (x < WATER_WIDTH || z < WATER_WIDTH || x >= TERRAIN_SIZE || z >= TERRAIN_SIZE){
                 float diffuseWater[4] = {0,0,0.8, 1};
                 float ambientWater[4] = {0,0,0.8, 1};
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientWater);
                 glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseWater);
             }
-            else if (heightMap[x][z] > 4 && heightMap[x][z] <= 8 ) {
+            else if (heightMap[x][z] <= 20 ) {
                 float diffuseGrass[4] = {0,0.3,0.2, 1};
                 float ambientGrass[4] = {0, 0.3, 0.2, 1};
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientGrass);
                 glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseGrass);
             }
-            else if (heightMap[x][z] >= 21 ) {
+            else if (heightMap[x][z] >= 32 ) {
                 float diffuseSnow[4] = {1,1,1, 1};
                 float ambientSnow[4] = {1,1,1, 1};
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientSnow);
                 glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseSnow);
             }
             else {
-                float diffuseDefault[4] = {0.52,0.26,0.08, 1.0};
-                float ambientDefault[4] = {0.52,0.26,0.08, 1.0};
-                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientDefault);
-                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseDefault);
+                float diffuseDirt[4] = {0.52,0.26,0.08, 1.0};
+                float ambientDirt[4] = {0.52,0.26,0.08, 1.0};
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientDirt);
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseDirt);
             }
+            
+            glNormal3fv(faceNormals[x][z]);
             
             //draw the quad
             glBegin(GL_QUADS);
-            glNormal3fv(vertexNormals[x][z]);
             glVertex3f(x-terrainOffset, heightMap[x][z], z-terrainOffset);
-
-            glNormal3fv(vertexNormals[x][z+1]);
             glVertex3f(x-terrainOffset, heightMap[x][z+1], z+1-terrainOffset);
-            
-            glNormal3fv(vertexNormals[x+1][z+1]);
             glVertex3f(x+1-terrainOffset, heightMap[x+1][z+1], z+1-terrainOffset);
-
-            glNormal3fv(vertexNormals[x+1][z]);
             glVertex3f(x+1-terrainOffset, heightMap[x+1][z], z-terrainOffset);
             glEnd();
         }
     }
+    
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glDisable(GL_LIGHTING);
+    glColor3f(0, 0.2, 0.8);
+    glScalef(50, 1, 50);
+    glTranslatef(0, -10, 0);
+    glutSolidCube(10);
+    glEnable(GL_LIGHTING);
+    glPopMatrix();
 }
 
 /**************************************************************
  * calculates normals for every vertex in the heightmap.
  * Code was taken from:
  * www.lighthouse3d.com/opengl/terrain/index.php3?normals
- * We modified the code to suit our needs.
  **************************************************************/
-void Terrain::calculateVertexNormals() {
+void Terrain::calculateFaceNormals() {
     
     //calculate normals
-    for (int x = 0; x < TERRAIN_SIZE; x++) {
-        for (int z = 0; z < TERRAIN_SIZE; z++) {
+    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
+        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++) {
             
             //x, z
             float t1[3];
@@ -201,14 +238,16 @@ void Terrain::calculateVertexNormals() {
             float len = sqrtf(vx*vx + vy*vy + vz*vz);
             float nv[3] = {vx/len, vy/len, vz/len};
             
-            vertexNormals[x][z][0] = nv[0];
-            vertexNormals[x][z][1] = nv[1];
-            vertexNormals[x][z][2] = nv[2];
+            faceNormals[x][z][0] = nv[0];
+            faceNormals[x][z][1] = nv[1];
+            faceNormals[x][z][2] = nv[2];
         }
     }
 }
 
-
+/**************************************************************
+ * returns height of terrain at x,z using bilinear interpolation
+ **************************************************************/
 float Terrain::getHeight(float x, float z) {
 
     //we didn't do full bilinear interpolation, instead we took two opposite points of
@@ -225,13 +264,4 @@ float Terrain::getHeight(float x, float z) {
     float distOnABLine = sqrtf(xPercent*xPercent + zPercent*zPercent);
     
     return aHeight+distOnABLine*(bHeight-aHeight);
-}
-
-float Terrain::getColour(int polygonIndex) {
-    return(1);
-}
-
-
-void Terrain::setColour(int polygonIndex, float position[3]) {
-    
 }
