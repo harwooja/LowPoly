@@ -32,7 +32,7 @@ Terrain terrain;
 bool paused = false;
 float camPos[3] = {-100,60,-100};
 float camLookAt[3] = {75,0,75};
-float lightPos[4] = {75,80,75, 1};
+float lightPos[4] = {75,50,75, 1};
 
 /*****************************************
  * displays all objects
@@ -135,7 +135,7 @@ void reshapeFunc(int w, int h) {
         
         //set up viewport
         glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1, 400);
+        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1, 500);
     }
     
     glutPostRedisplay();
@@ -149,7 +149,7 @@ void init() {
     //enable back face culling
     //glEnable(GL_CULL_FACE);
     
-    glClearColor(0.1, 0.1, 0.1, 1);
+    glClearColor(0.1, 0.1, 0.7, 1);
 
     glShadeModel(GL_FLAT);
     
