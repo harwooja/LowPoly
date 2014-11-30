@@ -28,6 +28,9 @@ bool paused = false;
 float camPos[3] = {-100,60,-100};
 float camLookAt[3] = {100,5,100};
 float lightPos[4] = {0,50,0, 1};
+float currX = 0;
+float currY = 0;
+
 
 /*****************************************
  * displays all objects
@@ -134,10 +137,28 @@ void special(int key, int x, int y) {
     glutPostRedisplay();
 }
 
+void passive(int x, int y) {
+    
+    printf("currX: %f x: %d currY: %f, y: %d\n",currX, x, currY, y);
+    
+    if (x-currX > 0) {
+        glMatrixMode(GL_MODELVIEW);
+        glRotatef(3, 1, 0, 0);
+    }
+    if (y-currY > 0) {
+        glRotatef(3, 0, 0, 1);
+    }
+    currX = x;
+    currY = y;
+    
+    glutPostRedisplay();
+}
+
+
 /********************************************
  * sets viewport according to window size
  *******************************************/
-void reshapeFunc(int w, int h) {
+void reshape(int w, int h) {
     
     //don't let window become less than 300 x 300
     int minWindowSize = 300;
@@ -206,8 +227,9 @@ int main(int argc, char** argv) {
     //registering callbacks
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
-    glutReshapeFunc(reshapeFunc);
+    glutReshapeFunc(reshape);
     glutSpecialFunc(special);
+    glutPassiveMotionFunc(passive);
     
     //setting up depth test & lighting normalization
     glEnable(GL_DEPTH_TEST);
