@@ -19,16 +19,20 @@
 #include <math.h>
 #endif
 
+#include "Terrain.h"
 /*****************************************
  *    FUNCTION DECLARATIONS
  ****************************************/
-
+void drawAxes();
 
 /*****************************************
  *    GLOBAL VARIABLES
  ****************************************/
+Terrain terrain;
 bool paused = false;
-
+float camPos[3] = {-100,60,-100};
+float camLookAt[3] = {75,0,75};
+float lightPos[4] = {75,50,75, 1};
 
 /*****************************************
  * displays all objects
@@ -41,30 +45,75 @@ void display(void) {
     glLoadIdentity();
     
     //point camera
-    gluLookAt(-10,10,-10, 0,0,0, 0,1,0);
+    gluLookAt(camPos[0],camPos[1],camPos[2], camLookAt[0],camLookAt[1],camLookAt[2], 0,1,0);
+
+    drawAxes();
+    terrain.drawTerrain();
     
-    float diffuse[4] = {1,0.8,0, 1.0};
-    float ambient[4] = {1,0.8,0, 1.0};
-    float specular[4] = {0.9,0.9,0.9, 1.0};
-    
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 40);
-    
-    glPopMatrix();
     glutSwapBuffers();
 }
 
+void drawAxes() {
+    glDisable(GL_LIGHTING);
+
+    glBegin(GL_LINES);
+    glColor3f(1, 0, 0);
+    glVertex3f(0,0,0);
+    glVertex3f(500, 0, 0);
+    
+    glColor3f(0, 1, 0);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 500, 0);
+
+    glColor3f(0, 0, 1);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 0, 500);
+    glEnd();
+    glEnable(GL_LIGHTING);
+}
 /********************************************
  * handles key presses for program functions
  *******************************************/
 void keyboard(unsigned char key, int x, int y) {
     
     switch (key) {
-            
+       case 'q':
+            exit(0);
+            break;
+        case '[':
+            camPos[2] -= 1;
+            break;
+        case ']':
+            camPos[2] += 1;
+            break;
     }
     
+    glutPostRedisplay();
+}
+
+/*****************************************
+ * handles arrow key presses (to move cam)
+ ****************************************/
+void special(int key, int x, int y) {
+    
+    //move camera w/ arrow keys
+    switch(key) {
+        case GLUT_KEY_LEFT:
+            camPos[0] -= 1;
+            break;
+            
+        case GLUT_KEY_RIGHT:
+            camPos[0] += 1;
+            break;
+            
+        case GLUT_KEY_UP:
+            camPos[1] += 1;
+            break;
+            
+        case GLUT_KEY_DOWN:
+            camPos[1] -= 1;
+            break;
+    }
     glutPostRedisplay();
 }
 
@@ -86,7 +135,7 @@ void reshapeFunc(int w, int h) {
         
         //set up viewport
         glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1, 100);
+        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1, 500);
     }
     
     glutPostRedisplay();
@@ -98,23 +147,22 @@ void reshapeFunc(int w, int h) {
 void init() {
     
     //enable back face culling
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     
-    glClearColor(0, 0, 0, 0);
+    glClearColor(0.1, 0.1, 0.7, 1);
+
+    glShadeModel(GL_FLAT);
     
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-    
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    
-    float lightPos[4] = {-5,4.5,0.5,1};
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
     
     //set projection matrix, using perspective w/ correct aspect ratio
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 100);
+    
+    terrain = Terrain();
 }
 
 /*****************************************
@@ -127,21 +175,21 @@ int main(int argc, char** argv) {
     
     //making our window
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(800, 800);
+    glutInitWindowSize(800, 600);
     glutInitWindowPosition(10, 10);
     glutCreateWindow("Volcano");
+    
+    //initializing variables
+    init();
     
     //registering callbacks
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshapeFunc);
+    glutSpecialFunc(special);
     
     //setting up depth test & lighting normalization
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_NORMALIZE);
-    
-    //initializing variables
-    init();
     
     //start event loop
     glutMainLoop();

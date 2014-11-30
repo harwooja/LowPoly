@@ -8,34 +8,42 @@
 
 #ifndef __LowPoly__Terrain__
 #define __LowPoly__Terrain__
-
 #include <stdio.h>
 
-class Terrain{
+class Terrain {
 
 public:
+    
     Terrain();
+    
+    enum Material {WATER, LAND, VOLCANO, LAVA};
+    
     float getHeight(float x, float z);
     float getColour(int polygonIndex);
     void setColour(int polygonIndex, float position[3]);
-    enum Material {Water, Land, Volcano, Lava};
+//    void generateTerrain();
+  //  void drawTerrain();
+    
+    //Terrain(int size); //constructor
+    
+    void drawTerrain();
+    void generateTerrain();
+    void smoothTerrain(float);
+    void changeWireframeMode();
+//    void changeTerrainAlgorithm(TerrainAlgorithm);
+    void calculateVertexNormals();
+    void calculateFaceNormals();
+    char* getWireframeMode();
+    char* getAlgorithm();
+    
+    /***************************************
+     *    PUBLIC GLOBAL VARIABLES
+     *****/
+
     
 private:
-    
-    
-   // float vertices[x][x];
-    //float colours[][];
-   // float faceNormals[x][x][3];
-   // float vertexNormals[x][x][3];
-   // float Material[x][x];
-    
+
     
 };
 
-
-
-
-
-
-
-#endif /* defined(__LowPoly__Terrain__) */
+#endif
