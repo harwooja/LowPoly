@@ -30,9 +30,9 @@ void drawAxes();
  ****************************************/
 Terrain terrain;
 bool paused = false;
-float camPos[3] = {-50,50,-50};
+float camPos[3] = {-100,60,-100};
 float camLookAt[3] = {75,0,75};
-float lightPos[4] = {30,30,30, 1};
+float lightPos[4] = {75,80,75, 1};
 
 /*****************************************
  * displays all objects
@@ -135,7 +135,7 @@ void reshapeFunc(int w, int h) {
         
         //set up viewport
         glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1, 100);
+        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1, 400);
     }
     
     glutPostRedisplay();
@@ -149,7 +149,7 @@ void init() {
     //enable back face culling
     //glEnable(GL_CULL_FACE);
     
-    glClearColor(0.1, 0.1, 0.1, 0);
+    glClearColor(0.1, 0.1, 0.1, 1);
 
     glShadeModel(GL_FLAT);
     
@@ -179,6 +179,9 @@ int main(int argc, char** argv) {
     glutInitWindowPosition(10, 10);
     glutCreateWindow("Volcano");
     
+    //initializing variables
+    init();
+    
     //registering callbacks
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
@@ -187,10 +190,6 @@ int main(int argc, char** argv) {
     
     //setting up depth test & lighting normalization
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_NORMALIZE);
-    
-    //initializing variables
-    init();
     
     //start event loop
     glutMainLoop();
