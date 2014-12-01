@@ -30,24 +30,19 @@ class ParticleSystem {
             bool explosion = false;
             
         } Particle;
-        typedef enum {CUBE, SPHERE, TEAPOT, CONE, TORUS} Shape;
     
         /****************************************
         *    FUNCTION DECLARATIONS
         ****************************************/
 
         //constructor
-        ParticleSystem();
+        ParticleSystem(Terrain);
 
         void addParticle();
         void clearParticles();
 
         void moveParticles();
         void drawParticles();
-
-        void changeSpawnRate(float);
-        void changeParticleSize(float);
-        void changeShape(Shape);
     
         /****************************************
         *    PUBLIC GLOBAL VARIABLES

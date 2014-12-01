@@ -4,9 +4,6 @@
 // Created by Jake Harwood on 2014-11-16.
 // Copyright (c) 2014 Jake Harwood. All rights reserved.
 
-#define TERRAIN_SIZE 150
-#define WATER_WIDTH 30
-
 class Terrain {
 
 public:

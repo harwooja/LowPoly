@@ -10,31 +10,25 @@
  after a set amount of time
  */
 
-#ifndef _PARTICLE_SYSTEM_H
-    #define _PARTICLE_SYSTEM_H
-    #include "ParticleSystem.h"
+#ifdef __APPLE__
+#  include <OpenGL/gl.h>
+#  include <OpenGL/glu.h>
+#  include <GLUT/glut.h>
+#else
+#ifdef _WIN32
+#  include <windows.h>
+#endif
+#  include <GL/gl.h>
+#  include <GL/glu.h>
+#  include <GL/freeglut.h>
 #endif
 
-#ifndef _OPENGL_
-    #define _OPENGL_
-    #ifdef __APPLE__
-    #  include <OpenGL/gl.h>
-    #  include <OpenGL/glu.h>
-    #  include <GLUT/glut.h>
-    #else
-	#  include <windows.h>
-    #  include <GL/gl.h>
-    #  include <GL/glu.h>
-    #  include <GL/freeglut.h>
-    #endif
-#endif
+#include "Terrain.h"
+#include "ParticleSystem.h"
+#include <vector>
+#include <stdlib.h>
+#include <math.h>
 
-#ifndef _STANDARD_
-    #define _STANDARD_
-    #include <vector>
-    #include <stdlib.h>
-    #include <math.h>
-#endif
 
 /*****************************************
  *    GLOBAL VARIABLES
@@ -42,24 +36,18 @@
 std::vector<ParticleSystem::Particle> particles;
 std::vector<ParticleSystem::Particle> explosionParticles;
 
-ParticleSystem::Shape shape;
-
 const int MAX_AGE = 300;
 
-const float MIN_SPAWN_RATE = 0.01;
-const float MAX_SPAWN_RATE = 1.0;
-
-const float MIN_PARTICLE_SIZE = 0.03;
-const float MAX_PARTICLE_SIZE = 1.0;
+Terrain terrain1;
 
 /*******************************************
 * initializes values (constructor)
 *******************************************/
-ParticleSystem::ParticleSystem() {
+ParticleSystem::ParticleSystem(Terrain t) {
 
     //initializing public global variables
     emitterPos[0] = 0;
-    emitterPos[1] = 4;
+    emitterPos[1] = 0;
     emitterPos[2] = 0;
     
     friction = true;
@@ -67,10 +55,9 @@ ParticleSystem::ParticleSystem() {
     explosionsEnabled = true;
     
     spawnRate = 0.1;
-    particleSize = 0.05;
-
-    //initializing private global variables
-    shape = CUBE;
+    particleSize = 1;
+    
+    terrain1 = t;
 }
 
 /*******************************************
@@ -78,7 +65,7 @@ ParticleSystem::ParticleSystem() {
 * in appropriate location
 *******************************************/
 void ParticleSystem::drawParticles() {
-
+    
     glMatrixMode(GL_MODELVIEW);
     
     for (int i = 0; i < particles.size(); i++) {
@@ -95,24 +82,8 @@ void ParticleSystem::drawParticles() {
         glRotatef(particles[i].yRot, 0, 1, 0);
         glRotatef(particles[i].zRot, 0, 0, 1);
         
-        //draw particle depending on state
-        if (shape == ParticleSystem::CUBE)
-            glutSolidCube(particleSize*particles[i].sizeMultiplier);
-        else if (shape == ParticleSystem::SPHERE)
-            glutSolidSphere(particleSize*particles[i].sizeMultiplier, 16, 16);
-        else if (shape == ParticleSystem::CONE)
-            glutSolidCone(particleSize*particles[i].sizeMultiplier, particleSize*particles[i].sizeMultiplier, 16, 16);
-        else if (shape == ParticleSystem::TEAPOT) {
-            /*this code is used to get around a bug with glutSolidTeapot as documented
-            * on http://www-etud.iro.umontreal.ca/~clavetsi/api/glut/glutSolidTeapot.html
-            * Code for switching faces taken from above website. */
-            glFrontFace(GL_CW);
-            glutSolidTeapot(particleSize*particles[i].sizeMultiplier);
-            glFrontFace(GL_CCW);
-        }
-        else if (shape == ParticleSystem::TORUS)
-            glutSolidTorus((particleSize*particles[i].sizeMultiplier)/2.0, particleSize*particles[i].sizeMultiplier, 16, 16);
-        
+        glutSolidCube(particleSize*particles[i].sizeMultiplier);
+    
         glPopMatrix();
     }
 }
@@ -125,9 +96,9 @@ void ParticleSystem::addParticle() {
     ParticleSystem::Particle particle;
     
     //randomize particle colour
-    particle.red = ((double) rand() / (RAND_MAX))*0.9 + 0.1;
-    particle.green = ((double) rand() / (RAND_MAX))*0.9 + 0.1;
-    particle.blue = ((double) rand() / (RAND_MAX))*0.9 + 0.1;
+    particle.red = ((double) rand() / (RAND_MAX))*0.5 + 0.5;
+    particle.green = ((double) rand() / (RAND_MAX))*0.3 + 0.1;
+    particle.blue = ((double) rand() / (RAND_MAX))*0.1 + 0.1;
     
     //start particle at position of emitter
     particle.x = emitterPos[0];
@@ -135,16 +106,23 @@ void ParticleSystem::addParticle() {
     particle.z = emitterPos[2];
     
     //randomize x and z directions between -0.5 and 0.5
-    particle.xDir = ((double) rand()/(RAND_MAX)) - 0.5;
-    particle.yDir = 2;
-    particle.zDir = ((double) rand()/(RAND_MAX)) - 0.5;
+    particle.xDir = ((double) rand()/(RAND_MAX)) - 0.1;
+    particle.yDir = 8;
+    particle.zDir = ((double) rand()/(RAND_MAX)) - 0.1;
 
     //randomize rotation between 0 and 3 degrees
     particle.xRotIncr = ((double) rand()/RAND_MAX)*3.0;
     particle.yRotIncr = ((double) rand()/RAND_MAX)*3.0;
     particle.zRotIncr = ((double) rand()/RAND_MAX)*3.0;
     
+    particle.sizeMultiplier = ((double) rand()/RAND_MAX)*2+0.3;
+    
+    //set only half of particles to explode (performance)
+    particle.explosion = ((double) rand()/RAND_MAX > 0.5) ? true : false;
+    
     particles.push_back(particle);
+    
+
 }
 
 /*******************************************
@@ -185,7 +163,7 @@ void ParticleSystem::moveParticles() {
         particles[i].age++;
         
         //remove particle below plane
-        if (particles[i].y < -5) {
+        if (particles[i].y < terrain1.getHeight(particles[i].x, particles[i].z) - 1) {
             particles[i] = particles[particles.size()-1];
             particles.pop_back();
         }
@@ -234,10 +212,10 @@ void ParticleSystem::moveParticles() {
         }
         
         //bounce particle
-        else if ((fabs(particles[i].x) <= 4.5 && fabs(particles[i].z) <= 4.5) && (particles[i].y <= 0 + (particleSize*particles[i].sizeMultiplier)/1.5)) {
+        else if (particles[i].y <= terrain1.getHeight(particles[i].x, particles[i].z)) {
             
             //bounce back up, slower and less high (if friction enabled)
-            particles[i].y = (particleSize*particles[i].sizeMultiplier)/1.5;
+            particles[i].y = terrain1.getHeight(particles[i].x, particles[i].z);
             particles[i].yDir = fabs(particles[i].yDir) * (friction ? 0.9 : 1);
             particles[i].speed = particles[i].speed * (friction? 0.7 : 1);
             
@@ -247,31 +225,4 @@ void ParticleSystem::moveParticles() {
             particles[i].zRotIncr *= (friction ? 0.5 : 1);
         }
     }
-}
-
-/**********************************************
-* changes the rate new particles added by delta
-**********************************************/
-void ParticleSystem::changeSpawnRate(float delta) {
-    if (delta < 0)
-        spawnRate = (spawnRate+delta >= MIN_SPAWN_RATE) ? spawnRate+delta : MIN_SPAWN_RATE;
-    else if (delta > 0)
-        spawnRate = (spawnRate+delta <= MAX_SPAWN_RATE) ? spawnRate+delta : MAX_SPAWN_RATE;
-}
-
-/**********************************************
-* changes the size of all particles
-**********************************************/
-void ParticleSystem::changeParticleSize(float delta) {
-    if (delta < 0)
-        particleSize = (particleSize+delta >= MIN_PARTICLE_SIZE) ? particleSize+delta : MIN_PARTICLE_SIZE;
-    else if (delta > 0)
-        particleSize = (particleSize+delta <= MAX_PARTICLE_SIZE) ? particleSize+delta : MAX_PARTICLE_SIZE;
-}
-
-/**********************************************
-* changes the shape of all particles
-**********************************************/
-void ParticleSystem::changeShape(ParticleSystem::Shape newShape) {
-    shape = newShape;
 }

@@ -11,7 +11,9 @@
 #  include <OpenGL/glu.h>
 #  include <GLUT/glut.h>
 #else
+#ifdef _WIN32
 #  include <windows.h>
+#endif
 #  include <GL/gl.h>
 #  include <GL/glu.h>
 #  include <GL/freeglut.h>
@@ -26,6 +28,9 @@
 /***************************************
  *    GLOBAL VARIABLES
  **************************************/
+#define TERRAIN_SIZE 150
+#define WATER_WIDTH 30
+
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
 float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
 const float MAX_HEIGHT = 40;
@@ -105,6 +110,9 @@ void Terrain::generateTerrain() {
     }
     smoothTerrain(0.4);
     calculateFaceNormals();
+    
+//   int ab = (int) (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+//    printf("\n\nheight at          (0,0): %f\ncomputed height at (0,0): %f",heightMap[ab][ab], getHeight(0,0));
 }
 
 /*****************************************
@@ -147,34 +155,37 @@ void Terrain::smoothTerrain(float smooth) {
 **************************************************************/
 void Terrain::drawTerrain() {
 
-    float specular[4] = {0.1,0.1,0.1, 0.5};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 2);
-    
     float terrainOffset = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
     
     //iterate over all values in heightmap
     for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
         for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
             
+            //water
             if (x < WATER_WIDTH || z < WATER_WIDTH || x >= TERRAIN_SIZE || z >= TERRAIN_SIZE){
                 float diffuseWater[4] = {0,0,0.8, 1};
                 float ambientWater[4] = {0,0,0.8, 1};
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientWater);
                 glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseWater);
             }
+            
+            //grass
             else if (heightMap[x][z] <= 20 ) {
                 float diffuseGrass[4] = {0,0.3,0.2, 1};
                 float ambientGrass[4] = {0, 0.3, 0.2, 1};
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientGrass);
                 glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseGrass);
             }
+            
+            //snow
             else if (heightMap[x][z] >= 32 ) {
                 float diffuseSnow[4] = {1,1,1, 1};
                 float ambientSnow[4] = {1,1,1, 1};
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientSnow);
                 glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseSnow);
             }
+            
+            //dirt
             else {
                 float diffuseDirt[4] = {0.52,0.26,0.08, 1.0};
                 float ambientDirt[4] = {0.52,0.26,0.08, 1.0};
@@ -186,23 +197,25 @@ void Terrain::drawTerrain() {
             
             //draw the quad
             glBegin(GL_QUADS);
-            glVertex3f(x-terrainOffset, heightMap[x][z], z-terrainOffset);
-            glVertex3f(x-terrainOffset, heightMap[x][z+1], z+1-terrainOffset);
-            glVertex3f(x+1-terrainOffset, heightMap[x+1][z+1], z+1-terrainOffset);
-            glVertex3f(x+1-terrainOffset, heightMap[x+1][z], z-terrainOffset);
+                glVertex3f(x-terrainOffset, heightMap[x][z], z-terrainOffset);
+                glVertex3f(x-terrainOffset, heightMap[x][z+1], z+1-terrainOffset);
+                glVertex3f(x+1-terrainOffset, heightMap[x+1][z+1], z+1-terrainOffset);
+                glVertex3f(x+1-terrainOffset, heightMap[x+1][z], z-terrainOffset);
             glEnd();
         }
     }
-    
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glDisable(GL_LIGHTING);
-    glColor3f(0, 0.2, 0.8);
-    glScalef(50, 1, 50);
-    glTranslatef(0, -10, 0);
-    glutSolidCube(10);
-    glEnable(GL_LIGHTING);
-    glPopMatrix();
+
+//    glDisable(GL_LIGHTING);
+//    glColor3f(0, 0.2, 0.8);
+//    glMatrixMode(GL_MODELVIEW);
+//    glPushMatrix();
+//    glScalef(50, 1, 50);
+//    glTranslatef(0, -10, 0);
+//
+//    glutSolidCube(10);
+//    
+//    glPopMatrix();
+//    glEnable(GL_LIGHTING);
 }
 
 /**************************************************************
@@ -250,11 +263,11 @@ void Terrain::calculateFaceNormals() {
  **************************************************************/
 float Terrain::getHeight(float x, float z) {
 
-    //we didn't do full bilinear interpolation, instead we took two opposite points of
-    //the quad (a and b) and interpolated our current height from the distance
-    //down that line. This makes his height movement a little less jumpy
-    float xIndexInHeightmap = x + TERRAIN_SIZE/2.0;
-    float zIndexInHeightmap = z + TERRAIN_SIZE/2.0;
+    float xIndexInHeightmap = x + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+    float zIndexInHeightmap = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+
+    if (xIndexInHeightmap < 0 || zIndexInHeightmap < 0 || xIndexInHeightmap >= TERRAIN_SIZE+WATER_WIDTH || zIndexInHeightmap >= TERRAIN_SIZE+WATER_WIDTH)
+        return 0;
     
     float aHeight = heightMap[(int)floor(xIndexInHeightmap)][(int)floor(zIndexInHeightmap)];
     float bHeight = heightMap[(int)floor(xIndexInHeightmap+1)][(int)floor(zIndexInHeightmap+1)];

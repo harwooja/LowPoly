@@ -1,19 +1,21 @@
 #ifdef __APPLE__
-#  include <OpenGL/gl.h>
-#  include <OpenGL/glu.h>
-#  include <GLUT/glut.h>
+# include <OpenGL/gl.h>
+# include <OpenGL/glu.h>
+# include <GLUT/glut.h>
 #else
-#  include <windows.h>
-#  include <GL/gl.h>
-#  include <GL/glu.h>
-#  include <GL/freeglut.h>
+#ifdef _WIN32
+# include <windows.h>
+#endif
+# include <GL/gl.h>
+# include <GL/glu.h>
+# include <GL/freeglut.h>
 #endif
 
 #include <vector>
 #include <stdlib.h>
 #include <math.h>
 #include "Terrain.h"
-
+#include "ParticleSystem.h"
 
 /*****************************************
  *    FUNCTION DECLARATIONS
@@ -24,6 +26,8 @@ void drawAxes();
  *    GLOBAL VARIABLES
  ****************************************/
 Terrain terrain;
+ParticleSystem volcanoParticles(terrain);
+
 bool paused = false;
 float camPos[3] = {-100,100,-100};
 float camLookAt[3] = {0,5,0};
@@ -50,6 +54,7 @@ void display(void) {
 
     drawAxes();
     terrain.drawTerrain();
+    volcanoParticles.drawParticles();
     
     glutSwapBuffers();
 }
@@ -70,17 +75,29 @@ void drawAxes() {
     glVertex3f(0, 0, 0);
     glVertex3f(0, 0, 500);
     glEnd();
+    
     glEnable(GL_LIGHTING);
 }
+
 /********************************************
  * handles key presses for program functions
  *******************************************/
 void keyboard(unsigned char key, int x, int y) {
     
     switch (key) {
-       case 'q':
+        
+        //quit
+        case 'q':
             exit(0);
             break;
+        
+        //pause
+        case 'p':
+        case 'P':
+            paused = !paused;
+            break;
+
+        //move camera
         case '[':
             camPos[2] -= 1;
             break;
@@ -88,6 +105,7 @@ void keyboard(unsigned char key, int x, int y) {
             camPos[2] += 1;
             break;
             
+        //move player
         case 'w':
         case 'W':
             camPos[0] += 1;
@@ -173,6 +191,16 @@ void passive(int x, int y) {
     glutPostRedisplay();
 }
 
+void timer(int value) {
+    
+    if (!paused)
+        volcanoParticles.moveParticles();
+    
+    //set timer function
+    glutTimerFunc(32, timer, 0);
+    glutPostRedisplay();
+}
+
 
 /********************************************
  * sets viewport according to window size
@@ -204,7 +232,7 @@ void reshape(int w, int h) {
 void init() {
     
     //enable back face culling
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
     
     glClearColor(0.1, 0.1, 0.1, 1);
 
@@ -217,9 +245,13 @@ void init() {
     //set projection matrix, using perspective w/ correct aspect ratio
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 100);
+    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 400);
     
     terrain = Terrain();
+    volcanoParticles = ParticleSystem(terrain);
+    volcanoParticles.emitterPos[0] = 0;
+    volcanoParticles.emitterPos[1] = terrain.getHeight(0,0)+1;
+    volcanoParticles.emitterPos[2] = 0;
     
     camPos[0] = -100;
     camPos[2] = -100;
@@ -250,6 +282,7 @@ int main(int argc, char** argv) {
     glutReshapeFunc(reshape);
     glutSpecialFunc(special);
     glutPassiveMotionFunc(passive);
+    glutTimerFunc(32, timer, 0);
     
     //setting up depth test & lighting normalization
     glEnable(GL_DEPTH_TEST);
