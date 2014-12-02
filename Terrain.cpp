@@ -28,8 +28,8 @@
 /***************************************
  *    GLOBAL VARIABLES
  **************************************/
-#define TERRAIN_SIZE 150
-#define WATER_WIDTH 30
+#define TERRAIN_SIZE 100
+#define WATER_WIDTH 20
 
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
 float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
