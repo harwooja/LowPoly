@@ -13,7 +13,6 @@ public:
      **************************************/
     enum Material {WATER, LAND, VOLCANO, LAVA};
     
-    
     /***************************************
      *    FUNCTION DECLARATIONS
      **************************************/
@@ -24,8 +23,9 @@ public:
     void drawTerrain();
     void calculateFaceNormals();
 
+    void burnTerrain(float x, float z);
     float getHeight(float x, float z);
-
+    float* getNormal(float x, float z);
     
     /***************************************
      *    PUBLIC GLOBAL VARIABLES

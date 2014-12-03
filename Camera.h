@@ -21,6 +21,8 @@ public:
     void strafe(Direction);
     void mouseMoved(int deltaX, int deltaY);
 
+    int midWinX = 0;
+    int midWinY = 0;
     
 private:
     
@@ -28,6 +30,6 @@ private:
     *    PRIVATE GLOBAL VARIABLES
     ****************************************/
     #define TO_RADS 3.141592654/180.0
-    float movementSpeedFactor = 0.5;
-    float mouseSensitivity = 0.3;
+    float movementSpeedFactor = 0.2;
+    float mouseSensitivity = 0.2;
 };

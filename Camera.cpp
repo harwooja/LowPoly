@@ -40,8 +40,8 @@ Camera::Camera() {
 void Camera::mouseMoved(int deltaX, int deltaY) {
 
     //rotate camera
-    rotation[1] += deltaX*mouseSensitivity;
-    rotation[0] += deltaY*mouseSensitivity;
+    rotation[1] += ((float) deltaX)*mouseSensitivity;
+    rotation[0] += ((float) deltaY)*mouseSensitivity;
 
     // Limit looking down to vertically down
     if (rotation[0] > 90) {

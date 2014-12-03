@@ -28,17 +28,18 @@ void drawAxes();
  *    GLOBAL VARIABLES
  ****************************************/
 Terrain terrain;
-ParticleSystem volcanoParticles(terrain);
+ParticleSystem volcanoParticles(&terrain);
 Camera camera;
 
 bool fullscreen = false;
 bool paused = false;
-float lightPos[4] = {0,50,0, 1};
+float lightPos[4] = {0,60,0, 1};
 
 bool mouseCurrentInitiated = false;
 int currX = 0;
 int currY = 0;
-
+int windowWidth = 800;
+int windowHeight = 600;
 
 /*****************************************
 * draws scene
@@ -112,6 +113,17 @@ void keyboard(unsigned char key, int x, int y) {
             }
             break;
             
+        case 'r':
+            terrain.generateTerrain();
+//            volcanoParticles = ParticleSystem(terrain);
+            break;
+        case '1':
+            glShadeModel(GL_FLAT);
+            break;
+        case '2':
+            glShadeModel(GL_SMOOTH);
+            break;
+            
         //move player
         case 'w':
         case 'W':
@@ -144,14 +156,21 @@ void passive(int x, int y) {
         currY = y;
         mouseCurrentInitiated = true;
     }
-
+    
+    //if cursor approaching edge, set it to middle of window
+    if (x < 1 || x >= windowWidth-1) {
+        glutWarpPointer(windowWidth/2.0, y);
+        currX = windowWidth/2.0;
+    }
+    if (y < 1 || y >= windowHeight-1) {
+        glutWarpPointer(x, windowHeight/2.0);
+        currY = windowHeight/2.0;
+    }
+    
     //move camera according to mouse movement
     camera.mouseMoved(x-currX, y-currY);
     currX = x;
     currY = y;
-    
-    //reset pointer to middle of window (glitchy, doesn't work that well)
-    //glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH)/2.0, glutGet(GLUT_WINDOW_HEIGHT)/2.0);
     
     glutPostRedisplay();
 }
@@ -180,14 +199,16 @@ void reshape(int w, int h) {
     if (w < minWindowSize || h < minWindowSize)
         glutReshapeWindow((w < minWindowSize) ? minWindowSize : w, (h < minWindowSize) ? minWindowSize : h);
     
+    //change projection matrix, set width & height globals
     else {
-        //set projection matrix, using perspective
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
      
-        //set up viewport
         glViewport(0, 0, (GLsizei) w, (GLsizei) h);
         gluPerspective(45, (GLfloat) w / (GLfloat) h, 1,400);
+        
+        windowWidth = w;
+        windowHeight = h;
     }
     
     glutPostRedisplay();
@@ -201,7 +222,7 @@ void init() {
     //enable back face culling & flat shading (for artistic reasons)
     glClearColor(0.1, 0.1, 0.1, 1);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+   // glEnable(GL_CULL_FACE);
     glShadeModel(GL_FLAT);
     
     glEnable(GL_LIGHTING);
@@ -215,7 +236,7 @@ void init() {
     
     //initialize globals
     terrain = Terrain();
-    volcanoParticles = ParticleSystem(terrain);
+    volcanoParticles = ParticleSystem(&terrain);
     volcanoParticles.emitterPos[0] = 0;
     volcanoParticles.emitterPos[1] = terrain.getHeight(0,0)+1;
     volcanoParticles.emitterPos[2] = 0;

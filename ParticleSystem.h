@@ -36,7 +36,7 @@ class ParticleSystem {
         ****************************************/
 
         //constructor
-        ParticleSystem(Terrain);
+        ParticleSystem(Terrain*);
 
         void addParticle();
         void clearParticles();
@@ -47,10 +47,6 @@ class ParticleSystem {
         /****************************************
         *    PUBLIC GLOBAL VARIABLES
         ****************************************/
-        bool friction;
-        bool spawnPaused;
-        bool explosionsEnabled;
-
         float spawnRate;
         float particleSize;
         float emitterPos[3];
