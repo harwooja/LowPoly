@@ -3,7 +3,7 @@
  Stuart Douglas - 1214422
 
  November 6th, 2014
- 
+
  ParticleSystem.cpp
  -generates particles that shoot out of the emitter position
  -particles bounce off y=0 plane, losing speed and exploding
@@ -54,10 +54,10 @@ ParticleSystem::ParticleSystem(Terrain* t) {
     emitterPos[0] = 0;
     emitterPos[1] = 0;
     emitterPos[2] = 0;
-    
+
     spawnRate = 0.05;
     particleSize = 1;
-    
+
     terrain1 = t;
 }
 
@@ -66,26 +66,26 @@ ParticleSystem::ParticleSystem(Terrain* t) {
 * in appropriate location
 *******************************************/
 void ParticleSystem::drawParticles() {
-    
+
     glMatrixMode(GL_MODELVIEW);
-    
+
     for (int i = 0; i < particles.size(); i++) {
 
         //set particle colour
         float colour[3] = {particles[i].red, particles[i].green, particles[i].blue};
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colour);
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, colour);
-        
+
         glPushMatrix();
-        
+
         //move and rotate particle to correct position
         glTranslatef(particles[i].x, particles[i].y, particles[i].z);
         glRotatef(particles[i].xRot, 1, 0, 0);
         glRotatef(particles[i].yRot, 0, 1, 0);
         glRotatef(particles[i].zRot, 0, 0, 1);
-        
+
         glutSolidCube(particleSize*particles[i].sizeMultiplier);
-    
+
         glPopMatrix();
     }
 }
@@ -94,19 +94,19 @@ void ParticleSystem::drawParticles() {
  * adds particle with randomized attributes
  *******************************************/
 void ParticleSystem::addParticle() {
-    
+
     ParticleSystem::Particle particle;
-    
+
     //particle is reddy orangey
     particle.red = ((double) rand() / (RAND_MAX))*0.5 + 0.5;
     particle.green = ((double) rand() / (RAND_MAX))*0.7;
     particle.blue = 0;
-    
+
     //start particle at position of emitter
     particle.x = emitterPos[0];
     particle.y = emitterPos[1];
     particle.z = emitterPos[2];
-    
+
     //randomize x and z directions
     particle.xDir = ((double) rand()/(RAND_MAX))*0.6 - 0.3;
     particle.yDir = 6;
@@ -115,19 +115,19 @@ void ParticleSystem::addParticle() {
     particle.xDir /= (dirVectorLength*0.2);
     particle.yDir /= (dirVectorLength*0.2);
     particle.zDir /= (dirVectorLength*0.2);
-    
+
     //randomize rotation
     particle.xRotIncr = ((double) rand()/RAND_MAX)*4.0;
     particle.yRotIncr = ((double) rand()/RAND_MAX)*4.0;
     particle.zRotIncr = ((double) rand()/RAND_MAX)*4.0;
-    
+
     //make size somewhat random
     particle.sizeMultiplier = ((double) rand()/RAND_MAX)*2+0.1;
     particle.speed = 0.2;
-    
+
     //set only half of particles to explode (performance)
     particle.explosion = ((double) rand()/RAND_MAX > 0.5) ? true : false;
-    
+
     particles.push_back(particle);
 }
 
@@ -143,71 +143,71 @@ void ParticleSystem::clearParticles() {
 * handling for bounces off plane
 *******************************************/
 void ParticleSystem::moveParticles() {
-    
+
     //add a new particle
     if ((double)rand()/RAND_MAX < spawnRate)
         addParticle();
-    
+
     //move particles according to their direction vectors
     for (int i = 0; i < particles.size(); i++) {
-        
+
         //gravity
         particles[i].yDir -= 0.1;
-        
+
         //move particle
         particles[i].x += particles[i].xDir * particles[i].speed;
         particles[i].y += particles[i].yDir * particles[i].speed;
         particles[i].z += particles[i].zDir * particles[i].speed;
-        
+
         //rotate particle
         particles[i].xRot += particles[i].xRotIncr;
         particles[i].yRot += particles[i].yRotIncr;
         particles[i].zRot += particles[i].zRotIncr;
-        
+
         //increase age
         particles[i].age++;
 
         //explode particles that die of old age
         if (particles[i].age >= MAX_AGE) {
-            
+
             //remove particle
             particles[i] = particles[particles.size()-1];
             particles.pop_back();
-            
+
             if (!particles[i].explosion) {
-                
+
                 float explosionOrigin[3] = {particles[i].x, particles[i].y, particles[i].z};
-                
+
                 //add some particles
                 for (int i = 0; i < 5; i++) {
-                
+
                     addParticle();
-                    
+
                     //set origin to coordinates of particle that died
                     particles[particles.size()-1].x = explosionOrigin[0];
                     particles[particles.size()-1].y = explosionOrigin[1];
                     particles[particles.size()-1].z = explosionOrigin[2];
-                    
+
                     //make them explode with lots of power
                     particles[particles.size()-1].xDir = (((double) rand()/(RAND_MAX)) - 0.5)*4;
                     particles[particles.size()-1].yDir = (((double) rand()/(RAND_MAX)) - 0.5)*4;
                     particles[particles.size()-1].zDir = (((double) rand()/(RAND_MAX)) - 0.5)*4;
-                    
+
                     //prevents it from spawning child explosions
                     particles[particles.size()-1].explosion = true;
-                    
+
                     //give them a shorter life
                     particles[particles.size()-1].age = 100;
-                    
+
                     //make them smaller
                     particles[particles.size()-1].sizeMultiplier = 0.5;
                 }
             }
         }
-        
+
         //bounce particle
         else if (particles[i].y+particles[i].sizeMultiplier/2.0 <= terrain1->getHeight(particles[i].x, particles[i].z)) {
-            
+
             //set height to terrain height
             particles[i].y = terrain1->getHeight(particles[i].x, particles[i].z)+particles[i].sizeMultiplier/2.0;
 
@@ -220,18 +220,18 @@ void ParticleSystem::moveParticles() {
                 resVec = multVectorByScalar(-2*dotProduct(dirVec,terrain1->getNormal(particles[i].x, particles[i].y)),resVec);
                 resVec = subtractVectors(resVec, dirVec);
                 float resVecLength = sqrt(resVec[0]*resVec[0]+resVec[1]*resVec[1]+resVec[2]*resVec[2]);
-                
+
                 //set reflection vector
                 particles[i].xDir = resVec[0]/(resVecLength*0.2);
                 particles[i].yDir = resVec[1]/(resVecLength*0.2);
                 particles[i].zDir = resVec[2]/(resVecLength*0.2);
-                
+
                 terrain1->burnTerrain(particles[i].x, particles[i].z);
             }
-            
+
             //decrease speed
             particles[i].speed = particles[i].speed * 0.5;
-        
+
             //if stopped, delete it
             if (particles[i].yDir < 0.5 || particles[i].speed < 0.05) {
                 particles[i] = particles[particles.size()-1];
