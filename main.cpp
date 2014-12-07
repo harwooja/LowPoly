@@ -33,6 +33,7 @@ void drawAxes();
 Terrain terrain;
 ParticleSystem volcanoParticles(&terrain);
 Camera camera;
+ParticleSystem snowParticles(&terrain);
 
 bool fullscreen = false;
 bool paused = false;
@@ -51,22 +52,29 @@ int windowHeight = 600;
 *************************************/
 bool stopAnimation = false;
 bool frictionMode = false;
-bool snowMode = true;
-bool lavaMode = false;
 bool reset = false;
 //xmin,xmax,ymin,ymax,zmin,zmax
 float particleBounds[] = {-20,20,4,50,-20,20};
 std::list<Particle> particleList;
+std::list<Particle> steamParticleList;
+std::list<Particle> lavaParticleList;
+list<Particle>::iterator steamParticleIterator = steamParticleList.end();
+list<Particle>::iterator lavaParticleIterator = lavaParticleList.end();
 list<Particle>::iterator particleIterator = particleList.end();
 list<Particle>::iterator particleIterator3;
 list<Particle>::iterator particleIterator2;
 
-
-float ageLimit = 200;
+float ageLimit = 400;
 float friction;
 float angle = 0;
 float angle2 = 0;
 float angle3 = 0;
+bool snowMode = false;
+bool lavaMode = true;
+bool steamMode = false;
+float snowColor[] = {1,1,1};
+float lavaColor[] = {1,0,0};
+float steamColor[] = {0.5,0.5,0.5};
 float RandomFloat(float a, float b) {
     float random = ((float) rand()) / (float) RAND_MAX;
     float diff = b - a;
@@ -121,36 +129,61 @@ void drawCube(float r, float g, float b)
 
 	glEnd();
 }
-void CreateParticles(void)
+//0 = snow, 1 = lava, 2 = steam
+void CreateParticles(int particleType)
 {
     //this method will add 10 particles to the list of particles
     for (int i = 0;i<1;i++){
-        if (snowMode == true){
+        if(particleType == 0){
             particleList.push_back(Particle(RandomFloat(particleBounds[0],particleBounds[1]),50,RandomFloat(particleBounds[4],particleBounds[5]) ) );
             particleIterator++;
-            particleIterator->setParticleDirection(RandomFloat(0,1),-2,RandomFloat(0,1));
-            particleIterator->setParticleSize(.75);
+            particleIterator->setParticleDirection(RandomFloat(-3,-1),RandomFloat(0,1),RandomFloat(0,1));
+            particleIterator->setParticleSize(.25);
             particleIterator->setParticleSpeed(.5);
             particleIterator->setParticleColor(1,1,1);
+
             //particleIterator->setParticleRotAngle()
+            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, snowColor);
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, snowColor);
+
         }
-        else{
-            particleList.push_back(Particle(0,80,80));
-            particleIterator++;
-            particleIterator->setParticleDirection(RandomFloat(0,1), RandomFloat(-5,-3), RandomFloat(0,1));
-            particleIterator->setParticleSize(.75);
-            particleIterator->setParticleSpeed(RandomFloat(.1,1));
-            particleIterator->setParticleColor(1,0, 0);
-            particleIterator->setParticleRotAngle(RandomFloat(0,360)+angle,RandomFloat(0,360)+angle2,RandomFloat(0,360)+angle3);
+        else if(particleType == 1){
+                //the steam particles are generated at the same location as the collision of lava particles and lava tiles
+            lavaParticleList.push_back(Particle(RandomFloat(particleBounds[0],particleBounds[1]),20,RandomFloat(particleBounds[4],particleBounds[5]) ) );
+            lavaParticleIterator++;
+            lavaParticleIterator->setParticleDirection(RandomFloat(0,1),RandomFloat(0,1),RandomFloat(0,1));
+            lavaParticleIterator->setParticleSize(.25);
+            lavaParticleIterator->setParticleSpeed(.5);
+            lavaParticleIterator->setParticleColor(1,0,0);
+
+            //lavaParticleIterator->setParticleRotAngle()
+            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, lavaColor);
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, lavaColor);
+
+        }
+        else if(particleType == 2){
+                //the steam particles are generated at the same location as the collision of steam particles and steam tiles
+            steamParticleList.push_back(Particle(RandomFloat(particleBounds[0],particleBounds[1]),50,RandomFloat(particleBounds[4],particleBounds[5]) ) );
+            steamParticleIterator++;
+            steamParticleIterator->setParticleDirection(RandomFloat(0,1),RandomFloat(0,1),RandomFloat(0,1));
+            steamParticleIterator->setParticleSize(.25);
+            steamParticleIterator->setParticleSpeed(.5);
+            steamParticleIterator->setParticleColor(0.5,0.5,0.5);
+
+            //steamParticleIterator->setParticleRotAngle()
+            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, steamColor);
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, steamColor);
+
         }
     }
 }
-void UpdateParticles(void)
+//right now snow builds up, but it doesnt look realistic
+void UpdateParticles(int particleType)
 {
     if(frictionMode == true) friction = .5;
     if(frictionMode == false) friction = 1;
-    if(snowMode == false){
-        for(particleIterator2 = particleList.begin();particleIterator2 != particleList.end();particleIterator2++){
+    if(particleType == 1){
+        for(particleIterator2 = lavaParticleList.begin();particleIterator2 != lavaParticleList.end();particleIterator2++){
 
             //if the particle's age is less than the limit, update its values
             if (particleIterator2->getParticleAge() < ageLimit){
@@ -159,7 +192,7 @@ void UpdateParticles(void)
                 float newZ = particleIterator2->getParticlePosition()[2] + particleIterator2->getParticleDirection()[2]*particleIterator2->getParticleSpeed();
 
                 //if the particle is within the platform boundaries let it stay on the platform imitating flow
-                if ((newX <=80 && newX >-80) && (newZ <=80 && newZ > -80)){
+                if ((newX <=particleBounds[1] && newX >particleBounds[0]) && (newZ <=particleBounds[5] && newZ > particleBounds[4])){
 
                     //if the direction is positive, then moving upwards, so gravity should reduce the speed
                     if(particleIterator2->getParticleDirection()[1] > 0){
@@ -178,11 +211,11 @@ void UpdateParticles(void)
                         newZ = particleIterator2->getParticlePosition()[2] + particleIterator2->getParticleDirection()[2]*particleIterator2->getParticleSpeed();
                     }
 
-                    //everytime the direction is negative, let gravity increase the speed at which the particle moves
                     if (particleIterator2->getParticleDirection()[1] <= 0){
-                        if (newY <=4){
+                        if (newY <= terrain.getHeight((int) newX, (int) newZ)){
                             particleIterator2->setParticleDirection(particleIterator2->getParticleDirection()[0],
-                                                                    0, particleIterator2->getParticleDirection()[2]);
+                                                                    particleIterator2->getParticleDirection()[1]*-1,
+                                                                    particleIterator2->getParticleDirection()[2]);
                             //friction will take some of the speed away
                             particleIterator2->setParticleSpeed(friction*particleIterator2->getParticleSpeed());
                             newX = particleIterator2->getParticlePosition()[0] + particleIterator2->getParticleDirection()[0]*particleIterator2->getParticleSpeed();
@@ -194,9 +227,7 @@ void UpdateParticles(void)
                         else{
                             particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed());
                         }
-
                     }
-
                     if (particleIterator2->getParticleDirection()[1] < 0){
                     }
                     //everytime the direction is positive, let gravity decrease the speed at which the particle moves
@@ -242,7 +273,7 @@ void UpdateParticles(void)
         }
     }
 
-    if(snowMode == true){
+    if(particleType == 0){
 
         for(particleIterator2 = particleList.begin();particleIterator2 != particleList.end();particleIterator2++){
 
@@ -270,8 +301,8 @@ void UpdateParticles(void)
 
                 }
                 //if the particle touches the platform, let it collect.
-                if(newY<=particleBounds[2]){
-                    newY = particleBounds[2];
+                if(newY <= terrain.getHeight((int) newX, (int) newZ)){
+                    newY = terrain.getHeight((int) newX, (int) newZ);
                     terrain.snowTerrain((int) newX,(int) newZ);
                 }
                 //finally update the particle's position, direction, age
@@ -280,44 +311,68 @@ void UpdateParticles(void)
             }
 
             else{
+                //first raise height to imitate snow buildup
                 particleIterator2 = particleList.erase(particleIterator2);
                 particleIterator2--;
+
             }
         }
     }
 }
 void DrawParticles(void)
 {
-    //also check if spacebar was pressed. if it was, then do not add anymore particles
-    if(stopAnimation == false){
-        CreateParticles();
+
+    if(snowMode){
+        CreateParticles(0);
+    }
+    if (lavaMode){
+        CreateParticles(1);
+    }
+    if(steamMode){
+        CreateParticles(2);
     }
     // create a new iterator for the list, starting at the beginning of the list
-    {if (reset == false){
+    if(snowMode){
         for(particleIterator3 = particleList.begin();particleIterator3 != particleList.end();particleIterator3++){
             glPushMatrix();
-            glTranslatef(particleIterator3->getParticlePosition()[0], particleIterator3->getParticlePosition()[1], particleIterator3->getParticlePosition()[2]);
-            //glTranslatef((*particleIterator3).getParticlePosition()[0], (*particleIterator3).getParticlePosition()[1], (*particleIterator3).getParticlePosition()[2])
-            glRotatef(particleIterator3->getParticleRotAngle()[0]+angle, 1, 0, 0);
-            glRotatef(particleIterator3->getParticleRotAngle()[1]+angle2, 0, 1, 0);
-            glRotatef(particleIterator3->getParticleRotAngle()[2]+angle3, 0, 0, 1);
-            glScalef(particleIterator3->getParticleSize(), particleIterator3->getParticleSize(), particleIterator3->getParticleSize());
+                glTranslatef(particleIterator3->getParticlePosition()[0], particleIterator3->getParticlePosition()[1], particleIterator3->getParticlePosition()[2]);
+                //glTranslatef((*particleIterator3).getParticlePosition()[0], (*particleIterator3).getParticlePosition()[1], (*particleIterator3).getParticlePosition()[2])
+                glRotatef(particleIterator3->getParticleRotAngle()[0]+angle, 1, 0, 0);
+                glRotatef(particleIterator3->getParticleRotAngle()[1]+angle2, 0, 1, 0);
+                glRotatef(particleIterator3->getParticleRotAngle()[2]+angle3, 0, 0, 1);
+                glScalef(particleIterator3->getParticleSize(), particleIterator3->getParticleSize(), particleIterator3->getParticleSize());
 
-            if (snowMode == true){
-                glColor3f(1,1,1);
                 glutSolidSphere(1,20,16);
-            }
-            else{
-                drawCube(particleIterator3->getParticleColor()[0], particleIterator3->getParticleColor()[1], particleIterator3->getParticleColor()[2]);
-            }
             glPopMatrix();
         }
     }
-    //if 'r' is pressed then the list will be cleared.
-    else if (reset == true){
-        particleList.clear();
-        reset = false;
+    if(lavaMode){
+        for(particleIterator3 = lavaParticleList.begin();particleIterator3 != lavaParticleList.end();particleIterator3++){
+            glPushMatrix();
+                glTranslatef(particleIterator3->getParticlePosition()[0], particleIterator3->getParticlePosition()[1], particleIterator3->getParticlePosition()[2]);
+                //glTranslatef((*particleIterator3).getParticlePosition()[0], (*particleIterator3).getParticlePosition()[1], (*particleIterator3).getParticlePosition()[2])
+                glRotatef(particleIterator3->getParticleRotAngle()[0]+angle, 1, 0, 0);
+                glRotatef(particleIterator3->getParticleRotAngle()[1]+angle2, 0, 1, 0);
+                glRotatef(particleIterator3->getParticleRotAngle()[2]+angle3, 0, 0, 1);
+                glScalef(particleIterator3->getParticleSize(), particleIterator3->getParticleSize(), particleIterator3->getParticleSize());
+
+                glutSolidSphere(1,20,16);
+            glPopMatrix();
+        }
     }
+    if(steamMode){
+        for(particleIterator3 = steamParticleList.begin();particleIterator3 != steamParticleList.end();particleIterator3++){
+            glPushMatrix();
+                glTranslatef(particleIterator3->getParticlePosition()[0], particleIterator3->getParticlePosition()[1], particleIterator3->getParticlePosition()[2]);
+                //glTranslatef((*particleIterator3).getParticlePosition()[0], (*particleIterator3).getParticlePosition()[1], (*particleIterator3).getParticlePosition()[2])
+                glRotatef(particleIterator3->getParticleRotAngle()[0]+angle, 1, 0, 0);
+                glRotatef(particleIterator3->getParticleRotAngle()[1]+angle2, 0, 1, 0);
+                glRotatef(particleIterator3->getParticleRotAngle()[2]+angle3, 0, 0, 1);
+                glScalef(particleIterator3->getParticleSize(), particleIterator3->getParticleSize(), particleIterator3->getParticleSize());
+
+                glutSolidSphere(1,20,16);
+            glPopMatrix();
+        }
     }
 }
 
@@ -465,7 +520,7 @@ void timer(int value) {
 
     //set timer function
     glutTimerFunc(32, timer, 0);
-    UpdateParticles();
+    UpdateParticles(0);
     glutPostRedisplay();
 }
 
