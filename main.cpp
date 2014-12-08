@@ -48,13 +48,25 @@ int windowHeight = 600;
 *added some more global variables
 *added 3 methods to create, update and draw the particles
 *added some helper methods
-*
+*snowMode, lavaMode turn snow and lava on and off
 *************************************/
-bool stopAnimation = false;
-bool frictionMode = false;
-bool reset = false;
+float ageLimit = 1000;
+float friction = 0.5;
+float gravity = 1.025;
 //xmin,xmax,ymin,ymax,zmin,zmax
-float particleBounds[] = {-100,100,4,100,-100,100};
+float particleBounds[] = {-50,50,4,50,-50,50};
+float angle = 0;
+float angle2 = 0;
+float angle3 = 0;
+
+bool snowMode = true;
+bool lavaMode = false;
+bool steamMode = false;
+
+float snowColor[] = {1,1,1};
+float lavaColor[] = {1,0,0};
+float steamColor[] = {0.5,0.5,0.5};
+
 std::list<Particle> particleList;
 std::list<Particle> steamParticleList;
 std::list<Particle> lavaParticleList;
@@ -64,18 +76,6 @@ list<Particle>::iterator particleIterator = particleList.end();
 list<Particle>::iterator particleIterator3;
 list<Particle>::iterator particleIterator2;
 
-float ageLimit = 1000;
-float friction = 0.5;
-float gravity = 1.025;
-float angle = 0;
-float angle2 = 0;
-float angle3 = 0;
-bool snowMode = true;
-bool lavaMode = false;
-bool steamMode = false;
-float snowColor[] = {1,1,1};
-float lavaColor[] = {1,0,0};
-float steamColor[] = {0.5,0.5,0.5};
 float RandomFloat(float a, float b) {
     float random = ((float) rand()) / (float) RAND_MAX;
     float diff = b - a;
