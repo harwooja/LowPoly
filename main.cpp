@@ -48,7 +48,7 @@ int windowHeight = 600;
 *added some more global variables
 *added 3 methods to create, update and draw the particles
 *added some helper methods
-*Simon
+*
 *************************************/
 bool stopAnimation = false;
 bool frictionMode = false;
@@ -70,8 +70,8 @@ float gravity = 1.025;
 float angle = 0;
 float angle2 = 0;
 float angle3 = 0;
-bool snowMode = false;
-bool lavaMode = true;
+bool snowMode = true;
+bool lavaMode = false;
 bool steamMode = false;
 float snowColor[] = {1,1,1};
 float lavaColor[] = {1,0,0};
@@ -331,18 +331,8 @@ void UpdateParticles(int particleType)
 }
 void DrawParticles(void)
 {
-
     if(snowMode){
         CreateParticles(0);
-    }
-    if (lavaMode){
-        CreateParticles(1);
-    }
-    if(steamMode){
-        CreateParticles(2);
-    }
-    // create a new iterator for the list, starting at the beginning of the list
-    if(snowMode){
         for(particleIterator3 = particleList.begin();particleIterator3 != particleList.end();particleIterator3++){
             glPushMatrix();
                 glTranslatef(particleIterator3->getParticlePosition()[0], particleIterator3->getParticlePosition()[1], particleIterator3->getParticlePosition()[2]);
@@ -357,6 +347,7 @@ void DrawParticles(void)
         }
     }
     if(lavaMode){
+        CreateParticles(1);
         for(particleIterator3 = lavaParticleList.begin();particleIterator3 != lavaParticleList.end();particleIterator3++){
             glPushMatrix();
                 glTranslatef(particleIterator3->getParticlePosition()[0], particleIterator3->getParticlePosition()[1], particleIterator3->getParticlePosition()[2]);
@@ -371,6 +362,7 @@ void DrawParticles(void)
         }
     }
     if(steamMode){
+        CreateParticles(2);
         for(particleIterator3 = steamParticleList.begin();particleIterator3 != steamParticleList.end();particleIterator3++){
             glPushMatrix();
                 glTranslatef(particleIterator3->getParticlePosition()[0], particleIterator3->getParticlePosition()[1], particleIterator3->getParticlePosition()[2]);
@@ -531,7 +523,9 @@ void timer(int value) {
 
     //set timer function
     glutTimerFunc(32, timer, 0);
-    UpdateParticles(1);
+    if(snowMode) UpdateParticles(0);
+    if(lavaMode) UpdateParticles(1);
+    if(steamMode) UpdateParticles(2);
     glutPostRedisplay();
 }
 
