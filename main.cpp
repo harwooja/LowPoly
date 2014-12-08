@@ -31,9 +31,9 @@ void drawAxes();
  *    GLOBAL VARIABLES
  ****************************************/
 Terrain terrain;
-ParticleSystem volcanoParticles(&terrain);
+//ParticleSystem volcanoParticles(&terrain);
 Camera camera;
-ParticleSystem snowParticles(&terrain);
+//ParticleSystem snowParticles(&terrain);
 
 bool fullscreen = false;
 bool paused = false;
@@ -54,7 +54,7 @@ bool stopAnimation = false;
 bool frictionMode = false;
 bool reset = false;
 //xmin,xmax,ymin,ymax,zmin,zmax
-float particleBounds[] = {-20,20,4,50,-20,20};
+float particleBounds[] = {-100,100,4,100,-100,100};
 std::list<Particle> particleList;
 std::list<Particle> steamParticleList;
 std::list<Particle> lavaParticleList;
@@ -64,8 +64,9 @@ list<Particle>::iterator particleIterator = particleList.end();
 list<Particle>::iterator particleIterator3;
 list<Particle>::iterator particleIterator2;
 
-float ageLimit = 400;
-float friction;
+float ageLimit = 1000;
+float friction = 0.5;
+float gravity = 1.025;
 float angle = 0;
 float angle2 = 0;
 float angle3 = 0;
@@ -129,34 +130,38 @@ void drawCube(float r, float g, float b)
 
 	glEnd();
 }
-//0 = snow, 1 = lava, 2 = steam
+
+/*****************************************
+ * snowMode: 0
+ * lavaMode: 1
+ * steamMode: 2
+ ****************************************/
 void CreateParticles(int particleType)
 {
-    //this method will add 10 particles to the list of particles
     for (int i = 0;i<1;i++){
         if(particleType == 0){
             particleList.push_back(Particle(RandomFloat(particleBounds[0],particleBounds[1]),50,RandomFloat(particleBounds[4],particleBounds[5]) ) );
             particleIterator++;
-            particleIterator->setParticleDirection(RandomFloat(-3,-1),RandomFloat(0,1),RandomFloat(0,1));
+            particleIterator->setParticleDirection(RandomFloat(0,1),-1,RandomFloat(0,1));
             particleIterator->setParticleSize(.25);
             particleIterator->setParticleSpeed(.5);
             particleIterator->setParticleColor(1,1,1);
+            //particleIterator->setParticleRotAngle();
 
-            //particleIterator->setParticleRotAngle()
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, snowColor);
             glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, snowColor);
 
         }
         else if(particleType == 1){
-                //the steam particles are generated at the same location as the collision of lava particles and lava tiles
-            lavaParticleList.push_back(Particle(RandomFloat(particleBounds[0],particleBounds[1]),20,RandomFloat(particleBounds[4],particleBounds[5]) ) );
-            lavaParticleIterator++;
-            lavaParticleIterator->setParticleDirection(RandomFloat(0,1),RandomFloat(0,1),RandomFloat(0,1));
-            lavaParticleIterator->setParticleSize(.25);
-            lavaParticleIterator->setParticleSpeed(.5);
-            lavaParticleIterator->setParticleColor(1,0,0);
 
-            //lavaParticleIterator->setParticleRotAngle()
+            lavaParticleList.push_back(Particle(-50,60,0));
+            lavaParticleIterator++;
+            lavaParticleIterator->setParticleDirection(3,-5,RandomFloat(0,1));
+            lavaParticleIterator->setParticleSize(.25);
+            lavaParticleIterator->setParticleSpeed(.025);
+            lavaParticleIterator->setParticleColor(1,0,0);
+            //lavaParticleIterator->setParticleRotAngle();
+
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, lavaColor);
             glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, lavaColor);
 
@@ -177,11 +182,13 @@ void CreateParticles(int particleType)
         }
     }
 }
-//right now snow builds up, but it doesnt look realistic
+/*****************************************
+ * snowMode: 0
+ * lavaMode: 1
+ * steamMode: 2
+ ****************************************/
 void UpdateParticles(int particleType)
 {
-    if(frictionMode == true) friction = .5;
-    if(frictionMode == false) friction = 1;
     if(particleType == 1){
         for(particleIterator2 = lavaParticleList.begin();particleIterator2 != lavaParticleList.end();particleIterator2++){
 
@@ -196,14 +203,14 @@ void UpdateParticles(int particleType)
 
                     //if the direction is positive, then moving upwards, so gravity should reduce the speed
                     if(particleIterator2->getParticleDirection()[1] > 0){
-                        particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed());
+                        particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed()/gravity);
 
                         //if the difference is infintismely small and positive (to confirm the particle is still moving up), reverse the direction
                         if ((newY - particleIterator2->getParticlePosition()[1] < 0.05) && (newY- particleIterator2->getParticlePosition()[1] > 0)){
                             particleIterator2->setParticleDirection(particleIterator2->getParticleDirection()[0],
                                                                     (-1)*particleIterator2->getParticleDirection()[1], particleIterator2->getParticleDirection()[2]);
                             //adjust speed for gravity
-                            particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed());
+                            particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed()*gravity);
                         }
                         //now recalculate the new positions
                         newX = particleIterator2->getParticlePosition()[0] + particleIterator2->getParticleDirection()[0]*particleIterator2->getParticleSpeed();
@@ -211,26 +218,32 @@ void UpdateParticles(int particleType)
                         newZ = particleIterator2->getParticlePosition()[2] + particleIterator2->getParticleDirection()[2]*particleIterator2->getParticleSpeed();
                     }
 
-                    if (particleIterator2->getParticleDirection()[1] <= 0){
-                        if (newY <= terrain.getHeight((int) newX, (int) newZ)){
-                            particleIterator2->setParticleDirection(particleIterator2->getParticleDirection()[0],
-                                                                    particleIterator2->getParticleDirection()[1]*-1,
-                                                                    particleIterator2->getParticleDirection()[2]);
+                    if(particleIterator2->getParticleDirection()[1] <= 0){
+                        if(newY <= terrain.getHeight(newX, newZ)){
+
+                            terrain.burnTerrain(particleIterator2->getParticlePosition()[0],particleIterator2->getParticlePosition()[2]);
+
+                            particleIterator2->setParticleDirection(particleIterator2->getParticleDirection()[0]*2,
+                                                                    particleIterator2->getParticleDirection()[1],
+                                                                    particleIterator2->getParticleDirection()[2]*1.05);
                             //friction will take some of the speed away
                             particleIterator2->setParticleSpeed(friction*particleIterator2->getParticleSpeed());
+
+                            if(terrain.getHeight((int) newX, (int) newZ) <=3){
+                                terrain.snowTerrain(particleIterator2->getParticlePosition()[0],particleIterator2->getParticlePosition()[2]);
+                            }
+
                             newX = particleIterator2->getParticlePosition()[0] + particleIterator2->getParticleDirection()[0]*particleIterator2->getParticleSpeed();
-                            newY = particleIterator2->getParticlePosition()[1] + particleIterator2->getParticleDirection()[1]*particleIterator2->getParticleSpeed();
+
                             newZ = particleIterator2->getParticlePosition()[2] + particleIterator2->getParticleDirection()[2]*particleIterator2->getParticleSpeed();
+                            newY = terrain.getHeight(newX, newZ);//particleIterator2->getParticlePosition()[1] + particleIterator2->getParticleDirection()[1]*particleIterator2->getParticleSpeed();
 
                         }
 
                         else{
-                            particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed());
+                            particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed()*gravity);
                         }
                     }
-                    if (particleIterator2->getParticleDirection()[1] < 0){
-                    }
-                    //everytime the direction is positive, let gravity decrease the speed at which the particle moves
                 }
                 //the platform is out of bounds and thus doesn't bounce anymore
                 else{
@@ -241,17 +254,17 @@ void UpdateParticles(int particleType)
 
                     //everytime the direction is negative, let gravity increase the speed at which the particle moves
                     if (particleIterator2->getParticleDirection()[1] < 0){
-                            particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed());
+                            particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed()*gravity);
                     }
                     if(particleIterator2->getParticleDirection()[1] > 0){
-                        particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed());
+                        particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed()/gravity);
 
                         //if the difference is infintismely small and positive (to confirm the particle is still moving up), reverse the direction
                         if ((newY - particleIterator2->getParticlePosition()[1] < 0.05) && (newY- particleIterator2->getParticlePosition()[1] > 0)){
                             particleIterator2->setParticleDirection(particleIterator2->getParticleDirection()[0],
                                                                     (-1)*particleIterator2->getParticleDirection()[1], particleIterator2->getParticleDirection()[2]);
                             //adjust speed for gravity
-                            particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed());
+                            particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed()*gravity);
                         }
                         //now recalculate the new positions
                         newX = particleIterator2->getParticlePosition()[0] + particleIterator2->getParticleDirection()[0]*particleIterator2->getParticleSpeed();
@@ -259,7 +272,6 @@ void UpdateParticles(int particleType)
                         newZ = particleIterator2->getParticlePosition()[2] + particleIterator2->getParticleDirection()[2]*particleIterator2->getParticleSpeed();
                     }
                 }
-
                 //finally update the particle's position, direction, age
                 particleIterator2->setParticlePosition(newX,newY,newZ);
                 particleIterator2->setParticleAge(particleIterator2->getParticleAge() + 1);
@@ -272,7 +284,6 @@ void UpdateParticles(int particleType)
             }
         }
     }
-
     if(particleType == 0){
 
         for(particleIterator2 = particleList.begin();particleIterator2 != particleList.end();particleIterator2++){
@@ -303,7 +314,7 @@ void UpdateParticles(int particleType)
                 //if the particle touches the platform, let it collect.
                 if(newY <= terrain.getHeight((int) newX, (int) newZ)){
                     newY = terrain.getHeight((int) newX, (int) newZ);
-                    terrain.snowTerrain((int) newX,(int) newZ);
+                    terrain.snowTerrain(newX, newZ);
                 }
                 //finally update the particle's position, direction, age
                 particleIterator2->setParticlePosition(newX,newY,newZ);
@@ -314,7 +325,6 @@ void UpdateParticles(int particleType)
                 //first raise height to imitate snow buildup
                 particleIterator2 = particleList.erase(particleIterator2);
                 particleIterator2--;
-
             }
         }
     }
@@ -391,10 +401,11 @@ void display(void) {
     glRotatef(camera.rotation[1], 0, 1, 0);
     glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-3, -camera.position[2]);
     DrawParticles();
+
     //draw the scene
     drawAxes();
     terrain.drawTerrain();
-    volcanoParticles.drawParticles();
+    //volcanoParticles.drawParticles();
 
     glutSwapBuffers();
 }
@@ -516,11 +527,11 @@ void passive(int x, int y) {
 void timer(int value) {
 
     if (!paused)
-        volcanoParticles.moveParticles();
+        //volcanoParticles.moveParticles();
 
     //set timer function
     glutTimerFunc(32, timer, 0);
-    UpdateParticles(0);
+    UpdateParticles(1);
     glutPostRedisplay();
 }
 
@@ -573,10 +584,10 @@ void init() {
 
     //initialize globals
     terrain = Terrain();
-    volcanoParticles = ParticleSystem(&terrain);
-    volcanoParticles.emitterPos[0] = 0;
-    volcanoParticles.emitterPos[1] = terrain.getHeight(0,0)+1;
-    volcanoParticles.emitterPos[2] = 0;
+    //volcanoParticles = ParticleSystem(&terrain);
+    //volcanoParticles.emitterPos[0] = 0;
+    //volcanoParticles.emitterPos[1] = terrain.getHeight(0,0)+1;
+    //volcanoParticles.emitterPos[2] = 0;
 
     //initialize camera
     camera = Camera();
