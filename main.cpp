@@ -115,7 +115,6 @@ void keyboard(unsigned char key, int x, int y) {
             
         case 'r':
             terrain.generateTerrain();
-//            volcanoParticles = ParticleSystem(terrain);
             break;
         case '1':
             glShadeModel(GL_FLAT);
@@ -220,9 +219,9 @@ void reshape(int w, int h) {
 void init() {
     
     //enable back face culling & flat shading (for artistic reasons)
-    glClearColor(0.1, 0.1, 0.1, 1);
+    glClearColor(0.25, 0.53, 0.77, 1);
     glEnable(GL_DEPTH_TEST);
-   // glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
     glShadeModel(GL_FLAT);
     
     glEnable(GL_LIGHTING);
@@ -237,9 +236,6 @@ void init() {
     //initialize globals
     terrain = Terrain();
     volcanoParticles = ParticleSystem(&terrain);
-    volcanoParticles.emitterPos[0] = 0;
-    volcanoParticles.emitterPos[1] = terrain.getHeight(0,0)+1;
-    volcanoParticles.emitterPos[2] = 0;
 
     //initialize camera
     camera = Camera();

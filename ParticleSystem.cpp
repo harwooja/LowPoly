@@ -51,10 +51,6 @@ Terrain* terrain1;
 ParticleSystem::ParticleSystem(Terrain* t) {
 
     //initializing public global variables
-    emitterPos[0] = 0;
-    emitterPos[1] = 0;
-    emitterPos[2] = 0;
-    
     spawnRate = 0.05;
     particleSize = 1;
     
@@ -103,9 +99,9 @@ void ParticleSystem::addParticle() {
     particle.blue = 0;
     
     //start particle at position of emitter
-    particle.x = emitterPos[0];
-    particle.y = emitterPos[1];
-    particle.z = emitterPos[2];
+    particle.x = terrain1->volcanoPos[0];
+    particle.y = terrain1->volcanoPos[1];
+    particle.z = terrain1->volcanoPos[2];
     
     //randomize x and z directions
     particle.xDir = ((double) rand()/(RAND_MAX))*0.6 - 0.3;
@@ -208,34 +204,39 @@ void ParticleSystem::moveParticles() {
         //bounce particle
         else if (particles[i].y+particles[i].sizeMultiplier/2.0 <= terrain1->getHeight(particles[i].x, particles[i].z)) {
             
-            //set height to terrain height
+            //set height to terrain height (if 0, delete particle as it's hit water)
             particles[i].y = terrain1->getHeight(particles[i].x, particles[i].z)+particles[i].sizeMultiplier/2.0;
-
-            if (terrain1->getNormal(particles[i].x, particles[i].z) != NULL) {
-
-                //calculate reflection vector. Formula taken from
-                //www.3dkingdoms.com/weekly/weekly.php?a=2
-                float dirVec[3] = {particles[i].xDir, particles[i].yDir, particles[i].zDir};
-                float* resVec = terrain1->getNormal(particles[i].x, particles[i].y);
-                resVec = multVectorByScalar(-2*dotProduct(dirVec,terrain1->getNormal(particles[i].x, particles[i].y)),resVec);
-                resVec = subtractVectors(resVec, dirVec);
-                float resVecLength = sqrt(resVec[0]*resVec[0]+resVec[1]*resVec[1]+resVec[2]*resVec[2]);
-                
-                //set reflection vector
-                particles[i].xDir = resVec[0]/(resVecLength*0.2);
-                particles[i].yDir = resVec[1]/(resVecLength*0.2);
-                particles[i].zDir = resVec[2]/(resVecLength*0.2);
-                
-                terrain1->burnTerrain(particles[i].x, particles[i].z);
-            }
-            
-            //decrease speed
-            particles[i].speed = particles[i].speed * 0.5;
-        
-            //if stopped, delete it
-            if (particles[i].yDir < 0.5 || particles[i].speed < 0.05) {
+            if (particles[i].y == particles[i].sizeMultiplier/2.0) {
                 particles[i] = particles[particles.size()-1];
                 particles.pop_back();
+            }
+            else {
+                float* resVec = terrain1->getNormal(particles[i].x, particles[i].y);
+                if (resVec != NULL) {
+                    
+                    //calculate reflection vector. Formula taken from
+                    //www.3dkingdoms.com/weekly/weekly.php?a=2
+                    float dirVec[3] = {particles[i].xDir, particles[i].yDir, particles[i].zDir};
+                    resVec = multVectorByScalar(-2*dotProduct(dirVec,terrain1->getNormal(particles[i].x, particles[i].y)),resVec);
+                    resVec = subtractVectors(resVec, dirVec);
+                    float resVecLength = sqrt(resVec[0]*resVec[0]+resVec[1]*resVec[1]+resVec[2]*resVec[2]);
+                    
+                    //set reflection vector
+                    particles[i].xDir = resVec[0]/(resVecLength*0.2);
+                    particles[i].yDir = resVec[1]/(resVecLength*0.2);
+                    particles[i].zDir = resVec[2]/(resVecLength*0.2);
+                    
+                    terrain1->burnTerrain(particles[i].x, particles[i].z);
+                }
+                
+                //decrease speed
+                particles[i].speed = particles[i].speed * 0.5;
+            
+                //if stopped, delete it
+                if (particles[i].speed < 0.05) {
+                    particles[i] = particles[particles.size()-1];
+                    particles.pop_back();
+                }
             }
         }
     }

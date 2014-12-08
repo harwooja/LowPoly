@@ -49,5 +49,4 @@ class ParticleSystem {
         ****************************************/
         float spawnRate;
         float particleSize;
-        float emitterPos[3];
 };
