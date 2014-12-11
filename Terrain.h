@@ -1,49 +1,36 @@
+// Terrain.h
+// LowPoly
 //
-//  Terrain.h
-//  LowPoly
-//
-//  Created by Jake Harwood on 2014-11-16.
-//  Copyright (c) 2014 Jake Harwood. All rights reserved.
-//
-
-#ifndef __LowPoly__Terrain__
-#define __LowPoly__Terrain__
-#include <stdio.h>
+// Created by Jake Harwood on 2014-11-16.
+// Copyright (c) 2014 Jake Harwood. All rights reserved.
 
 class Terrain {
 
 public:
     
+    /***************************************
+     *    FUNCTION DECLARATIONS
+     **************************************/
     Terrain();
-    
-    enum Material {WATER, LAND, VOLCANO, LAVA};
-    
-    float getHeight(float x, float z);
-    float getColour(int polygonIndex);
-    void setColour(int polygonIndex, float position[3]);
-//    void generateTerrain();
-  //  void drawTerrain();
-    
-    //Terrain(int size); //constructor
-    
-    void drawTerrain();
+
     void generateTerrain();
-    void smoothTerrain(float);
-    void changeWireframeMode();
-//    void changeTerrainAlgorithm(TerrainAlgorithm);
-    void calculateVertexNormals();
-    void calculateFaceNormals();
-    char* getWireframeMode();
-    char* getAlgorithm();
+    void drawTerrain();
+    void burnTerrain(float x, float z);
+
+    float getHeight(float x, float z);
+    float* getNormal(float x, float z);
     
     /***************************************
-     *    PUBLIC GLOBAL VARIABLES
-     *****/
-
+     *    PUBLIC GLOBAL VARIABLE
+     **************************************/
+    float volcanoPos[3] = {0,0,0};
     
 private:
 
-    
+    /***************************************
+    *    FUNCTION DECLARATIONS
+    **************************************/
+    void generateWater(float);
+    void smoothTerrain(float);
+    void calculateFaceNormals();
 };
-
-#endif

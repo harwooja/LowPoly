@@ -1,42 +1,49 @@
-#ifndef _OPENGL_
-#define _OPENGL_
 #ifdef __APPLE__
-#  include <OpenGL/gl.h>
-#  include <OpenGL/glu.h>
-#  include <GLUT/glut.h>
+# include <OpenGL/gl.h>
+# include <OpenGL/glu.h>
+# include <GLUT/glut.h>
 #else
-#  include <windows.h>
-#  include <GL/gl.h>
-#  include <GL/glu.h>
-#  include <GL/freeglut.h>
+#ifdef _WIN32
+# include <windows.h>
 #endif
+# include <GL/gl.h>
+# include <GL/glu.h>
+# include <GL/freeglut.h>
 #endif
 
-#ifndef _STANDARD_
-#define _STANDARD_
 #include <vector>
 #include <stdlib.h>
 #include <math.h>
-#endif
-
 #include "Terrain.h"
+#include "ParticleSystem.h"
+#include "Camera.h"
+
+
 /*****************************************
- *    FUNCTION DECLARATIONS
- ****************************************/
+*    FUNCTION DECLARATIONS
+****************************************/
 void drawAxes();
 
 /*****************************************
  *    GLOBAL VARIABLES
  ****************************************/
 Terrain terrain;
+ParticleSystem volcanoParticles(&terrain);
+Camera camera;
+
+bool fullscreen = false;
 bool paused = false;
-float camPos[3] = {-100,60,-100};
-float camLookAt[3] = {75,0,75};
-float lightPos[4] = {75,50,75, 1};
+float lightPos[4] = {0,60,0, 1};
+
+bool mouseCurrentInitiated = false;
+int currX = 0;
+int currY = 0;
+int windowWidth = 800;
+int windowHeight = 600;
 
 /*****************************************
- * displays all objects
- ****************************************/
+* draws scene
+****************************************/
 void display(void) {
     
     //clear bits and model view matrix
@@ -44,11 +51,15 @@ void display(void) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
-    //point camera
-    gluLookAt(camPos[0],camPos[1],camPos[2], camLookAt[0],camLookAt[1],camLookAt[2], 0,1,0);
+    //transform according to camera
+    glRotatef(camera.rotation[0], 1, 0, 0);
+    glRotatef(camera.rotation[1], 0, 1, 0);
+    glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-3, -camera.position[2]);
 
+    //draw the scene
     drawAxes();
     terrain.drawTerrain();
+    volcanoParticles.drawParticles();
     
     glutSwapBuffers();
 }
@@ -69,88 +80,148 @@ void drawAxes() {
     glVertex3f(0, 0, 0);
     glVertex3f(0, 0, 500);
     glEnd();
+    
     glEnable(GL_LIGHTING);
 }
+
 /********************************************
- * handles key presses for program functions
- *******************************************/
+* handles key presses for program functions
+*******************************************/
 void keyboard(unsigned char key, int x, int y) {
     
     switch (key) {
-       case 'q':
+        
+        //quit
+        case 'q':
             exit(0);
             break;
-        case '[':
-            camPos[2] -= 1;
+        
+        //pause
+        case 'p':
+        case 'P':
+            paused = !paused;
             break;
-        case ']':
-            camPos[2] += 1;
-            break;
-    }
-    
-    glutPostRedisplay();
-}
 
-/*****************************************
- * handles arrow key presses (to move cam)
- ****************************************/
-void special(int key, int x, int y) {
-    
-    //move camera w/ arrow keys
-    switch(key) {
-        case GLUT_KEY_LEFT:
-            camPos[0] -= 1;
+        //toggle fullscreen
+        case 'f':
+        case 'F':
+            if (!fullscreen)
+                glutFullScreen();
+            else {
+                glutPositionWindow(10, 10);
+                glutReshapeWindow(800, 600);
+            }
             break;
             
-        case GLUT_KEY_RIGHT:
-            camPos[0] += 1;
+        case 'r':
+            terrain.generateTerrain();
+            break;
+        case '1':
+            glShadeModel(GL_FLAT);
+            break;
+        case '2':
+            glShadeModel(GL_SMOOTH);
             break;
             
-        case GLUT_KEY_UP:
-            camPos[1] += 1;
+        //move player
+        case 'w':
+        case 'W':
+            camera.strafe(Camera::FORWARD);
             break;
-            
-        case GLUT_KEY_DOWN:
-            camPos[1] -= 1;
+        case 's':
+        case 'S':
+            camera.strafe(Camera::BACK);
+            break;
+        case 'a':
+        case 'A':
+            camera.strafe(Camera::LEFT);
+            break;
+        case 'd':
+        case 'D':
+            camera.strafe(Camera::RIGHT);
             break;
     }
     glutPostRedisplay();
 }
 
 /********************************************
- * sets viewport according to window size
- *******************************************/
-void reshapeFunc(int w, int h) {
+* moves camera (First Person)
+*******************************************/
+void passive(int x, int y) {
+
+    //on first call set currX, currY
+    if (!mouseCurrentInitiated) {
+        currX = x;
+        currY = y;
+        mouseCurrentInitiated = true;
+    }
+    
+    //if cursor approaching edge, set it to middle of window
+    if (x < 1 || x >= windowWidth-1) {
+        glutWarpPointer(windowWidth/2.0, y);
+        currX = windowWidth/2.0;
+    }
+    if (y < 1 || y >= windowHeight-1) {
+        glutWarpPointer(x, windowHeight/2.0);
+        currY = windowHeight/2.0;
+    }
+    
+    //move camera according to mouse movement
+    camera.mouseMoved(x-currX, y-currY);
+    currX = x;
+    currY = y;
+    
+    glutPostRedisplay();
+}
+
+/********************************************
+* moves volcano particles
+*******************************************/
+void timer(int value) {
+    
+    if (!paused)
+        volcanoParticles.moveParticles();
+    
+    //set timer function
+    glutTimerFunc(32, timer, 0);
+    glutPostRedisplay();
+}
+
+
+/********************************************
+* sets viewport according to window size
+*******************************************/
+void reshape(int w, int h) {
     
     //don't let window become less than 300 x 300
     int minWindowSize = 300;
     if (w < minWindowSize || h < minWindowSize)
         glutReshapeWindow((w < minWindowSize) ? minWindowSize : w, (h < minWindowSize) ? minWindowSize : h);
     
+    //change projection matrix, set width & height globals
     else {
-        
-        //set projection matrix, using perspective
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        
-        //set up viewport
+     
         glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1, 500);
+        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1,400);
+        
+        windowWidth = w;
+        windowHeight = h;
     }
     
     glutPostRedisplay();
 }
 
 /*******************************************
- *initializes global variables and settings
- ******************************************/
+*initializes global variables and settings
+******************************************/
 void init() {
     
-    //enable back face culling
-    //glEnable(GL_CULL_FACE);
-    
-    glClearColor(0.1, 0.1, 0.7, 1);
-
+    //enable back face culling & flat shading (for artistic reasons)
+    glClearColor(0.25, 0.53, 0.77, 1);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
     glShadeModel(GL_FLAT);
     
     glEnable(GL_LIGHTING);
@@ -160,14 +231,22 @@ void init() {
     //set projection matrix, using perspective w/ correct aspect ratio
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 100);
+    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 400);
     
+    //initialize globals
     terrain = Terrain();
+    volcanoParticles = ParticleSystem(&terrain);
+
+    //initialize camera
+    camera = Camera();
+    
+    //hide cursor
+    glutSetCursor(GLUT_CURSOR_NONE);
 }
 
 /*****************************************
- * program start point
- ****************************************/
+* program start point
+****************************************/
 int main(int argc, char** argv) {
     
     //initializeing GLUT
@@ -185,11 +264,9 @@ int main(int argc, char** argv) {
     //registering callbacks
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
-    glutReshapeFunc(reshapeFunc);
-    glutSpecialFunc(special);
-    
-    //setting up depth test & lighting normalization
-    glEnable(GL_DEPTH_TEST);
+    glutReshapeFunc(reshape);
+    glutPassiveMotionFunc(passive);
+    glutTimerFunc(32, timer, 0);
     
     //start event loop
     glutMainLoop();

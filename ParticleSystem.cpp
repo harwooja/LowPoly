@@ -10,31 +10,31 @@
  after a set amount of time
  */
 
-#ifndef _PARTICLE_SYSTEM_H
-    #define _PARTICLE_SYSTEM_H
-    #include "ParticleSystem.h"
+#ifdef __APPLE__
+#  include <OpenGL/gl.h>
+#  include <OpenGL/glu.h>
+#  include <GLUT/glut.h>
+#else
+#ifdef _WIN32
+#  include <windows.h>
+#endif
+#  include <GL/gl.h>
+#  include <GL/glu.h>
+#  include <GL/freeglut.h>
 #endif
 
-#ifndef _OPENGL_
-    #define _OPENGL_
-    #ifdef __APPLE__
-    #  include <OpenGL/gl.h>
-    #  include <OpenGL/glu.h>
-    #  include <GLUT/glut.h>
-    #else
-	#  include <windows.h>
-    #  include <GL/gl.h>
-    #  include <GL/glu.h>
-    #  include <GL/freeglut.h>
-    #endif
-#endif
+#include "Terrain.h"
+#include "ParticleSystem.h"
+#include <vector>
+#include <stdlib.h>
+#include <math.h>
 
-#ifndef _STANDARD_
-    #define _STANDARD_
-    #include <vector>
-    #include <stdlib.h>
-    #include <math.h>
-#endif
+/*****************************************
+ *    FUNCTION DECLARATIONS
+ ****************************************/
+float dotProduct(float* a, float* b);
+float* multVectorByScalar(float s, float* a);
+float* subtractVectors(float* a, float* b);
 
 /*****************************************
  *    GLOBAL VARIABLES
@@ -42,35 +42,19 @@
 std::vector<ParticleSystem::Particle> particles;
 std::vector<ParticleSystem::Particle> explosionParticles;
 
-ParticleSystem::Shape shape;
-
 const int MAX_AGE = 300;
-
-const float MIN_SPAWN_RATE = 0.01;
-const float MAX_SPAWN_RATE = 1.0;
-
-const float MIN_PARTICLE_SIZE = 0.03;
-const float MAX_PARTICLE_SIZE = 1.0;
+Terrain* terrain1;
 
 /*******************************************
 * initializes values (constructor)
 *******************************************/
-ParticleSystem::ParticleSystem() {
+ParticleSystem::ParticleSystem(Terrain* t) {
 
     //initializing public global variables
-    emitterPos[0] = 0;
-    emitterPos[1] = 4;
-    emitterPos[2] = 0;
+    spawnRate = 0.05;
+    particleSize = 1;
     
-    friction = true;
-    spawnPaused = false;
-    explosionsEnabled = true;
-    
-    spawnRate = 0.1;
-    particleSize = 0.05;
-
-    //initializing private global variables
-    shape = CUBE;
+    terrain1 = t;
 }
 
 /*******************************************
@@ -78,14 +62,15 @@ ParticleSystem::ParticleSystem() {
 * in appropriate location
 *******************************************/
 void ParticleSystem::drawParticles() {
-
+    
     glMatrixMode(GL_MODELVIEW);
     
     for (int i = 0; i < particles.size(); i++) {
 
         //set particle colour
-        float diffuseColour[3] = {particles[i].red, particles[i].green, particles[i].blue};
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseColour);
+        float colour[3] = {particles[i].red, particles[i].green, particles[i].blue};
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colour);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, colour);
         
         glPushMatrix();
         
@@ -95,24 +80,8 @@ void ParticleSystem::drawParticles() {
         glRotatef(particles[i].yRot, 0, 1, 0);
         glRotatef(particles[i].zRot, 0, 0, 1);
         
-        //draw particle depending on state
-        if (shape == ParticleSystem::CUBE)
-            glutSolidCube(particleSize*particles[i].sizeMultiplier);
-        else if (shape == ParticleSystem::SPHERE)
-            glutSolidSphere(particleSize*particles[i].sizeMultiplier, 16, 16);
-        else if (shape == ParticleSystem::CONE)
-            glutSolidCone(particleSize*particles[i].sizeMultiplier, particleSize*particles[i].sizeMultiplier, 16, 16);
-        else if (shape == ParticleSystem::TEAPOT) {
-            /*this code is used to get around a bug with glutSolidTeapot as documented
-            * on http://www-etud.iro.umontreal.ca/~clavetsi/api/glut/glutSolidTeapot.html
-            * Code for switching faces taken from above website. */
-            glFrontFace(GL_CW);
-            glutSolidTeapot(particleSize*particles[i].sizeMultiplier);
-            glFrontFace(GL_CCW);
-        }
-        else if (shape == ParticleSystem::TORUS)
-            glutSolidTorus((particleSize*particles[i].sizeMultiplier)/2.0, particleSize*particles[i].sizeMultiplier, 16, 16);
-        
+        glutSolidCube(particleSize*particles[i].sizeMultiplier);
+    
         glPopMatrix();
     }
 }
@@ -124,25 +93,36 @@ void ParticleSystem::addParticle() {
     
     ParticleSystem::Particle particle;
     
-    //randomize particle colour
-    particle.red = ((double) rand() / (RAND_MAX))*0.9 + 0.1;
-    particle.green = ((double) rand() / (RAND_MAX))*0.9 + 0.1;
-    particle.blue = ((double) rand() / (RAND_MAX))*0.9 + 0.1;
+    //particle is reddy orangey
+    particle.red = ((double) rand() / (RAND_MAX))*0.5 + 0.5;
+    particle.green = ((double) rand() / (RAND_MAX))*0.7;
+    particle.blue = 0;
     
     //start particle at position of emitter
-    particle.x = emitterPos[0];
-    particle.y = emitterPos[1];
-    particle.z = emitterPos[2];
+    particle.x = terrain1->volcanoPos[0];
+    particle.y = terrain1->volcanoPos[1];
+    particle.z = terrain1->volcanoPos[2];
     
-    //randomize x and z directions between -0.5 and 0.5
-    particle.xDir = ((double) rand()/(RAND_MAX)) - 0.5;
-    particle.yDir = 2;
-    particle.zDir = ((double) rand()/(RAND_MAX)) - 0.5;
-
-    //randomize rotation between 0 and 3 degrees
-    particle.xRotIncr = ((double) rand()/RAND_MAX)*3.0;
-    particle.yRotIncr = ((double) rand()/RAND_MAX)*3.0;
-    particle.zRotIncr = ((double) rand()/RAND_MAX)*3.0;
+    //randomize x and z directions
+    particle.xDir = ((double) rand()/(RAND_MAX))*0.6 - 0.3;
+    particle.yDir = 6;
+    particle.zDir = ((double) rand()/(RAND_MAX))*0.6 - 0.3;
+    float dirVectorLength = sqrt(particle.xDir*particle.xDir + particle.yDir*particle.yDir + particle.zDir*particle.zDir);
+    particle.xDir /= (dirVectorLength*0.2);
+    particle.yDir /= (dirVectorLength*0.2);
+    particle.zDir /= (dirVectorLength*0.2);
+    
+    //randomize rotation
+    particle.xRotIncr = ((double) rand()/RAND_MAX)*4.0;
+    particle.yRotIncr = ((double) rand()/RAND_MAX)*4.0;
+    particle.zRotIncr = ((double) rand()/RAND_MAX)*4.0;
+    
+    //make size somewhat random
+    particle.sizeMultiplier = ((double) rand()/RAND_MAX)*2+0.1;
+    particle.speed = 0.2;
+    
+    //set only half of particles to explode (performance)
+    particle.explosion = ((double) rand()/RAND_MAX > 0.5) ? true : false;
     
     particles.push_back(particle);
 }
@@ -161,8 +141,7 @@ void ParticleSystem::clearParticles() {
 void ParticleSystem::moveParticles() {
     
     //add a new particle
-    float r = (double) rand() / RAND_MAX;
-    if (!spawnPaused && r < spawnRate)
+    if ((double)rand()/RAND_MAX < spawnRate)
         addParticle();
     
     //move particles according to their direction vectors
@@ -177,31 +156,26 @@ void ParticleSystem::moveParticles() {
         particles[i].z += particles[i].zDir * particles[i].speed;
         
         //rotate particle
-        particles[i].xRot = particles[i].xRot+particles[i].xRotIncr < 360 ? particles[i].xRot + particles[i].xRotIncr : 0;
-        particles[i].yRot = particles[i].yRot+particles[i].yRotIncr < 360 ? particles[i].yRot + particles[i].yRotIncr : 0;
-        particles[i].zRot = particles[i].zRot+particles[i].zRotIncr < 360 ? particles[i].zRot + particles[i].zRotIncr : 0;
+        particles[i].xRot += particles[i].xRotIncr;
+        particles[i].yRot += particles[i].yRotIncr;
+        particles[i].zRot += particles[i].zRotIncr;
         
         //increase age
         particles[i].age++;
-        
-        //remove particle below plane
-        if (particles[i].y < -5) {
-            particles[i] = particles[particles.size()-1];
-            particles.pop_back();
-        }
 
         //explode particles that die of old age
         if (particles[i].age >= MAX_AGE) {
             
-            float explosionOrigin[3] = {particles[i].x, particles[i].y, particles[i].z};
-            float explosionColour[3] = {particles[i].red, particles[i].green, particles[i].blue};
+            //remove particle
             particles[i] = particles[particles.size()-1];
             particles.pop_back();
             
-            if (!particles[i].explosion && explosionsEnabled) {
-
+            if (!particles[i].explosion) {
+                
+                float explosionOrigin[3] = {particles[i].x, particles[i].y, particles[i].z};
+                
                 //add some particles
-                for (int i = 0; i < 15; i++) {
+                for (int i = 0; i < 5; i++) {
                 
                     addParticle();
                     
@@ -214,12 +188,6 @@ void ParticleSystem::moveParticles() {
                     particles[particles.size()-1].xDir = (((double) rand()/(RAND_MAX)) - 0.5)*4;
                     particles[particles.size()-1].yDir = (((double) rand()/(RAND_MAX)) - 0.5)*4;
                     particles[particles.size()-1].zDir = (((double) rand()/(RAND_MAX)) - 0.5)*4;
-                    
-                    //set colour to similar to particle that died (but a little randomized)
-                    //NOTE: this may result in a colour value < 0 or > 1, this doesn't really matter though
-                    particles[particles.size()-1].red = explosionColour[0] + 0.2*(((double) rand()/RAND_MAX) - 0.5);
-                    particles[particles.size()-1].green = explosionColour[1] + 0.2*(((double) rand()/RAND_MAX) - 0.5);
-                    particles[particles.size()-1].blue = explosionColour[2] + 0.2*(((double) rand()/RAND_MAX) - 0.5);
                     
                     //prevents it from spawning child explosions
                     particles[particles.size()-1].explosion = true;
@@ -234,44 +202,64 @@ void ParticleSystem::moveParticles() {
         }
         
         //bounce particle
-        else if ((fabs(particles[i].x) <= 4.5 && fabs(particles[i].z) <= 4.5) && (particles[i].y <= 0 + (particleSize*particles[i].sizeMultiplier)/1.5)) {
+        else if (particles[i].y+particles[i].sizeMultiplier/2.0 <= terrain1->getHeight(particles[i].x, particles[i].z)) {
             
-            //bounce back up, slower and less high (if friction enabled)
-            particles[i].y = (particleSize*particles[i].sizeMultiplier)/1.5;
-            particles[i].yDir = fabs(particles[i].yDir) * (friction ? 0.9 : 1);
-            particles[i].speed = particles[i].speed * (friction? 0.7 : 1);
+            //set height to terrain height (if 0, delete particle as it's hit water)
+            particles[i].y = terrain1->getHeight(particles[i].x, particles[i].z)+particles[i].sizeMultiplier/2.0;
+            if (particles[i].y == particles[i].sizeMultiplier/2.0) {
+                particles[i] = particles[particles.size()-1];
+                particles.pop_back();
+            }
+            else {
+                float* resVec = terrain1->getNormal(particles[i].x, particles[i].y);
+                if (resVec != NULL) {
+                    
+                    //calculate reflection vector. Formula taken from
+                    //www.3dkingdoms.com/weekly/weekly.php?a=2
+                    float dirVec[3] = {particles[i].xDir, particles[i].yDir, particles[i].zDir};
+                    resVec = multVectorByScalar(-2*dotProduct(dirVec,terrain1->getNormal(particles[i].x, particles[i].y)),resVec);
+                    resVec = subtractVectors(resVec, dirVec);
+                    float resVecLength = sqrt(resVec[0]*resVec[0]+resVec[1]*resVec[1]+resVec[2]*resVec[2]);
+                    
+                    //set reflection vector
+                    particles[i].xDir = resVec[0]/(resVecLength*0.2);
+                    particles[i].yDir = resVec[1]/(resVecLength*0.2);
+                    particles[i].zDir = resVec[2]/(resVecLength*0.2);
+                    
+                    terrain1->burnTerrain(particles[i].x, particles[i].z);
+                }
+                
+                //decrease speed
+                particles[i].speed = particles[i].speed * 0.5;
             
-            //slowly stop rotating (so it doesn't rotate when still)
-            particles[i].xRotIncr *= (friction ? 0.5 : 1);
-            particles[i].yRotIncr *= (friction ? 0.5 : 1);
-            particles[i].zRotIncr *= (friction ? 0.5 : 1);
+                //if stopped, delete it
+                if (particles[i].speed < 0.05) {
+                    particles[i] = particles[particles.size()-1];
+                    particles.pop_back();
+                }
+            }
         }
     }
 }
 
-/**********************************************
-* changes the rate new particles added by delta
-**********************************************/
-void ParticleSystem::changeSpawnRate(float delta) {
-    if (delta < 0)
-        spawnRate = (spawnRate+delta >= MIN_SPAWN_RATE) ? spawnRate+delta : MIN_SPAWN_RATE;
-    else if (delta > 0)
-        spawnRate = (spawnRate+delta <= MAX_SPAWN_RATE) ? spawnRate+delta : MAX_SPAWN_RATE;
+/*******************************************
+ * simple vector functions (used only for
+ * reflecting particles on bounce)
+ *******************************************/
+float dotProduct(float* a, float* b) {
+    return (a[0]*b[0] + a[1]*b[1] + a[2]*b[2]);
 }
-
-/**********************************************
-* changes the size of all particles
-**********************************************/
-void ParticleSystem::changeParticleSize(float delta) {
-    if (delta < 0)
-        particleSize = (particleSize+delta >= MIN_PARTICLE_SIZE) ? particleSize+delta : MIN_PARTICLE_SIZE;
-    else if (delta > 0)
-        particleSize = (particleSize+delta <= MAX_PARTICLE_SIZE) ? particleSize+delta : MAX_PARTICLE_SIZE;
+float* multVectorByScalar(float s, float* a) {
+    static float res[3];
+    res[0] = s*a[0];
+    res[1] = s*a[1];
+    res[2] = s*a[2];
+    return res;
 }
-
-/**********************************************
-* changes the shape of all particles
-**********************************************/
-void ParticleSystem::changeShape(ParticleSystem::Shape newShape) {
-    shape = newShape;
+float* subtractVectors(float* a, float* b) {
+    static float res[3];
+    res[0] = a[0]-b[0];
+    res[1] = a[1]-b[1];
+    res[2] = a[2]-b[2];
+    return res;
 }
