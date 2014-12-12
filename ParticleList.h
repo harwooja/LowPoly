@@ -21,9 +21,9 @@ using namespace std;
 class ParticleList
 {
     public:
-        ParticleList(int particleType, int numberOfParticles, float particleBounds[6]);
+        ParticleList(int particleType, float particleBounds[6]);
         ~ParticleList();
-        void UpdateParticles();
+        void UpdateParticles(Terrain terrainMap);
         void DrawParticles();
         void addParticle();
 
@@ -37,8 +37,14 @@ class ParticleList
         float newDirX;
         float newDirY;
         float newDirZ;
-        Terrain *terrain;
+        //Terrain *terrain;
         int particlesDrawn = 0;
+        float particleBounds[6];
+        int particleType;
+        float snow[3] = {1,1,1};
+        float fire[3] = {1,0,0};
+        float amb[3] = {0,0,0};
+        float spc[3] = {0,0,0};
 
 };
 
