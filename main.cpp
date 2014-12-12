@@ -204,9 +204,9 @@ void keyboard(unsigned char key, int x, int y) {
         //toggle fullscreen
         case 'f':
         case 'F':
-            if (!fullscreen)
+            fullscreen = !fullscreen;
+            if (fullscreen)
                 glutFullScreen();
-            //TODO: when paused it won't exit fullscreen (it will enter it though)
             else {
                 glutPositionWindow(10, 10);
                 glutReshapeWindow(800, 600);
