@@ -1,3 +1,10 @@
+// CS 3GC3 Final Project
+//
+// main.cpp
+// -program entrypoiny
+// -ViewController in MVC terms
+// -draws scene, handles interaction, etc.
+
 #ifdef __APPLE__
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
@@ -14,12 +21,12 @@
 #include <vector>
 #include <stdlib.h>
 #include <math.h>
-#include <unistd.h>
 #include <string.h>
 
 #include "Terrain.h"
 #include "ParticleSystem.h"
 #include "Camera.h"
+#include "ImageLoader.h"
 
 
 /*****************************************
@@ -396,19 +403,8 @@ void init() {
     volcanoParticles = ParticleSystem(&terrain);
 
     //setup interface image
-    char currentDir[1024];
-    char* fileName = (char*) "/interface.ppm";
-    if (getcwd(currentDir, sizeof(currentDir)) != NULL) {
-        char* filePath;
-        filePath = (char*) malloc(strlen(currentDir)+34);
-        strcpy(filePath, currentDir);
-        strcat(filePath, fileName);
-//        printf("filepath: \"%s\"\n",filePath);
-        hudImage = LoadPPM(filePath, &hudWidth, &hudHeight);
-        free(filePath);
-    }
-    else
-        printf("Error. Current directory path too long");
+    ImageLoader imgLoader = ImageLoader();
+    hudImage = imgLoader.loadPPM((char*) "/interface.ppm", true, &hudWidth, &hudHeight);
     
     //initialize camera
     camera = Camera();

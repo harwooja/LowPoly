@@ -1,11 +1,10 @@
-/*
- CS 3GC3 Final Project
- 
- ParticleSystem.cpp
- -generates particles that shoot out of the emitter position
- -particles bounce off y=0 plane, losing speed and exploding
- after a set amount of time
-*/
+// CS 3GC3 Final Project
+// 
+// ParticleSystem.cpp
+// -generates particles that shoot out of the emitter position
+// -particles bounce off y=0 plane, losing speed and exploding
+// after a set amount of time
+
 
 #ifdef __APPLE__
 #  include <OpenGL/gl.h>

@@ -1,3 +1,8 @@
+// CS 3GC3 Final Project
+//
+// Camera.h
+// -interface for Camera class
+
 class Camera {
 
 public:

@@ -1,9 +1,7 @@
-/*
- CS 3GC3 Final Project
- 
- ParticleSystem.h
- -public interface for particle system
-*/
+// CS 3GC3 Final Project
+//
+// ParticleSystem.h
+// -public interface for particle system
 
 class ParticleSystem {
 

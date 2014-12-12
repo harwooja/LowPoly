@@ -1,9 +1,17 @@
-/* This is a heavily modified version of the camera class found on:
- * r3dux.org/2012/12/a-c-camera-class-for-simple-opengl-fps-controls
- *
- * We have rewritten almost all of it to suit our needs, however we
- * wanted to cite the original source.
- */
+// CS 3GC3 Final Project
+//
+// Camera.cpp
+// -handles FPS camera movements
+// -arrow keys move wrt where camera is
+// pointing.
+// -moving mouse will move camera
+//
+// This is a heavily modified version of the camera class found on:
+// r3dux.org/2012/12/a-c-camera-class-for-simple-opengl-fps-controls
+// 
+// We have rewritten almost all of it to suit our needs, however we
+// wanted to cite the original source.
+
 
 #ifdef __APPLE__
 # include <OpenGL/gl.h>

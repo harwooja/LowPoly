@@ -1,10 +1,10 @@
+// CS 3GC3 Final Project
+//
 // Terrain.cpp
-// LowPoly
-//
-// Created by Jake Harwood on 2014-11-16.
-// Copyright (c) 2014 Jake Harwood. All rights reserved.
-//
-// Stores all vertices of terrain & volcano, vertex orderings, normals, and colours
+// -stores all vertices and colours
+// -uses heightmap to generate the terrain
+// -has functions to draw terrain and get
+// important information about it
 
 #ifdef __APPLE__
 #  include <OpenGL/gl.h>
@@ -19,13 +19,12 @@
 #  include <GL/freeglut.h>
 #endif
 
-#include "Terrain.h"
 #include <vector>
 #include <stdlib.h>
 #include <math.h>
 
-#include <unistd.h>
-#include <string.h>
+#include "Terrain.h"
+#include "ImageLoader.h"
 
 
 /***************************************
@@ -38,80 +37,12 @@ float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
 float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
 float materialColours[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][4];
 
-int imgWidth = 0;
-int imgHeight = 0;
-GLubyte* heightmapImage;
-
 /***************************************
  * Constructor
  **************************************/
 Terrain::Terrain(){
-    srand(10);
     generateTerrain();
 }
-
-
-//TODO: rewrite this function so it's not as ugly/messy
-GLubyte* LoadPPM2(char* file, int* width, int* height) {
-    
-    //open the file in read mode
-    FILE *fd = fopen(file, "r");
-    if (fd == NULL) {
-        printf("Error. File \"%s\" could not be loaded.",file);
-        exit(0);
-    }
-    
-    //scan everything up to newline
-    char b[100];
-    fscanf(fd,"%[^\n] ", b);
-    
-    //check if the first two characters are not P3, if not, it's not an ASCII PPM file
-    if (b[0]!='P'|| b[1] != '3') {
-        printf("%s is not a PPM file!\n",file);
-        return NULL;
-    }
-    
-    //read past the file comments: scan for lines that begin
-    //  with #, and keep going until you find no more
-    char c;
-    fscanf(fd, "%c",&c);
-    while(c == '#')	{
-        fscanf(fd, "%[^\n] ", b);
-        fscanf(fd, "%c",&c);
-    }
-    
-    //rewind the read pointer one character, or we'll lose the size
-    ungetc(c,fd);
-    
-    //read the rows, columns and max colour values
-    int k, n, m;
-    fscanf(fd, "%d %d %d", &n, &m, &k);
-    
-    //number of pixels is rows * columns
-    int size = n*m;
-    
-    //allocate memory to store 3 GLuints for every pixel
-    GLubyte* img = (GLubyte *)malloc(3*sizeof(GLuint)*size);
-    
-    //scale the colour in case maxCol is not 255
-    float s;
-    s = 255.0/k;
-    
-    //start reading pixel colour data
-    int red, green, blue;
-    for(int i = 0; i < size; i++) {
-        fscanf(fd,"%d %d %d",&red, &green, &blue );
-        img[3*size-3*i-3]=red*s;
-        img[3*size-3*i-2]=green*s;
-        img[3*size-3*i-1]=blue*s;
-    }
-    
-    *width = n;
-    *height = m;
-    
-    return img;
-}
-
 
 /***************************************
 * uses fault line algorithm to create
@@ -127,58 +58,17 @@ void Terrain::generateTerrain() {
             heightMap[x][z] = 0;
 
     //load heightmap image
-    char currentDirPath[1024];
-    char* fileName = (char*) "/portrait.ppm";
-    
-    if (getcwd(currentDirPath, sizeof(currentDirPath)) != NULL) {
-    
-        //create path
-        char* filePath = (char*) malloc(strlen(currentDirPath)+strlen(fileName)+1);
-        strcpy(filePath, currentDirPath);
-        strcat(filePath, fileName);
-        
-        //load image
-        heightmapImage = LoadPPM2(filePath, &imgWidth, &imgHeight);
-
-        //check for errors
-        if (heightmapImage == NULL) {
-            printf("\nError. Heightmap image could not be found. Check that \"%s\" exists.",filePath);
-            exit(0);
-        }
-        else if (imgWidth < TERRAIN_SIZE || imgHeight < TERRAIN_SIZE) {
-            printf("\nError. Heightmap image too small.");
-            exit(0);
-        }
-        else if (imgWidth > TERRAIN_SIZE || imgHeight > TERRAIN_SIZE) {
-            printf("\nError. Heightmap image too large.");
-            exit(0);
-        }
-        
-        free(filePath);
-    }
-    else {
-        printf("\nError. Could not get current directory path.");
-        exit(0);
-    }
-
-    
-    //convert to 2d coordinates, average the 3 rgb values to get single float on [0,1]
-    float heightmapImage2[TERRAIN_SIZE][TERRAIN_SIZE];
-    for (int i = 0; i < TERRAIN_SIZE; i++) {
-        for (int j = 0; j < TERRAIN_SIZE; j++) {
-            int subscript = (int) (3*(i*TERRAIN_SIZE+j) + 3*(i*TERRAIN_SIZE+j)+1 + 3*(i*TERRAIN_SIZE+j)+2)/3.0;
-            heightmapImage2[i][j] = heightmapImage[subscript]/255.0;
-        }
-    }
+    ImageLoader imgLoader = ImageLoader();
+    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap2.ppm", true,TERRAIN_SIZE);
 
     //iterate over all points in heightmap (not incl. water)
     for (int x = 0; x < TERRAIN_SIZE; x++) {
         for (int z = 0; z < TERRAIN_SIZE; z++) {
 
             //set height
-            heightMap[x][z] = 40*heightmapImage2[x][z];
+            heightMap[x][z] = 40*heightmapImage[x][z];
             
-            //set volcano pos to highest poinit
+            //set volcano pos to highest point
             if (heightMap[x][z] > volcanoPos[1]) {
                 volcanoPos[0] = x-terrainRadius;
                 volcanoPos[1] = heightMap[x][z];
@@ -218,92 +108,19 @@ void Terrain::generateTerrain() {
             materialColours[x][z][3] = 1;
         }
     }
-
- 
-//    float volcanoHeightFactor = 30;
-//        //make terrain higher in middle (volcano)
-//        for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
-//            for (int z = WATER_WIDTH; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
-//                float distFromCenter = sqrtf((x-terrainWidth)*(x-terrainWidth) + (z-terrainWidth)*(z-terrainWidth))/75;
-//                heightMap[x][z] = (1-distFromCenter)*volcanoHeightFactor;
-//            }
-//        }
-//        
-//        
-//        //generate the terrain, making it look mountainous
-//        float displacement = 1;
-//        for (int i = 0; i < 300; i++) {
-//            
-//            //choose random line
-//            int v = rand();
-//            float a = sinf(v);
-//            float b = cosf(v);
-//            float d = sqrtf(2.0*(TERRAIN_SIZE*TERRAIN_SIZE));
-//            float c = ((double) rand()/RAND_MAX) * d - d/2.0;
-//            
-//            //iterate over all points in heightmap (not incl. water)
-//            for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
-//                for (int z = WATER_WIDTH; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
-//
-//                    //increase the height
-//                    if (a*x + b*z - c < 0) {
-//                        heightMap[x][z] = heightMap[x][z]+displacement;
-//                        if (heightMap[x][z] > volcanoPos[1]) {
-//                            volcanoPos[0] = x-terrainWidth;
-//                            volcanoPos[1] = heightMap[x][z];
-//                            volcanoPos[2] = z-terrainWidth;
-//                        }
-//                    }
-//                    
-//                    //decrease the height
-//                    else
-//                        heightMap[x][z] = heightMap[x][z]-displacement;
-//                    
-//                    //grass
-//                    if (heightMap[x][z] <= 15) {
-//                        materialColours[x][z][0] = 0.0;
-//                        materialColours[x][z][1] = 0.3;
-//                        materialColours[x][z][2] = 0.2;
-//                    }
-//                    //grass to dirt transition
-//                    else if (heightMap[x][z] > 15 && heightMap[x][z] <= 20) {
-//                        materialColours[x][z][0] = 0.0 + ((heightMap[x][z]-20)*0.1);
-//                        materialColours[x][z][1] = 0.3 - ((heightMap[x][z]-20)*0.01);
-//                        materialColours[x][z][1] = 0.2 - ((heightMap[x][z]-20)*0.02);
-//                    }
-//                    //dirt
-//                    else if (heightMap[x][z] > 20 && heightMap[x][z] <= 30) {
-//                        materialColours[x][z][0] = 0.52;
-//                        materialColours[x][z][1] = 0.26;
-//                        materialColours[x][z][2] = 0.08;
-//                    }
-//                    //dirt to snow transition
-//                    else if (heightMap[x][z] > 30 && heightMap[x][z] <= 35) {
-//                        materialColours[x][z][0] = 0.52 + ((heightMap[x][z]-30)*0.1);
-//                        materialColours[x][z][1] = 0.26 + ((heightMap[x][z]-30)*0.15);
-//                        materialColours[x][z][2] = 0.08 + ((heightMap[x][z]-30)*0.18);
-//                    }
-//                    //snow
-//                    else {
-//                        materialColours[x][z][0] = 1;
-//                        materialColours[x][z][1] = 1;
-//                        materialColours[x][z][2] = 1;
-//                    }
-//                    materialColours[x][z][3] = 1;
-//                }
-//            }
-//            displacement = displacement > 0.2 ? displacement-0.001 : 0.2;
-//        }
-//    }
     
     generateWater(3);
-
-        smoothTerrain(0.2);
+    smoothTerrain(0.2);
     
     volcanoPos[1] = heightMap[(int)(volcanoPos[0]+terrainRadius)][(int)(volcanoPos[2]+terrainRadius)]-1;
     calculateFaceNormals();
 }
 
+/***************************************
+* for specified waterwidth (global),
+* creates choppy white (foaming) water
+* around terrain. Modifies heightmap.
+**************************************/
 void Terrain::generateWater(float choppiness) {
     
     for (int x = TERRAIN_SIZE; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
