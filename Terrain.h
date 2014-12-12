@@ -9,27 +9,29 @@ class Terrain {
 public:
 
     /***************************************
-     *    CUSTOM STRUCTS/ENUMS
-     **************************************/
-    enum Material {WATER, LAND, VOLCANO, LAVA};
-
-    /***************************************
      *    FUNCTION DECLARATIONS
      **************************************/
     Terrain();
 
     void generateTerrain();
-    void smoothTerrain(float);
     void drawTerrain();
-    void calculateFaceNormals();
-
     void burnTerrain(float x, float z);
     void snowTerrain(float x, float z);
+
     float getHeight(float x, float z);
     float* getNormal(float x, float z);
 
     /***************************************
-     *    PUBLIC GLOBAL VARIABLES
+     *    PUBLIC GLOBAL VARIABLE
      **************************************/
+    float volcanoPos[3] = {0,0,0};
 
+private:
+
+    /***************************************
+    *    FUNCTION DECLARATIONS
+    **************************************/
+    void generateWater(float);
+    void smoothTerrain(float);
+    void calculateFaceNormals();
 };

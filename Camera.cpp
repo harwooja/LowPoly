@@ -20,7 +20,7 @@
 
 #include "Camera.h"
 #include <math.h>
-
+#include <stdio.h>
 
 /****************************************
 * Constructor
@@ -40,9 +40,9 @@ Camera::Camera() {
 void Camera::mouseMoved(int deltaX, int deltaY) {
 
     //rotate camera
-    rotation[1] += ((float) deltaX)*mouseSensitivity;
     rotation[0] += ((float) deltaY)*mouseSensitivity;
-
+    rotation[1] += ((float) deltaX)*mouseSensitivity;
+    
     // Limit looking down to vertically down
     if (rotation[0] > 90) {
         rotation[0] = 90;

@@ -1,8 +1,5 @@
 #include "ParticleList.h"
 
-
-
-
 float RandomFloatt(float a, float b) {
     float random = ((float) rand()) / (float) RAND_MAX;
     float diff = b - a;

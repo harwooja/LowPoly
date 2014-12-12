@@ -23,20 +23,18 @@
 #include <vector>
 #include <stdlib.h>
 #include <math.h>
+#include <stdio.h>
 
 
 /***************************************
  *    GLOBAL VARIABLES
  **************************************/
-#define TERRAIN_SIZE 120
-#define WATER_WIDTH 0
+#define TERRAIN_SIZE 100
+#define WATER_WIDTH 5
 
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
 float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
 float materialColours[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][4];
-
-const float MAX_HEIGHT = 50;
-float minHeight = 40;
 
 /***************************************
  * Constructor
@@ -52,14 +50,26 @@ Terrain::Terrain(){
 **************************************/
 void Terrain::generateTerrain() {
 
+    float volcanoHeightFactor = 50;
+    float terrainWidth = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+
     //reset heightmap
     for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++)
         for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++)
-            heightMap[x][z] = 20;
+            heightMap[x][z] = -10;
 
+    //make terrain higher in middle (volcano)
+    for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
+        for (int z = WATER_WIDTH; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
+            float distFromCenter = sqrtf((x-terrainWidth)*(x-terrainWidth) + (z-terrainWidth)*(z-terrainWidth))/75;
+            heightMap[x][z] = (1-distFromCenter)*volcanoHeightFactor;
+        }
+    }
+
+
+    //generate the terrain, making it look mountainous
     float displacement = 1.2;
-
-    for (int i = 0; i < 550; i++) {
+    for (int i = 0; i < 300; i++) {
 
         //choose random line
         int v = rand();
@@ -73,15 +83,18 @@ void Terrain::generateTerrain() {
             for (int z = WATER_WIDTH; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
 
                 //increase the height
-                if (a*x + b*z - c < 0)
-                    heightMap[x][z] = heightMap[x][z]+displacement < MAX_HEIGHT ? heightMap[x][z] += displacement : MAX_HEIGHT;
+                if (a*x + b*z - c < 0) {
+                    heightMap[x][z] = heightMap[x][z]+displacement;
+                    if (heightMap[x][z] > volcanoPos[1]) {
+                        volcanoPos[0] = x-terrainWidth;
+                        volcanoPos[1] = heightMap[x][z];
+                        volcanoPos[2] = z-terrainWidth;
+                    }
+                }
 
                 //decrease the height
-                else {
-                    heightMap[x][z] = heightMap[x][z]-displacement > 0 ? heightMap[x][z] -= displacement : 0;
-                    if (heightMap[x][z] < minHeight)
-                        minHeight = heightMap[x][z];
-                }
+                else
+                    heightMap[x][z] = heightMap[x][z]-displacement;
 
                 //grass
                 if (heightMap[x][z] <= 15) {
@@ -107,6 +120,7 @@ void Terrain::generateTerrain() {
                     materialColours[x][z][1] = 0.26 + ((heightMap[x][z]-30)*0.15);
                     materialColours[x][z][2] = 0.08 + ((heightMap[x][z]-30)*0.18);
                 }
+                //snow
                 else {
                     materialColours[x][z][0] = 1;
                     materialColours[x][z][1] = 1;
@@ -114,56 +128,61 @@ void Terrain::generateTerrain() {
                 }
                 materialColours[x][z][3] = 1;
             }
-
         }
         displacement = displacement > 0.2 ? displacement-0.001 : 0.2;
     }
+    generateWater(3);
+    smoothTerrain(0.4);
 
-    //generate the water
-    float choppiness = 3;
+    volcanoPos[1] = heightMap[(int)(volcanoPos[0]+terrainWidth)][(int)(volcanoPos[2]+terrainWidth)]-1;
+    calculateFaceNormals();
+}
+
+void Terrain::generateWater(float choppiness) {
+
     for (int x = TERRAIN_SIZE; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
         for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++) {
             float a = rand();
             heightMap[x][z] = choppiness*cosf(a);
-            materialColours[x][z][0] = 0.0;
-            materialColours[x][z][1] = 0.0;
-            materialColours[x][z][2] = 0.8;
-            materialColours[x][z][3] = 1;
-        }
-    }
-    for (int x = 0; x < WATER_WIDTH; x++) {
-        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++) {
-            float a = rand();
-            heightMap[x][z] = choppiness*cosf(a);
-            materialColours[x][z][0] = 0.0;
-            materialColours[x][z][1] = 0.0;
-            materialColours[x][z][2] = 0.8;
-            materialColours[x][z][3] = 1;
-        }
-    }
-    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
-        for (int z = TERRAIN_SIZE; z < TERRAIN_SIZE+WATER_WIDTH; z++) {
-            float a = rand();
-            heightMap[x][z] = choppiness*cosf(a);
-            materialColours[x][z][0] = 0.0;
-            materialColours[x][z][1] = 0.0;
-            materialColours[x][z][2] = 0.8;
-            materialColours[x][z][3] = 1;
-        }
-    }
-    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
-        for (int z = 0; z < WATER_WIDTH; z++) {
-            float a = rand();
-            heightMap[x][z] = choppiness*cosf(a);
-            materialColours[x][z][0] = 0.0;
-            materialColours[x][z][1] = 0.0;
+            materialColours[x][z][0] = 0.7;
+            materialColours[x][z][1] = 0.7;
             materialColours[x][z][2] = 0.8;
             materialColours[x][z][3] = 1;
         }
     }
 
-    smoothTerrain(0.4);
-    calculateFaceNormals();
+    for (int x = 0; x < WATER_WIDTH; x++) {
+        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++) {
+            float a = rand();
+            heightMap[x][z] = choppiness*cosf(a);
+            materialColours[x][z][0] = 0.7;
+            materialColours[x][z][1] = 0.7;
+            materialColours[x][z][2] = 0.8;
+            materialColours[x][z][3] = 1;
+        }
+    }
+
+    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
+        for (int z = TERRAIN_SIZE; z < TERRAIN_SIZE+WATER_WIDTH; z++) {
+            float a = rand();
+            heightMap[x][z] = choppiness*cosf(a);
+            materialColours[x][z][0] = 0.7;
+            materialColours[x][z][1] = 0.7;
+            materialColours[x][z][2] = 0.8;
+            materialColours[x][z][3] = 1;
+        }
+    }
+
+    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
+        for (int z = 0; z < WATER_WIDTH; z++) {
+            float a = rand();
+            heightMap[x][z] = choppiness*cosf(a);
+            materialColours[x][z][0] = 0.7;
+            materialColours[x][z][1] = 0.7;
+            materialColours[x][z][2] = 0.8;
+            materialColours[x][z][3] = 1;
+        }
+    }
 }
 
 /*****************************************
@@ -207,7 +226,6 @@ void Terrain::smoothTerrain(float smooth) {
 void Terrain::drawTerrain() {
 
     float terrainOffset = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-    float waterColour[4] = {0, 0, 0.8, 1};
 
     //iterate over all values in heightmap
     for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
@@ -236,12 +254,13 @@ void Terrain::drawTerrain() {
     }
 
     //draw water
+    float waterColour[4] = {0.1, 0.6, 1, 1};
     glMaterialfv(GL_FRONT, GL_AMBIENT, waterColour);
-    glMaterialfv(GL_FRONT, GL_AMBIENT, waterColour);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, waterColour);
 
     glPushMatrix();
     glScalef(100, 1, 100);
-    glTranslatef(0, minHeight-3, 0);
+    glTranslatef(0, -3, 0);
     glutSolidCube(10);
     glPopMatrix();
 }
@@ -300,6 +319,8 @@ float Terrain::getHeight(float x, float z) {
         return 0;
     if (zIndexInHeightmap < 0 || zIndexInHeightmap >= TERRAIN_SIZE+WATER_WIDTH-2)
         return 0;
+    if (heightMap[(int)floor(xIndexInHeightmap)][(int)floor(zIndexInHeightmap)] < 0)
+        return 0;
 
     // B(0,1) ------ C(1,1)
     //   |      pos    |
@@ -354,13 +375,12 @@ void Terrain::snowTerrain(float x, float z) {
     if (zIndex < 0 || zIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
         return;
 
-    //turn squares white
-    materialColours[xIndex][zIndex][0] = 1;
-    materialColours[xIndex][zIndex][1] = 1;
-    materialColours[xIndex][zIndex][2] = 1;
+    //darken square ("charred")
+    materialColours[xIndex][zIndex][0] += 0.1;
+    materialColours[xIndex][zIndex][1] += 0.1;
+    materialColours[xIndex][zIndex][2] += 0.1;
 
 }
-
 /**************************************************************
  * returns face normal at point x,z
  **************************************************************/
@@ -376,5 +396,7 @@ float* Terrain::getNormal(float x, float z) {
     if (zIndex < 0 || zIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
         return NULL;
 
+    if (faceNormals[xIndex][zIndex] == NULL)
+        printf("OOHOHOOHH");
     return faceNormals[xIndex][zIndex];
 }
