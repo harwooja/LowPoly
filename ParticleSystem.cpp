@@ -1,14 +1,11 @@
 /*
- CS 3GC3 Final Assignment
- Stuart Douglas - 1214422
-
- November 6th, 2014
+ CS 3GC3 Final Project
  
  ParticleSystem.cpp
  -generates particles that shoot out of the emitter position
  -particles bounce off y=0 plane, losing speed and exploding
  after a set amount of time
- */
+*/
 
 #ifdef __APPLE__
 #  include <OpenGL/gl.h>
@@ -51,7 +48,7 @@ Terrain* terrain1;
 ParticleSystem::ParticleSystem(Terrain* t) {
 
     //initializing public global variables
-    spawnRate = 0.05;
+    spawnRate = 0.25;
     particleSize = 1;
     
     terrain1 = t;
@@ -80,8 +77,11 @@ void ParticleSystem::drawParticles() {
         glRotatef(particles[i].yRot, 0, 1, 0);
         glRotatef(particles[i].zRot, 0, 0, 1);
         
-        glutSolidCube(particleSize*particles[i].sizeMultiplier);
-    
+        if (shape == 0)
+            glutSolidCube(particleSize*particles[i].sizeMultiplier);
+        else
+            glutSolidSphere(particleSize*particles[i].sizeMultiplier, 16, 16);
+
         glPopMatrix();
     }
 }
@@ -94,8 +94,8 @@ void ParticleSystem::addParticle() {
     ParticleSystem::Particle particle;
     
     //particle is reddy orangey
-    particle.red = ((double) rand() / (RAND_MAX))*0.5 + 0.5;
-    particle.green = ((double) rand() / (RAND_MAX))*0.7;
+    particle.red = ((double) rand() / (RAND_MAX))*0.25 + 0.75;
+    particle.green = ((double) rand() / (RAND_MAX))*0.5;
     particle.blue = 0;
     
     //start particle at position of emitter

@@ -1,3 +1,10 @@
+/*
+ CS 3GC3 Final Project
+ 
+ ParticleSystem.h
+ -public interface for particle system
+*/
+
 class ParticleSystem {
 
     public:
@@ -49,4 +56,5 @@ class ParticleSystem {
         ****************************************/
         float spawnRate;
         float particleSize;
+        int shape;
 };
