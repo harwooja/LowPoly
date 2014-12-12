@@ -52,6 +52,8 @@ int hudWidth = 0;
 int hudHeight = 0;
 GLubyte *hudImage;
 
+bool birdsEyeView = false;
+
 /*****************************************
 * draws scene
 ****************************************/
@@ -66,8 +68,14 @@ void display(void) {
     //transform according to camera
     glRotatef(camera.rotation[0], 1, 0, 0);
     glRotatef(camera.rotation[1], 0, 1, 0);
-    glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-2, -camera.position[2]);
-
+ 
+    if (!birdsEyeView) {
+        glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-3, -camera.position[2]);
+    }
+    else {
+        glTranslatef(-camera.position[0], -100, -camera.position[2]);
+    }
+    
     //draw the scene
     drawAxes();
     terrain.drawTerrain();
@@ -145,16 +153,20 @@ GLubyte* LoadPPM(char* file, int* width, int* height) {
 void drawHud() {
     glDisable(GL_DEPTH_TEST);
     
+    //set projection matrix
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0, windowWidth, 0, windowHeight);
     
+    //draw pixels of image
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glRasterPos2i(windowWidth/2+hudWidth/2, windowHeight/2-hudHeight/2);
     glPixelZoom(-1,1);
-    glDrawPixels(hudWidth, hudHeight, GL_RGB, GL_UNSIGNED_BYTE, hudImage);
+    if (hudImage != NULL)
+        glDrawPixels(hudWidth, hudHeight, GL_RGB, GL_UNSIGNED_BYTE, hudImage);
     
+    //reset projection matrixs
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45, (float) windowWidth / (float) windowHeight, 1,400);
@@ -218,6 +230,9 @@ void keyboard(unsigned char key, int x, int y) {
     if (!paused) {
         switch (key) {
             
+            case 'b':
+                birdsEyeView = !birdsEyeView;
+                break;
             case 'r':
                 terrain.generateTerrain();
                 break;
@@ -343,7 +358,7 @@ void reshape(int w, int h) {
         glLoadIdentity();
      
         glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1,400);
+        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1,300);
         
         windowWidth = w;
         windowHeight = h;
@@ -388,13 +403,12 @@ void init() {
         filePath = (char*) malloc(strlen(currentDir)+34);
         strcpy(filePath, currentDir);
         strcat(filePath, fileName);
-        printf("filepath: \"%s\"\n",filePath);
+//        printf("filepath: \"%s\"\n",filePath);
         hudImage = LoadPPM(filePath, &hudWidth, &hudHeight);
         free(filePath);
     }
-    else {
+    else
         printf("Error. Current directory path too long");
-    }
     
     //initialize camera
     camera = Camera();
