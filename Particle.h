@@ -23,6 +23,7 @@ class Particle
         void setParticleSize(float s);
         void setParticleColor(float r, float g, float b);
         void setParticleAge(float age);
+        bool touchedTerrain = false;
 
     protected:
     private:
@@ -47,6 +48,8 @@ class Particle
 
         float particleAge;
         float particleSize;
+
+
 
 };
 

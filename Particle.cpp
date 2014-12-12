@@ -1,5 +1,5 @@
 #include "Particle.h"
-//Particle constructor
+
 Particle::Particle(float x, float y, float z)
 {
     particleX = x;

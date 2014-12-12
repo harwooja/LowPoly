@@ -11,14 +11,17 @@
 # include <GL/freeglut.h>
 #endif
 
+#include <list>
 #include <vector>
 #include <stdlib.h>
 #include <math.h>
-#include "Terrain.h"
+//#include "Terrain.h"
+#include "Particle.h"
+#include "ParticleList.h"
 #include "ParticleSystem.h"
 #include "Camera.h"
-#include "Particle.h"
-#include <list>
+
+
 
 using namespace std;
 
@@ -59,13 +62,15 @@ float angle = 0;
 float angle2 = 0;
 float angle3 = 0;
 
-bool snowMode = true;
+bool snowMode = false;
 bool lavaMode = false;
 bool steamMode = false;
 
 float snowColor[] = {1,1,1};
 float lavaColor[] = {1,0,0};
 float steamColor[] = {0.5,0.5,0.5};
+
+ParticleList fireParticles(1,1,particleBounds);
 
 std::list<Particle> particleList;
 std::list<Particle> steamParticleList;
@@ -142,7 +147,7 @@ void CreateParticles(int particleType)
         if(particleType == 0){
             particleList.push_back(Particle(RandomFloat(particleBounds[0],particleBounds[1]),50,RandomFloat(particleBounds[4],particleBounds[5]) ) );
             particleIterator++;
-            particleIterator->setParticleDirection(RandomFloat(0,1),-1,RandomFloat(0,1));
+            particleIterator->setParticleDirection(RandomFloat(0,10),-1,RandomFloat(0,1));
             particleIterator->setParticleSize(.25);
             particleIterator->setParticleSpeed(.5);
             particleIterator->setParticleColor(1,1,1);
@@ -156,7 +161,7 @@ void CreateParticles(int particleType)
 
             lavaParticleList.push_back(Particle(-50,60,0));
             lavaParticleIterator++;
-            lavaParticleIterator->setParticleDirection(3,-5,RandomFloat(0,1));
+            lavaParticleIterator->setParticleDirection(3,15,RandomFloat(0,1));
             lavaParticleIterator->setParticleSize(.25);
             lavaParticleIterator->setParticleSpeed(.025);
             lavaParticleIterator->setParticleColor(1,0,0);
@@ -218,7 +223,7 @@ void UpdateParticles(int particleType)
                         newZ = particleIterator2->getParticlePosition()[2] + particleIterator2->getParticleDirection()[2]*particleIterator2->getParticleSpeed();
                     }
 
-                    if(particleIterator2->getParticleDirection()[1] <= 0){
+                    else if(particleIterator2->getParticleDirection()[1] <= 0){
                         if(newY <= terrain.getHeight(newX, newZ)){
 
                             terrain.burnTerrain(particleIterator2->getParticlePosition()[0],particleIterator2->getParticlePosition()[2]);
@@ -267,8 +272,9 @@ void UpdateParticles(int particleType)
                             particleIterator2->setParticleSpeed(particleIterator2->getParticleSpeed()*gravity);
                         }
                         //now recalculate the new positions
+                        newY = terrain.getHeight(newX, newZ);//newY = particleIterator2->getParticlePosition()[1] + particleIterator2->getParticleDirection()[1]*particleIterator2->getParticleSpeed();
                         newX = particleIterator2->getParticlePosition()[0] + particleIterator2->getParticleDirection()[0]*particleIterator2->getParticleSpeed();
-                        newY = particleIterator2->getParticlePosition()[1] + particleIterator2->getParticleDirection()[1]*particleIterator2->getParticleSpeed();
+
                         newZ = particleIterator2->getParticlePosition()[2] + particleIterator2->getParticleDirection()[2]*particleIterator2->getParticleSpeed();
                     }
                 }
@@ -342,7 +348,8 @@ void DrawParticles(void)
                 glRotatef(particleIterator3->getParticleRotAngle()[2]+angle3, 0, 0, 1);
                 glScalef(particleIterator3->getParticleSize(), particleIterator3->getParticleSize(), particleIterator3->getParticleSize());
 
-                glutSolidSphere(1,20,16);
+                glutSolidSphere(1,8,4);
+
             glPopMatrix();
         }
     }
@@ -393,6 +400,7 @@ void display(void) {
     glRotatef(camera.rotation[1], 0, 1, 0);
     glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-3, -camera.position[2]);
     DrawParticles();
+    fireParticles.DrawParticles();
 
     //draw the scene
     drawAxes();
@@ -526,6 +534,7 @@ void timer(int value) {
     if(snowMode) UpdateParticles(0);
     if(lavaMode) UpdateParticles(1);
     if(steamMode) UpdateParticles(2);
+    fireParticles.UpdateParticles();
     glutPostRedisplay();
 }
 
@@ -569,6 +578,7 @@ void init() {
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+
 
 
     //set projection matrix, using perspective w/ correct aspect ratio
