@@ -67,7 +67,7 @@ int hudHeight = 0;
 GLubyte *hudImage;
 
 bool birdsEyeView = false;
-bool testingVectorParticles = true;
+bool testingVectorParticles = false;
 
 /*****************************************
 * draws scene
@@ -189,7 +189,9 @@ void keyboard(unsigned char key, int x, int y) {
     //keys that only work when not paused
     if (!paused) {
         switch (key) {
-
+            case '0':
+                testingVectorParticles = !testingVectorParticles;
+                break;
             case 'b':
                 birdsEyeView = !birdsEyeView;
                 break;
