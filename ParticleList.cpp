@@ -1,5 +1,22 @@
-#include "ParticleList.h"
+#ifdef __APPLE__
+# include <OpenGL/gl.h>
+# include <OpenGL/glu.h>
+# include <GLUT/glut.h>
+#else
+#ifdef _WIN32
+# include <windows.h>
+#endif
+# include <GL/gl.h>
+# include <GL/glu.h>
+# include <GL/freeglut.h>
+#endif
+
+#include <list>
+#include <math.h>
 #include <stdlib.h>
+
+#include "Particle.h"
+#include "ParticleList.h"
 
 float RandomFloatt(float a, float b) {
     float random = (float) rand()/RAND_MAX;
@@ -12,7 +29,7 @@ float RandomFloatt(float a, float b) {
 *Creates a list of particles of type Snow(0),
 *Lava(1), or Steam(2)
 **************************************************/
-ParticleList::ParticleList(int typeOfParticle,float boundsOfParticle[6]) {
+ParticleList::ParticleList(int typeOfParticle, float boundsOfParticle[6]) {
     
     particleType = typeOfParticle;
     for (int i = 0; i < 6; i++) {
@@ -22,9 +39,9 @@ ParticleList::ParticleList(int typeOfParticle,float boundsOfParticle[6]) {
     particleIterator = particleList.end();
 
     if (particleType == 0) {
-        particleList.push_back(Particle(RandomFloatt(particleBounds[0],particleBounds[1]),50,RandomFloatt(particleBounds[4],particleBounds[5]) ) );
+        particleList.push_back(Particle(RandomFloatt(particleBounds[0],particleBounds[1]),50,RandomFloatt(particleBounds[4],particleBounds[5])));
         particleIterator++;
-        particleIterator->setParticleDirection(RandomFloatt(0,10),-1,RandomFloatt(0,1));
+        particleIterator->setParticleDirection(RandomFloatt(0,10), -1, RandomFloatt(0,1));
         particleIterator->setParticleSize(.75);
         particleIterator->setParticleSpeed(.5);
         particleIterator->setParticleColor(1,1,1);
