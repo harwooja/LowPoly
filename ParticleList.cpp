@@ -11,7 +11,6 @@
 # include <GL/freeglut.h>
 #endif
 
-#include <list>
 #include <math.h>
 #include <stdlib.h>
 

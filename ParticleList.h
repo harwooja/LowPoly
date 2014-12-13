@@ -2,6 +2,7 @@
 #define __TERRAIN__
 #include "Terrain.h"
 #endif
+#include <list>
 
 using namespace std;
 
