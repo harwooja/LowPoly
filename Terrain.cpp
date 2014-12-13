@@ -31,7 +31,7 @@
  *    GLOBAL VARIABLES
  **************************************/
 #define TERRAIN_SIZE 256
-#define WATER_WIDTH 0
+#define WATER_WIDTH 4
 
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
 float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
@@ -59,14 +59,14 @@ void Terrain::generateTerrain() {
     
     //load heightmap image
     ImageLoader imgLoader = ImageLoader();
-    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap256_5.ppm", true, TERRAIN_SIZE);
+    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap256_6.ppm", true, TERRAIN_SIZE);
     
     //iterate over all points in heightmap (not incl. water)
-    for (int x = 0; x < TERRAIN_SIZE; x++) {
-        for (int z = 0; z < TERRAIN_SIZE; z++) {
+    for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
+        for (int z = WATER_WIDTH; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
             
             //set height
-            heightMap[x][z] = 40*heightmapImage[x][z];
+            heightMap[x][z] = 40*heightmapImage[x-WATER_WIDTH][z-WATER_WIDTH];
 
             //set volcano pos to highest point
             if (heightMap[x][z] > volcanoPos[1]) {
@@ -210,18 +210,19 @@ void Terrain::drawTerrain() {
     float terrainOffset = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
     
     //iterate over all values in heightmap
-    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH-2; x++) {
+    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
         glBegin(GL_QUAD_STRIP);
-        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
+        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++) {
             
             glMaterialfv(GL_FRONT, GL_AMBIENT, materialColours[x][z]);
             glMaterialfv(GL_FRONT, GL_DIFFUSE, materialColours[x][z]);
             
+            glNormal3fv(faceNormals[x+1][z]);
+            glVertex3f(x+1-terrainOffset, heightMap[x+1][z], z-terrainOffset);
+            
             glNormal3fv(faceNormals[x][z]);
             glVertex3f(x-terrainOffset, heightMap[x][z], z-terrainOffset);
-            
-            glNormal3fv(faceNormals[x][z+1]);
-            glVertex3f(x+1-terrainOffset, heightMap[x+1][z], z-terrainOffset);
+
         }
         glEnd();
     }
@@ -233,7 +234,7 @@ void Terrain::drawTerrain() {
     
     glPushMatrix();
     glScalef(100, 1, 100);
-    glTranslatef(0, -3, 0);
+    glTranslatef(0, -1, 0);
     glutSolidCube(10);
     glPopMatrix();
 }
@@ -332,11 +333,11 @@ float Terrain::getHeight(float x, float z) {
     
     //if outside of terrain, set height to 0
     if (xIndexInHeightmap < 0 || xIndexInHeightmap >= TERRAIN_SIZE+WATER_WIDTH-2)
-        return 0;
+        return 3;
     if (zIndexInHeightmap < 0 || zIndexInHeightmap >= TERRAIN_SIZE+WATER_WIDTH-2)
-        return 0;
-    if (heightMap[(int)floor(xIndexInHeightmap)][(int)floor(zIndexInHeightmap)] < 0)
-        return 0;
+        return 3;
+    if (heightMap[(int)floor(xIndexInHeightmap)][(int)floor(zIndexInHeightmap)] < 3)
+        return 3;
     
     // B(0,1) ------ C(1,1)
     //   |      pos    |

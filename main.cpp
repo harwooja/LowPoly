@@ -172,6 +172,7 @@ void keyboard(unsigned char key, int x, int y) {
         //pause
         case 'p':
         case 'P':
+        case 27:
             togglePausedScene();
             break;
 
@@ -365,7 +366,7 @@ void init() {
     glClearColor(0.25, 0.53, 0.77, 1);
     glEnable(GL_DEPTH_TEST);
     
-    glFrontFace(GL_CW);
+    glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
     

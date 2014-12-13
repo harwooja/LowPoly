@@ -133,7 +133,7 @@ void ParticleList::addParticle() {
     }
     else if (particleType == 1) {
         oneParticle.setParticlePosition(terrainMap->volcanoPos[0],terrainMap->volcanoPos[1],terrainMap->volcanoPos[2]);
-        oneParticle.setParticleDirection(RandomFloatt(-.5,.5),3,RandomFloatt(-.5,.5));
+        oneParticle.setParticleDirection(RandomFloatt(-.25,.25),3,RandomFloatt(-.25,.25));
         oneParticle.setParticleSize(RandomFloatt(0,2));
         oneParticle.setParticleSpeed(.15);
         oneParticle.setParticleAge(0);
