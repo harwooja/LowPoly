@@ -36,6 +36,8 @@ class ParticleSystem {
             
         } Particle;
     
+        typedef enum {SPHERE, CUBE} Shape;
+    
         /****************************************
         *    FUNCTION DECLARATIONS
         ****************************************/
@@ -54,5 +56,5 @@ class ParticleSystem {
         ****************************************/
         float spawnRate;
         float particleSize;
-        int shape;
+        Shape shape = CUBE;
 };

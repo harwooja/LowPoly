@@ -60,6 +60,7 @@ int hudHeight = 0;
 GLubyte *hudImage;
 
 bool birdsEyeView = false;
+bool flatShading = true;
 
 /*****************************************
 * draws scene
@@ -84,74 +85,13 @@ void display(void) {
     }
     
     //draw the scene
-    drawAxes();
+//    drawAxes();
     terrain.drawTerrain();
     volcanoParticles.drawParticles();
     if (paused)
         drawHud();
     
     glutSwapBuffers();
-}
-
-//TODO: rewrite this function so it's not as ugly/messy
-GLubyte* LoadPPM(char* file, int* width, int* height) {
-
-	//open the file in read mode
-	FILE *fd = fopen(file, "r");
-    if (fd == NULL) {
-        printf("Error. File \"%s\" could not be loaded.",file);
-        return NULL;
-    }
-    
-	//scan everything up to newline
-    char b[100];
-	fscanf(fd,"%[^\n] ", b);
-
-	//check if the first two characters are not P3, if not, it's not an ASCII PPM file
-	if (b[0]!='P'|| b[1] != '3') {
-		printf("%s is not a PPM file!\n",file);
-		return NULL;
-	}
-
-	//read past the file comments: scan for lines that begin
-	//  with #, and keep going until you find no more
-    char c;
-    fscanf(fd, "%c",&c);
-	while(c == '#')	{
-		fscanf(fd, "%[^\n] ", b);
-		fscanf(fd, "%c",&c);
-	}
-
-	//rewind the read pointer one character, or we'll lose the size
-	ungetc(c,fd);
-
-	//read the rows, columns and max colour values
-    int k, n, m;
-	fscanf(fd, "%d %d %d", &n, &m, &k);
-
-	//number of pixels is rows * columns
-    int size = n*m;
-
-	//allocate memory to store 3 GLuints for every pixel
-	GLubyte* img = (GLubyte *)malloc(3*sizeof(GLuint)*size);
-
-	//scale the colour in case maxCol is not 255
-    float s;
-    s = 255.0/k;
-
-	//start reading pixel colour data
-    int red, green, blue;
-	for(int i = 0; i < size; i++) {
-		fscanf(fd,"%d %d %d",&red, &green, &blue );
-		img[3*size-3*i-3]=red*s;
-		img[3*size-3*i-2]=green*s;
-		img[3*size-3*i-1]=blue*s;
-	}
-
-	*width = n;
-	*height = m;
-
-	return img;
 }
 
 /********************************************
@@ -176,7 +116,7 @@ void drawHud() {
     //reset projection matrixs
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45, (float) windowWidth / (float) windowHeight, 1,400);
+    gluPerspective(45, (float) windowWidth / (float) windowHeight, 1,300);
     
     glEnable(GL_DEPTH_TEST);
 }
@@ -250,10 +190,10 @@ void keyboard(unsigned char key, int x, int y) {
                 glShadeModel(GL_SMOOTH);
                 break;
             case '3':
-                volcanoParticles.shape = 0;
+                volcanoParticles.shape = ParticleSystem::CUBE;
                 break;
             case '4':
-                volcanoParticles.shape = 1;
+                volcanoParticles.shape = ParticleSystem::SPHERE;
                 break;
             
             //move player
@@ -307,9 +247,44 @@ void passive(int x, int y) {
     
     glutPostRedisplay();
 }
+
+/********************************************
+* handles menu clicks when paused
+*******************************************/
 void mouse(int button, int state, int x, int y) {
+    
     if (state == GLUT_LEFT_BUTTON) {
-        printf("mouse clicked at %d %d",x,y);
+
+        //get bounds of hud
+        int leftHud = windowWidth/2 - hudWidth/2;
+        int rightHud = windowWidth/2 + hudWidth/2;
+        int bottomHud = windowHeight/2+hudHeight/2;
+        int topHud = windowHeight/2-hudHeight/2;
+
+        //click is within hud, with 20px padding
+        if (x > leftHud+20 && x < rightHud-20 && y > topHud+20 && y < bottomHud-20) {
+            
+            //top button
+            if (y > topHud+30 && y < topHud+140) {
+                flatShading = !flatShading;
+                if (!flatShading)
+                    glShadeModel(GL_SMOOTH);
+                else
+                    glShadeModel(GL_FLAT);
+            }
+            
+            //second button
+            else if (y > topHud+170 && y < topHud+280) {
+                if (volcanoParticles.shape == ParticleSystem::CUBE)
+                    volcanoParticles.shape = ParticleSystem::SPHERE;
+                else
+                    volcanoParticles.shape = ParticleSystem::CUBE;
+            }
+            
+            //bottom buton
+            else if (y <bottomHud-50 && y > bottomHud-105)
+                exit(1);
+        }
     }
 }
 
@@ -396,7 +371,7 @@ void init() {
     //set projection matrix, using perspective w/ correct aspect ratio
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 400);
+    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
     
     //initialize globals
     terrain = Terrain();
