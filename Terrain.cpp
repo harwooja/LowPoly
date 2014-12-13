@@ -50,13 +50,19 @@ Terrain::Terrain(){
 **************************************/
 void Terrain::generateTerrain() {
 
+
     float volcanoHeightFactor = 50;
     float terrainWidth = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+
+
+    float terrainRadius = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+
 
     //reset heightmap
     for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++)
         for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++)
             heightMap[x][z] = -10;
+
 
     //make terrain higher in middle (volcano)
     for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
@@ -128,14 +134,72 @@ void Terrain::generateTerrain() {
                 }
                 materialColours[x][z][3] = 1;
             }
+
+    //load heightmap image
+    ImageLoader imgLoader = ImageLoader();
+    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap2.ppm", true,TERRAIN_SIZE);
+
+    //iterate over all points in heightmap (not incl. water)
+    for (int x = 0; x < TERRAIN_SIZE; x++) {
+        for (int z = 0; z < TERRAIN_SIZE; z++) {
+
+            //set height
+            heightMap[x][z] = 40*heightmapImage[x][z];
+
+            //set volcano pos to highest point
+            if (heightMap[x][z] > volcanoPos[1]) {
+                volcanoPos[0] = x-terrainRadius;
+                volcanoPos[1] = heightMap[x][z];
+                volcanoPos[2] = z-terrainRadius;
+            }
+
+            //grass
+            if (heightMap[x][z] <= 15) {
+                materialColours[x][z][0] = 0.0;
+                materialColours[x][z][1] = 0.3;
+                materialColours[x][z][2] = 0.2;
+            }
+            //grass to dirt transition
+            else if (heightMap[x][z] > 15 && heightMap[x][z] <= 20) {
+                materialColours[x][z][0] = 0.0 + ((heightMap[x][z]-20)*0.1);
+                materialColours[x][z][1] = 0.3 - ((heightMap[x][z]-20)*0.01);
+                materialColours[x][z][1] = 0.2 - ((heightMap[x][z]-20)*0.02);
+            }
+            //dirt
+            else if (heightMap[x][z] > 20 && heightMap[x][z] <= 30) {
+                materialColours[x][z][0] = 0.52;
+                materialColours[x][z][1] = 0.26;
+                materialColours[x][z][2] = 0.08;
+            }
+            //dirt to snow transition
+            else if (heightMap[x][z] > 30 && heightMap[x][z] <= 35) {
+                materialColours[x][z][0] = 0.52 + ((heightMap[x][z]-30)*0.1);
+                materialColours[x][z][1] = 0.26 + ((heightMap[x][z]-30)*0.15);
+                materialColours[x][z][2] = 0.08 + ((heightMap[x][z]-30)*0.18);
+            }
+            //snow
+            else {
+                materialColours[x][z][0] = 1;
+                materialColours[x][z][1] = 1;
+                materialColours[x][z][2] = 1;
+            }
+            materialColours[x][z][3] = 1;
+
         }
         displacement = displacement > 0.2 ? displacement-0.001 : 0.2;
     }
     generateWater(3);
+
     smoothTerrain(0.4);
 
     volcanoPos[1] = heightMap[(int)(volcanoPos[0]+terrainWidth)][(int)(volcanoPos[2]+terrainWidth)]-1;
     calculateFaceNormals();
+
+    smoothTerrain(0.2);
+    calculateFaceNormals();
+
+    volcanoPos[1] = heightMap[(int)(volcanoPos[0]+terrainRadius)][(int)(volcanoPos[2]+terrainRadius)]-1;
+
 }
 
 void Terrain::generateWater(float choppiness) {

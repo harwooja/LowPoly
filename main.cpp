@@ -17,13 +17,19 @@
 #include <stdio.h>
 #include <math.h>
 
+
+#include <string.h>
+
+
 #include "Particle.h"
 #include "ParticleList.h"
 
 #include <unistd.h>
-#include <string.h>
 
 #include "Camera.h"
+#include "ImageLoader.h"
+
+
 using namespace std;
 
 /*****************************************
@@ -66,13 +72,18 @@ bool steamMode = false;
 float snowColor[] = {1,1,1};
 float lavaColor[] = {1,0,0};
 float steamColor[] = {0.5,0.5,0.5};
+
 // 0 is snow, 1 is lava, 2 is steam(still in development)
-ParticleList snowParticles(0,particleBounds);
-ParticleList fireParticles(1,particleBounds);
+ParticleList snowParticles(0, particleBounds);
+ParticleList fireParticles(1, particleBounds);
 
 int hudWidth = 0;
 int hudHeight = 0;
 GLubyte *hudImage;
+
+
+bool birdsEyeView = false;
+bool flatShading = true;
 
 
 /*****************************************
@@ -89,24 +100,30 @@ void display(void) {
     //transform according to camera
     glRotatef(camera.rotation[0], 1, 0, 0);
     glRotatef(camera.rotation[1], 0, 1, 0);
+
     glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-2, -camera.position[2]);
 
 
 
     //draw the scene
     drawAxes();
-    terrain.drawTerrain();
 
+    if (!birdsEyeView)
+        glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-3, -camera.position[2]);
+    else
+        glTranslatef(-camera.position[0], -100, -camera.position[2]);
+
+    //draw the scene
+
+    terrain.drawTerrain();
     fireParticles.DrawParticles();
     snowParticles.DrawParticles();
-
-
     if (paused)
         drawHud();
 
-
     glutSwapBuffers();
 }
+
 
 //TODO: rewrite this function so it's not as ugly/messy
 GLubyte* LoadPPM(char* file, int* width, int* height) {
@@ -186,25 +203,46 @@ GLubyte* LoadPPM(char* file, int* width, int* height) {
 	return img;
 }
 
+
 /********************************************
 * draws the menu for when game paused
 *******************************************/
 void drawHud() {
     glDisable(GL_DEPTH_TEST);
 
+
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0, windowWidth, 0, windowHeight);
+
+
+
+    //set projection matrix
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, windowWidth, 0, windowHeight);
+
+    //draw pixels of image
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glRasterPos2i(windowWidth/2+hudWidth/2, windowHeight/2-hudHeight/2);
     glPixelZoom(-1,1);
+
     glDrawPixels(hudWidth, hudHeight, GL_RGB, GL_UNSIGNED_BYTE, hudImage);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45, (float) windowWidth / (float) windowHeight, 1,400);
+
+    if (hudImage != NULL)
+        glDrawPixels(hudWidth, hudHeight, GL_RGB, GL_UNSIGNED_BYTE, hudImage);
+
+    //reset projection matrixs
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45, (float) windowWidth / (float) windowHeight, 1,300);
+
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -262,59 +300,27 @@ void keyboard(unsigned char key, int x, int y) {
                 glutReshapeWindow(800, 600);
             }
             break;
-
-
-        case 'r':
-            terrain.generateTerrain();
-//            volcanoParticles = ParticleSystem(terrain);
-            break;
-        case '1':
-            glShadeModel(GL_FLAT);
-            break;
-        case '2':
-            glShadeModel(GL_SMOOTH);
-            break;
-
-        //move player
-        case 'w':
-        case 'W':
-            camera.strafe(Camera::FORWARD);
-            break;
-        case 's':
-        case 'S':
-            camera.strafe(Camera::BACK);
-            break;
-        case 'a':
-        case 'A':
-            camera.strafe(Camera::LEFT);
-            break;
-        case 'd':
-        case 'D':
-            camera.strafe(Camera::RIGHT);
-            break;
-
     }
 
     //keys that only work when not paused
     if (!paused) {
         switch (key) {
 
+
+            case 'b':
+                birdsEyeView = !birdsEyeView;
+                break;
+
             case 'r':
                 terrain.generateTerrain();
                 break;
+
             case '1':
                 glShadeModel(GL_FLAT);
                 break;
             case '2':
                 glShadeModel(GL_SMOOTH);
                 break;
-            case '3':
-                //volcanoParticles.shape = 0;
-                break;
-            case '4':
-                //volcanoParticles.shape = 1;
-                break;
-
             //move player
             case 'w':
             case 'W':
@@ -369,7 +375,42 @@ void passive(int x, int y) {
 }
 void mouse(int button, int state, int x, int y) {
     if (state == GLUT_LEFT_BUTTON) {
+
         printf("mouse clicked at %d %d",x,y);
+
+
+        //get bounds of hud
+        int leftHud = windowWidth/2 - hudWidth/2;
+        int rightHud = windowWidth/2 + hudWidth/2;
+        int bottomHud = windowHeight/2+hudHeight/2;
+        int topHud = windowHeight/2-hudHeight/2;
+
+        //click is within hud, with 20px padding
+        if (x > leftHud+20 && x < rightHud-20 && y > topHud+20 && y < bottomHud-20) {
+
+            //top button
+            if (y > topHud+30 && y < topHud+140) {
+                flatShading = !flatShading;
+                if (!flatShading)
+                    glShadeModel(GL_SMOOTH);
+                else
+                    glShadeModel(GL_FLAT);
+            }
+
+            //second button
+            else if (y > topHud+170 && y < topHud+280) {
+//                if (volcanoParticles.shape == ParticleSystem::CUBE)
+//                    volcanoParticles.shape = ParticleSystem::SPHERE;
+//                else
+//                    volcanoParticles.shape = ParticleSystem::CUBE;
+                printf("2nd button pressed");
+            }
+
+            //bottom buton
+            else if (y <bottomHud-50 && y > bottomHud-105)
+                exit(1);
+        }
+
     }
 }
 
@@ -418,8 +459,6 @@ void reshape(int w, int h) {
     if (w < minWindowSize || h < minWindowSize) {
         glutReshapeWindow((w < minWindowSize) ? minWindowSize : w, (h < minWindowSize) ? minWindowSize : h);
 
-
-
         windowWidth = (w < minWindowSize) ? 300 : w;
         windowHeight = (h < minWindowSize) ? 300 : h;
     }
@@ -431,7 +470,11 @@ void reshape(int w, int h) {
         glLoadIdentity();
 
         glViewport(0, 0, (GLsizei) w, (GLsizei) h);
+
         gluPerspective(45, (GLfloat) w / (GLfloat) h, 1,400);
+
+        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1,300);
+
 
         windowWidth = w;
         windowHeight = h;
@@ -470,12 +513,18 @@ void init() {
     //set projection matrix, using perspective w/ correct aspect ratio
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+
     gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 400);
+
+
+    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
+
 
     //initialize globals
     terrain = Terrain();
 
     //setup interface image
+
     char currentDir[1024];
     char* fileName = (char*) "/interface.ppm";
     if (getcwd(currentDir, sizeof(currentDir)) != NULL) {
@@ -490,6 +539,11 @@ void init() {
     else {
         printf("Error. Current directory path too long");
     }
+
+
+    ImageLoader imgLoader = ImageLoader();
+    hudImage = imgLoader.loadPPM((char*) "/interface.ppm", true, &hudWidth, &hudHeight);
+
 
     //initialize camera
     camera = Camera();

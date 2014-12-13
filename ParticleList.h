@@ -1,9 +1,3 @@
-#ifndef PARTICLELIST_H
-#define PARTICLELIST_H
-#include "Particle.h"
-#include <list>
-#include <Math.h>
-#include "Terrain.h"
 #ifdef __APPLE__
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
@@ -16,10 +10,17 @@
 # include <GL/glu.h>
 # include <GL/freeglut.h>
 #endif
+
+#include <list>
+#include <math.h>
+
+#include "Particle.h"
+#include "Terrain.h"
+
 using namespace std;
 
-class ParticleList
-{
+class ParticleList {
+
     public:
         ParticleList(int particleType, float particleBounds[6]);
         ~ParticleList();
@@ -45,7 +46,4 @@ class ParticleList
         float fire[3] = {1,0,0};
         float amb[3] = {0,0,0};
         float spc[3] = {0,0,0};
-
 };
-
-#endif // PARTICLELIST_H
