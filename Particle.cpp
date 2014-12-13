@@ -2,10 +2,7 @@
 #include <stdlib.h>
 
 Particle::Particle(float x, float y, float z) {
-    particleX = x;
-    particleY = y;
-    particleZ = z;
-
+    setParticlePosition(x,y,z);
     setParticleAge(0);
     setParticleColor(0,0,0);
     setParticleDirection(0,0,0);

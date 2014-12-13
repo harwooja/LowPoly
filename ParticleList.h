@@ -10,7 +10,7 @@ using namespace std;
 class ParticleList {
     
 public:
-    ParticleList(int particleType, float particleBounds[6]);
+    ParticleList(int particleType, float particleBounds[6], Terrain*);
     ~ParticleList();
     void UpdateParticles(Terrain terrainMap);
     void DrawParticles();
@@ -27,7 +27,7 @@ private:
     float newDirX;
     float newDirY;
     float newDirZ;
-    //Terrain *terrain;
+    Terrain *terrainMap;
     int particlesDrawn = 0;
     float particleBounds[6];
     int particleType;

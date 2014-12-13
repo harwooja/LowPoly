@@ -59,8 +59,8 @@ int windowHeight = 600;
 float particleBounds[] = {-50,50,4,50,-50,50};
 
 // 0 is snow, 1 is lava, 2 is steam(still in development)
-ParticleList snowParticles(0,particleBounds);
-ParticleList fireParticles(1,particleBounds);
+ParticleList snowParticles(0,particleBounds,&terrain);
+ParticleList fireParticles(1,particleBounds,&terrain);
 
 int hudWidth = 0;
 int hudHeight = 0;
@@ -95,9 +95,11 @@ void display(void) {
         volcanoParticles.drawParticles();
     else {
         fireParticles.DrawParticles();
-        snowParticles.DrawParticles();
+        //snowParticles.DrawParticles();
     }
 
+    glTranslatef(25, 40, 58);
+    
     if (paused)
         drawHud();
 
@@ -315,7 +317,7 @@ void timer(int value) {
             volcanoParticles.moveParticles();
         else {
             fireParticles.UpdateParticles(terrain);
-            snowParticles.UpdateParticles(terrain);
+            //snowParticles.UpdateParticles(terrain);
         }
     }
     
@@ -378,6 +380,8 @@ void init() {
     
     //initialize globals
     terrain = Terrain();
+    snowParticles = ParticleList(0,particleBounds,&terrain);
+    fireParticles = ParticleList(1,particleBounds,&terrain);
     volcanoParticles = ParticleSystem(&terrain);
     
     //setup interface image

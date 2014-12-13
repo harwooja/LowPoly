@@ -67,7 +67,7 @@ void Terrain::generateTerrain() {
             
             //set height
             heightMap[x][z] = 40*heightmapImage[x][z];
-            
+
             //set volcano pos to highest point
             if (heightMap[x][z] > volcanoPos[1]) {
                 volcanoPos[0] = x-terrainRadius;
@@ -112,7 +112,6 @@ void Terrain::generateTerrain() {
     generateWater(3);
     smoothTerrain(0.2);
     
-    volcanoPos[1] = heightMap[(int)(volcanoPos[0]+terrainRadius)][(int)(volcanoPos[2]+terrainRadius)]-1;
     calculateFaceNormals();
 }
 
@@ -383,7 +382,5 @@ float* Terrain::getNormal(float x, float z) {
     if (zIndex < 0 || zIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
         return NULL;
     
-    if (faceNormals[xIndex][zIndex] == NULL)
-        printf("OOHOHOOHH");
     return faceNormals[xIndex][zIndex];
 }
