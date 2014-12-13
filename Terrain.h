@@ -1,8 +1,7 @@
-// Terrain.h
-// LowPoly
+// CS 3GC3 Final Project
 //
-// Created by Jake Harwood on 2014-11-16.
-// Copyright (c) 2014 Jake Harwood. All rights reserved.
+// Terrain.h
+// -interface for Terrain class
 
 class Terrain {
 

@@ -1,10 +1,10 @@
+// CS 3GC3 Final Project
+//
 // Terrain.cpp
-// LowPoly
-//
-// Created by Jake Harwood on 2014-11-16.
-// Copyright (c) 2014 Jake Harwood. All rights reserved.
-//
-// Stores all vertices of terrain & volcano, vertex orderings, normals, and colours
+// -stores all vertices and colours
+// -uses heightmap to generate the terrain
+// -has functions to draw terrain and get
+// important information about it
 
 #ifdef __APPLE__
 #  include <OpenGL/gl.h>
@@ -19,18 +19,20 @@
 #  include <GL/freeglut.h>
 #endif
 
-#include "Terrain.h"
 #include <vector>
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
 
+#include "Terrain.h"
+#include "ImageLoader.h"
+
 
 /***************************************
  *    GLOBAL VARIABLES
  **************************************/
-#define TERRAIN_SIZE 100
-#define WATER_WIDTH 5
+#define TERRAIN_SIZE 150
+#define WATER_WIDTH 0
 
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
 float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
@@ -40,7 +42,6 @@ float materialColours[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][4];
  * Constructor
  **************************************/
 Terrain::Terrain(){
-    srand(10);
     generateTerrain();
 }
 
@@ -49,15 +50,22 @@ Terrain::Terrain(){
 * the terrain, stored in heightMap
 **************************************/
 void Terrain::generateTerrain() {
+<<<<<<< HEAD
 
     float volcanoHeightFactor = 50;
     float terrainWidth = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
 
+=======
+    
+    float terrainRadius = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+    
+>>>>>>> stuart
     //reset heightmap
     for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++)
         for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++)
-            heightMap[x][z] = -10;
+            heightMap[x][z] = 0;
 
+<<<<<<< HEAD
     //make terrain higher in middle (volcano)
     for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
         for (int z = WATER_WIDTH; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
@@ -127,17 +135,78 @@ void Terrain::generateTerrain() {
                     materialColours[x][z][2] = 1;
                 }
                 materialColours[x][z][3] = 1;
+=======
+    //load heightmap image
+    ImageLoader imgLoader = ImageLoader();
+    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap2.ppm", true,TERRAIN_SIZE);
+
+    //iterate over all points in heightmap (not incl. water)
+    for (int x = 0; x < TERRAIN_SIZE; x++) {
+        for (int z = 0; z < TERRAIN_SIZE; z++) {
+
+            //set height
+            heightMap[x][z] = 40*heightmapImage[x][z];
+            
+            //set volcano pos to highest point
+            if (heightMap[x][z] > volcanoPos[1]) {
+                volcanoPos[0] = x-terrainRadius;
+                volcanoPos[1] = heightMap[x][z];
+                volcanoPos[2] = z-terrainRadius;
             }
+            
+            //grass
+            if (heightMap[x][z] <= 15) {
+                materialColours[x][z][0] = 0.0;
+                materialColours[x][z][1] = 0.3;
+                materialColours[x][z][2] = 0.2;
+            }
+            //grass to dirt transition
+            else if (heightMap[x][z] > 15 && heightMap[x][z] <= 20) {
+                materialColours[x][z][0] = 0.0 + ((heightMap[x][z]-20)*0.1);
+                materialColours[x][z][1] = 0.3 - ((heightMap[x][z]-20)*0.01);
+                materialColours[x][z][1] = 0.2 - ((heightMap[x][z]-20)*0.02);
+            }
+            //dirt
+            else if (heightMap[x][z] > 20 && heightMap[x][z] <= 30) {
+                materialColours[x][z][0] = 0.52;
+                materialColours[x][z][1] = 0.26;
+                materialColours[x][z][2] = 0.08;
+>>>>>>> stuart
+            }
+            //dirt to snow transition
+            else if (heightMap[x][z] > 30 && heightMap[x][z] <= 35) {
+                materialColours[x][z][0] = 0.52 + ((heightMap[x][z]-30)*0.1);
+                materialColours[x][z][1] = 0.26 + ((heightMap[x][z]-30)*0.15);
+                materialColours[x][z][2] = 0.08 + ((heightMap[x][z]-30)*0.18);
+            }
+            //snow
+            else {
+                materialColours[x][z][0] = 1;
+                materialColours[x][z][1] = 1;
+                materialColours[x][z][2] = 1;
+            }
+            materialColours[x][z][3] = 1;
         }
-        displacement = displacement > 0.2 ? displacement-0.001 : 0.2;
     }
+    
     generateWater(3);
+<<<<<<< HEAD
     smoothTerrain(0.4);
 
     volcanoPos[1] = heightMap[(int)(volcanoPos[0]+terrainWidth)][(int)(volcanoPos[2]+terrainWidth)]-1;
+=======
+    smoothTerrain(0.2);
+    
+    volcanoPos[1] = heightMap[(int)(volcanoPos[0]+terrainRadius)][(int)(volcanoPos[2]+terrainRadius)]-1;
+>>>>>>> stuart
     calculateFaceNormals();
 }
 
+/***************************************
+* for specified waterwidth (global),
+* creates choppy white (foaming) water
+* around terrain. Modifies heightmap.
+**************************************/
 void Terrain::generateWater(float choppiness) {
 
     for (int x = TERRAIN_SIZE; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
