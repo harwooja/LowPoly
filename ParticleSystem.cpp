@@ -18,11 +18,11 @@
 #  include <GL/freeglut.h>
 #endif
 
-#include "Terrain.h"
-#include "ParticleSystem.h"
 #include <vector>
 #include <stdlib.h>
 #include <math.h>
+
+#include "ParticleSystem.h"
 
 /*****************************************
  *    FUNCTION DECLARATIONS
@@ -44,7 +44,7 @@ Terrain* terrain1;
 * initializes values (constructor)
 *******************************************/
 ParticleSystem::ParticleSystem(Terrain* t) {
-
+    
     spawnRate = 0.25;
     particleSize = 1;
 

@@ -46,10 +46,10 @@ ParticleList::ParticleList(int typeOfParticle, float boundsOfParticle[6]) {
         particleIterator->setParticleSpeed(.5);
         particleIterator->setParticleColor(1,1,1);
         particleIterator->setParticleRotAngle(0,0,0);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, snow);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, snow);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, 0);
     }
     else if (particleType == 1) {
         particleList.push_back(Particle(-5,20,0));
@@ -59,10 +59,10 @@ ParticleList::ParticleList(int typeOfParticle, float boundsOfParticle[6]) {
         particleIterator->setParticleSpeed(.75);
         particleIterator->setParticleColor(1,0,0);
         particleIterator->setParticleRotAngle(0,0,0);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fire);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, 0);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fire);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, 0);
     }
     else if (particleType == 2) {
         particleList.push_back(Particle(RandomFloatt(particleBounds[0],particleBounds[1]),50,RandomFloatt(particleBounds[4],particleBounds[5]) ) );

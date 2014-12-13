@@ -25,13 +25,11 @@
 #include <math.h>
 #include <string.h>
 
+#include "ParticleSystem.h"
 #include "Particle.h"
 #include "ParticleList.h"
-
 #include "Camera.h"
 #include "ImageLoader.h"
-
-using namespace std;
 
 /*****************************************
 *    FUNCTION DECLARATIONS
@@ -46,7 +44,7 @@ void timer(int value);
  *    GLOBAL VARIABLES
  ****************************************/
 Terrain terrain;
-
+ParticleSystem volcanoParticles = NULL;
 Camera camera;
 
 bool fullscreen = false;
@@ -62,17 +60,6 @@ int windowHeight = 600;
 
 //xmin,xmax,ymin,ymax,zmin,zmax
 float particleBounds[] = {-50,50,4,50,-50,50};
-float angle = 0;
-float angle2 = 0;
-float angle3 = 0;
-
-bool snowMode = false;
-bool lavaMode = false;
-bool steamMode = false;
-
-float snowColor[] = {1,1,1};
-float lavaColor[] = {1,0,0};
-float steamColor[] = {0.5,0.5,0.5};
 
 // 0 is snow, 1 is lava, 2 is steam(still in development)
 ParticleList snowParticles(0, particleBounds);
@@ -106,6 +93,7 @@ void display(void) {
 
     //draw the scene
     terrain.drawTerrain();
+//    volcanoParticles.drawParticles();
     fireParticles.DrawParticles();
     snowParticles.DrawParticles();
     if (paused)
@@ -167,11 +155,8 @@ void togglePausedScene() {
 *******************************************/
 void keyboard(unsigned char key, int x, int y) {
 
-
     //keys that are handled whether paused or not
-
     switch (key) {
-
         //quit
         case 'q':
             exit(0);
@@ -319,13 +304,14 @@ void mouse(int button, int state, int x, int y) {
 *******************************************/
 void timer(int value) {
 
-    if (!paused)
-
-
-    //set timer function
+    if (!paused) {
+        fireParticles.UpdateParticles(terrain);
+        snowParticles.UpdateParticles(terrain);
+//        volcanoParticles.moveParticles();
+    }
+    
+    //set timer func
     glutTimerFunc(32, timer, 0);
-    fireParticles.UpdateParticles(terrain);
-    snowParticles.UpdateParticles(terrain);
     glutPostRedisplay();
 }
 
@@ -363,7 +349,6 @@ void reshape(int w, int h) {
         windowHeight = (h < minWindowSize) ? 300 : h;
     }
 
-
     //change projection matrix, set width & height globals
     else {
         glMatrixMode(GL_PROJECTION);
@@ -384,19 +369,11 @@ void reshape(int w, int h) {
 ******************************************/
 void init() {
 
-
-    //enable back face culling & flat shading (for artistic reasons)
-    glClearColor(0.1, 0.1, 0.1, 1);
+    glClearColor(0.25, 0.53, 0.77, 1);
     glEnable(GL_DEPTH_TEST);
-   // glEnable(GL_CULL_FACE);
-    glShadeModel(GL_FLAT);
-
 
     //enable flat shading (for artistic reasons)
     glShadeModel(GL_FLAT);
-
-    glClearColor(0.25, 0.53, 0.77, 1);
-    glEnable(GL_DEPTH_TEST);
 
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
@@ -413,7 +390,9 @@ void init() {
     
     //initialize globals
     terrain = Terrain();
-
+    
+    volcanoParticles = ParticleSystem(&terrain);
+    
     //setup interface image
     ImageLoader imgLoader = ImageLoader();
     hudImage = imgLoader.loadPPM((char*) "/interface.ppm", true, &hudWidth, &hudHeight);

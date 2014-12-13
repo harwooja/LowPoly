@@ -24,14 +24,17 @@
 #include <math.h>
 #include <stdio.h>
 
+#ifndef __TERRAIN__
+#define __TERRAIN__
 #include "Terrain.h"
+#endif
 #include "ImageLoader.h"
 
 
 /***************************************
  *    GLOBAL VARIABLES
  **************************************/
-#define TERRAIN_SIZE 150
+#define TERRAIN_SIZE 128
 #define WATER_WIDTH 0
 
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
@@ -60,7 +63,7 @@ void Terrain::generateTerrain() {
 
     //load heightmap image
     ImageLoader imgLoader = ImageLoader();
-    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap2.ppm", true,TERRAIN_SIZE);
+    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap3.ppm", true, TERRAIN_SIZE);
 
     //iterate over all points in heightmap (not incl. water)
     for (int x = 0; x < TERRAIN_SIZE; x++) {

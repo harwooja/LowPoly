@@ -1,4 +1,7 @@
+#ifndef __TERRAIN__
+#define __TERRAIN__
 #include "Terrain.h"
+#endif
 
 using namespace std;
 
