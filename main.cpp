@@ -189,6 +189,8 @@ void keyboard(unsigned char key, int x, int y) {
     //keys that only work when not paused
     if (!paused) {
         switch (key) {
+            
+            //change global state
             case '0':
                 testingVectorParticles = !testingVectorParticles;
                 break;
@@ -202,10 +204,10 @@ void keyboard(unsigned char key, int x, int y) {
                 glShadeModel(GL_SMOOTH);
                 break;
             case '3':
-                //volcanoParticles.shape = ParticleSystem::CUBE;
+                volcanoParticles.shape = ParticleSystem::CUBE;
                 break;
             case '4':
-                //volcanoParticles.shape = ParticleSystem::SPHERE;
+                volcanoParticles.shape = ParticleSystem::SPHERE;
                 break;
 
             //move player
