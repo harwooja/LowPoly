@@ -46,10 +46,7 @@ ParticleList::ParticleList(int typeOfParticle, float boundsOfParticle[6]) {
         particleIterator->setParticleSpeed(.5);
         particleIterator->setParticleColor(1,1,1);
         particleIterator->setParticleRotAngle(0,0,0);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, snow);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+
     }
     else if (particleType == 1) {
         particleList.push_back(Particle(-5,20,0));
@@ -59,10 +56,7 @@ ParticleList::ParticleList(int typeOfParticle, float boundsOfParticle[6]) {
         particleIterator->setParticleSpeed(.75);
         particleIterator->setParticleColor(1,0,0);
         particleIterator->setParticleRotAngle(0,0,0);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fire);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, 0);
+
     }
     else if (particleType == 2) {
         particleList.push_back(Particle(RandomFloatt(particleBounds[0],particleBounds[1]),50,RandomFloatt(particleBounds[4],particleBounds[5]) ) );
@@ -164,11 +158,23 @@ void ParticleList::DrawParticles() {
             glRotatef(particleIterator->getParticleRotAngle()[1], 0, 1, 0);
             glRotatef(particleIterator->getParticleRotAngle()[2], 0, 0, 1);
             glScalef(particleIterator->getParticleSize(), particleIterator->getParticleSize(), particleIterator->getParticleSize());
-            if (particleType == 0)
-                glColor3fv(snow);
-            else if (particleType == 1)
-                glColor3fv(fire);
-            glutSolidSphere(1,8,4);
+            if (particleType == 0){
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, snow);
+                //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
+                //glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+                glutSolidSphere(1,8,4);
+            }
+
+            else if (particleType == 1){
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fire);
+                //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
+                //glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+                glutSolidSphere(1,8,4);
+            }
+
+
 
         glPopMatrix();
 
@@ -182,4 +188,13 @@ void ParticleList::DrawParticles() {
     }
     else if (particleType == 0)
         addParticle();
+}
+void ParticleList::rotateParticle(float incrX, float incrY, float incrZ)
+{
+    for(particleIterator = particleList.begin();particleIterator != particleList.end();particleIterator++){
+
+        particleIterator->setParticleRotAngle(particleIterator->getParticleRotAngle()[0]+incrX,
+                                              particleIterator->getParticleRotAngle()[1]+incrY,
+                                              particleIterator->getParticleRotAngle()[2]+incrZ);
+    }
 }

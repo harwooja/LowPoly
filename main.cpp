@@ -63,9 +63,6 @@ bool snowMode = false;
 bool lavaMode = false;
 bool steamMode = false;
 
-float snowColor[] = {1,1,1};
-float lavaColor[] = {1,0,0};
-float steamColor[] = {0.5,0.5,0.5};
 // 0 is snow, 1 is lava, 2 is steam(still in development)
 ParticleList snowParticles(0,particleBounds);
 ParticleList fireParticles(1,particleBounds);
@@ -108,83 +105,6 @@ void display(void) {
     glutSwapBuffers();
 }
 
-//TODO: rewrite this function so it's not as ugly/messy
-GLubyte* LoadPPM(char* file, int* width, int* height) {
-
-
-    glBegin(GL_LINES);
-    glColor3f(1, 0, 0);
-    glVertex3f(0,0,0);
-    glVertex3f(500, 0, 0);
-
-    glColor3f(0, 1, 0);
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 500, 0);
-
-    glColor3f(0, 0, 1);
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, 0, 500);
-    glEnd();
-
-    glEnable(GL_LIGHTING);
-
-	//open the file in read mode
-	FILE *fd = fopen(file, "r");
-    if (fd == NULL) {
-        printf("Error. File \"%s\" could not be loaded.",file);
-        return NULL;
-    }
-
-	//scan everything up to newline
-    char b[100];
-	fscanf(fd,"%[^\n] ", b);
-
-	//check if the first two characters are not P3, if not, it's not an ASCII PPM file
-	if (b[0]!='P'|| b[1] != '3') {
-		printf("%s is not a PPM file!\n",file);
-		return NULL;
-	}
-
-	//read past the file comments: scan for lines that begin
-	//  with #, and keep going until you find no more
-    char c;
-    fscanf(fd, "%c",&c);
-	while(c == '#')	{
-		fscanf(fd, "%[^\n] ", b);
-		fscanf(fd, "%c",&c);
-	}
-
-	//rewind the read pointer one character, or we'll lose the size
-	ungetc(c,fd);
-
-	//read the rows, columns and max colour values
-    int k, n, m;
-	fscanf(fd, "%d %d %d", &n, &m, &k);
-
-	//number of pixels is rows * columns
-    int size = n*m;
-
-	//allocate memory to store 3 GLuints for every pixel
-	GLubyte* img = (GLubyte *)malloc(3*sizeof(GLuint)*size);
-
-	//scale the colour in case maxCol is not 255
-    float s;
-    s = 255.0/k;
-
-	//start reading pixel colour data
-    int red, green, blue;
-	for(int i = 0; i < size; i++) {
-		fscanf(fd,"%d %d %d",&red, &green, &blue );
-		img[3*size-3*i-3]=red*s;
-		img[3*size-3*i-2]=green*s;
-		img[3*size-3*i-1]=blue*s;
-	}
-
-	*width = n;
-	*height = m;
-
-	return img;
-}
 
 /********************************************
 * draws the menu for when game paused
@@ -385,6 +305,7 @@ void timer(int value) {
     glutTimerFunc(32, timer, 0);
     fireParticles.UpdateParticles(terrain);
     snowParticles.UpdateParticles(terrain);
+    snowParticles.rotateParticle(.5,.5,.5);
     glutPostRedisplay();
 }
 

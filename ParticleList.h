@@ -13,6 +13,7 @@ class ParticleList {
         void UpdateParticles(Terrain terrainMap);
         void DrawParticles();
         void addParticle();
+        void rotateParticle(float incrX, float incrY, float incrZ);
 
     private:
         std::list<Particle> particleList;
