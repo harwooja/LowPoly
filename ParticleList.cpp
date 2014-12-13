@@ -25,18 +25,18 @@ float RandomFloatt(float a, float b) {
 }
 
 /**************************************************
-*Creates a list of particles of type Snow(0),
-*Lava(1), or Steam(2)
-**************************************************/
+ *Creates a list of particles of type Snow(0),
+ *Lava(1), or Steam(2)
+ **************************************************/
 ParticleList::ParticleList(int typeOfParticle, float boundsOfParticle[6]) {
-
+    
     particleType = typeOfParticle;
     for (int i = 0; i < 6; i++) {
         particleBounds[i] = boundsOfParticle[i];
     }
-
+    
     particleIterator = particleList.end();
-
+    
     if (particleType == 0) {
         particleList.push_back(Particle(RandomFloatt(particleBounds[0],particleBounds[1]),50,RandomFloatt(particleBounds[4],particleBounds[5])));
         particleIterator++;
@@ -45,10 +45,7 @@ ParticleList::ParticleList(int typeOfParticle, float boundsOfParticle[6]) {
         particleIterator->setParticleSpeed(.5);
         particleIterator->setParticleColor(1,1,1);
         particleIterator->setParticleRotAngle(0,0,0);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, snow);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+        
     }
     else if (particleType == 1) {
         particleList.push_back(Particle(-5,20,0));
@@ -58,10 +55,7 @@ ParticleList::ParticleList(int typeOfParticle, float boundsOfParticle[6]) {
         particleIterator->setParticleSpeed(.75);
         particleIterator->setParticleColor(1,0,0);
         particleIterator->setParticleRotAngle(0,0,0);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fire);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, 0);
+        
     }
     else if (particleType == 2) {
         particleList.push_back(Particle(RandomFloatt(particleBounds[0],particleBounds[1]),50,RandomFloatt(particleBounds[4],particleBounds[5]) ) );
@@ -79,9 +73,9 @@ ParticleList::~ParticleList() {
 }
 
 void ParticleList::UpdateParticles(Terrain terrainMap) {
-
+    
     for(particleIterator = particleList.begin();particleIterator != particleList.end();particleIterator++) {
-
+        
         if (particleIterator->getParticleAge() < ageLimit){
             if (particleType == 0) {
                 newX = particleIterator->getParticlePosition()[0];
@@ -93,11 +87,11 @@ void ParticleList::UpdateParticles(Terrain terrainMap) {
                 newY = particleIterator->getParticlePosition()[1]+particleIterator->getParticleDirection()[1]*particleIterator->getParticleSpeed();
                 newZ = particleIterator->getParticlePosition()[2]+particleIterator->getParticleDirection()[2]*particleIterator->getParticleSpeed();
             }
-
+            
             //what do the braces do?
             {
                 if (newY <= terrainMap.getHeight(newX, newZ)) {
-
+                    
                     particleIterator->touchedTerrain = true;
                     newY = terrainMap.getHeight(newX, newZ);
                     if (particleType == 0) {
@@ -107,7 +101,7 @@ void ParticleList::UpdateParticles(Terrain terrainMap) {
                         terrainMap.burnTerrain(newX, newZ);
                     }
                 }
-
+                
                 else if (newY > terrainMap.getHeight(newX, newZ)) {
                     newDirX = particleIterator->getParticleDirection()[0]+particleIterator->getParticleDirection()[0]*particleIterator->getParticleSpeed();
                     newDirY = particleIterator->getParticleDirection()[1] - .01;
@@ -115,12 +109,12 @@ void ParticleList::UpdateParticles(Terrain terrainMap) {
                     particleIterator->setParticleDirection(newDirX, newDirY, newDirZ);
                 }
             }
-
+            
             particleIterator->setParticlePosition(newX, newY, newZ);
             particleIterator->setParticleAge(particleIterator->getParticleAge()+1);
-
+            
         }
-
+        
         else {
             particleIterator = particleList.erase(particleIterator);
             particleIterator--;
@@ -130,7 +124,7 @@ void ParticleList::UpdateParticles(Terrain terrainMap) {
 
 void ParticleList::addParticle() {
     Particle oneParticle(0,0,0);
-
+    
     if (particleType == 0) {
         oneParticle.setParticlePosition(RandomFloatt(particleBounds[0],particleBounds[1]),50,RandomFloatt(particleBounds[4],particleBounds[5]));
         oneParticle.setParticleDirection(0,-.1,0);
@@ -140,7 +134,7 @@ void ParticleList::addParticle() {
         oneParticle.setParticleRotAngle(0,0,0);
         particleList.push_back(oneParticle);
     }
-
+    
     else if (particleType ==1) {
         oneParticle.setParticlePosition(-50,20,0);
         oneParticle.setParticleDirection(RandomFloatt(-.5,.5),3,RandomFloatt(-.5,.5));
@@ -153,27 +147,39 @@ void ParticleList::addParticle() {
 }
 
 void ParticleList::DrawParticles() {
-
+    
     for(particleIterator = particleList.begin();particleIterator != particleList.end();particleIterator++){
-
+        
         glPushMatrix();
-            glTranslatef(particleIterator->getParticlePosition()[0], particleIterator->getParticlePosition()[1], particleIterator->getParticlePosition()[2]);
-            //glTranslatef((*particleIterator).getParticlePosition()[0], (*particleIterator).getParticlePosition()[1], (*particleIterator).getParticlePosition()[2])
-            glRotatef(particleIterator->getParticleRotAngle()[0], 1, 0, 0);
-            glRotatef(particleIterator->getParticleRotAngle()[1], 0, 1, 0);
-            glRotatef(particleIterator->getParticleRotAngle()[2], 0, 0, 1);
-            glScalef(particleIterator->getParticleSize(), particleIterator->getParticleSize(), particleIterator->getParticleSize());
-            if (particleType == 0)
-                glColor3fv(snow);
-            else if (particleType == 1)
-                glColor3fv(fire);
+        glTranslatef(particleIterator->getParticlePosition()[0], particleIterator->getParticlePosition()[1], particleIterator->getParticlePosition()[2]);
+        //glTranslatef((*particleIterator).getParticlePosition()[0], (*particleIterator).getParticlePosition()[1], (*particleIterator).getParticlePosition()[2])
+        glRotatef(particleIterator->getParticleRotAngle()[0], 1, 0, 0);
+        glRotatef(particleIterator->getParticleRotAngle()[1], 0, 1, 0);
+        glRotatef(particleIterator->getParticleRotAngle()[2], 0, 0, 1);
+        glScalef(particleIterator->getParticleSize(), particleIterator->getParticleSize(), particleIterator->getParticleSize());
+        if (particleType == 0){
+            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, snow);
+            //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
+            //glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, 0);
             glutSolidSphere(1,8,4);
-
+        }
+        
+        else if (particleType == 1){
+            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fire);
+            //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
+            //glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+            glutSolidSphere(1,8,4);
+        }
+        
+        
+        
         glPopMatrix();
-
+        
     }
     particlesDrawn++;
-
+    
     //controls flow speed of particles drawn.
     if(particlesDrawn == 2 && particleType==1){
         addParticle();
@@ -181,4 +187,13 @@ void ParticleList::DrawParticles() {
     }
     else if (particleType == 0)
         addParticle();
+}
+void ParticleList::rotateParticle(float incrX, float incrY, float incrZ)
+{
+    for(particleIterator = particleList.begin();particleIterator != particleList.end();particleIterator++){
+        
+        particleIterator->setParticleRotAngle(particleIterator->getParticleRotAngle()[0]+incrX,
+                                              particleIterator->getParticleRotAngle()[1]+incrY,
+                                              particleIterator->getParticleRotAngle()[2]+incrZ);
+    }
 }
