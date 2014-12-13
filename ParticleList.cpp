@@ -72,7 +72,7 @@ ParticleList::~ParticleList() {
     particleList.clear();
 }
 
-void ParticleList::UpdateParticles(Terrain terrainMap) {
+void ParticleList::UpdateParticles() {
     
     for(particleIterator = particleList.begin();particleIterator != particleList.end();particleIterator++) {
         
@@ -89,19 +89,18 @@ void ParticleList::UpdateParticles(Terrain terrainMap) {
             }
             
             {
-                if (newY <= terrainMap.getHeight(newX, newZ)) {
-                    
+                if (newY <= terrainMap->getHeight(newX, newZ)) {
                     particleIterator->touchedTerrain = true;
-                    newY = terrainMap.getHeight(newX, newZ);
+                    newY = terrainMap->getHeight(newX, newZ);
                     if (particleType == 0) {
-                        terrainMap.snowTerrain(newX, newZ);
+                       terrainMap->snowTerrain(newX, newZ);
                     }
                     if (particleType == 1) {
-                        terrainMap.burnTerrain(newX, newZ);
+                        terrainMap->burnTerrain(newX, newZ);
                     }
                 }
                 
-                else if (newY > terrainMap.getHeight(newX, newZ)) {
+                else if (newY > terrainMap->getHeight(newX, newZ)) {
                     newDirX = particleIterator->getParticleDirection()[0]+particleIterator->getParticleDirection()[0]*particleIterator->getParticleSpeed();
                     newDirY = particleIterator->getParticleDirection()[1] - .01;
                     newDirZ = particleIterator->getParticleDirection()[2]+particleIterator->getParticleDirection()[2]*particleIterator->getParticleSpeed();

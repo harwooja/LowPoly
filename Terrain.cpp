@@ -30,7 +30,7 @@
 /***************************************
  *    GLOBAL VARIABLES
  **************************************/
-#define TERRAIN_SIZE 128
+#define TERRAIN_SIZE 256
 #define WATER_WIDTH 0
 
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
@@ -59,7 +59,7 @@ void Terrain::generateTerrain() {
     
     //load heightmap image
     ImageLoader imgLoader = ImageLoader();
-    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap3.ppm", true, TERRAIN_SIZE);
+    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap256_5.ppm", true, TERRAIN_SIZE);
     
     //iterate over all points in heightmap (not incl. water)
     for (int x = 0; x < TERRAIN_SIZE; x++) {
@@ -210,29 +210,20 @@ void Terrain::drawTerrain() {
     float terrainOffset = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
     
     //iterate over all values in heightmap
-    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
+    for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH-2; x++) {
+        glBegin(GL_QUAD_STRIP);
         for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
             
             glMaterialfv(GL_FRONT, GL_AMBIENT, materialColours[x][z]);
             glMaterialfv(GL_FRONT, GL_DIFFUSE, materialColours[x][z]);
             
-            //draw the quad
-            glBegin(GL_QUADS);
-            
             glNormal3fv(faceNormals[x][z]);
             glVertex3f(x-terrainOffset, heightMap[x][z], z-terrainOffset);
             
             glNormal3fv(faceNormals[x][z+1]);
-            glVertex3f(x-terrainOffset, heightMap[x][z+1], z+1-terrainOffset);
-            
-            glNormal3fv(faceNormals[x+1][z+1]);
-            glVertex3f(x+1-terrainOffset, heightMap[x+1][z+1], z+1-terrainOffset);
-            
-            glNormal3fv(faceNormals[x+1][z]);
             glVertex3f(x+1-terrainOffset, heightMap[x+1][z], z-terrainOffset);
-            
-            glEnd();
         }
+        glEnd();
     }
     
     //draw water

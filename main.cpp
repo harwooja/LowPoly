@@ -316,7 +316,7 @@ void timer(int value) {
         if (testingVectorParticles)
             volcanoParticles.moveParticles();
         else {
-            fireParticles.UpdateParticles(terrain);
+            fireParticles.UpdateParticles();
             //snowParticles.UpdateParticles(terrain);
         }
     }
@@ -365,7 +365,7 @@ void init() {
     glClearColor(0.25, 0.53, 0.77, 1);
     glEnable(GL_DEPTH_TEST);
     
-    glFrontFace(GL_CCW);
+    glFrontFace(GL_CW);
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
     

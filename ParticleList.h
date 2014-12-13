@@ -12,7 +12,7 @@ class ParticleList {
 public:
     ParticleList(int particleType, float particleBounds[6], Terrain*);
     ~ParticleList();
-    void UpdateParticles(Terrain terrainMap);
+    void UpdateParticles();
     void DrawParticles();
     void addParticle();
     void rotateParticle(float incrX, float incrY, float incrZ);
