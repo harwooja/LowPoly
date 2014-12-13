@@ -30,7 +30,7 @@ float RandomFloatt(float a, float b) {
 *Lava(1), or Steam(2)
 **************************************************/
 ParticleList::ParticleList(int typeOfParticle, float boundsOfParticle[6]) {
-    
+
     particleType = typeOfParticle;
     for (int i = 0; i < 6; i++) {
         particleBounds[i] = boundsOfParticle[i];
@@ -82,7 +82,7 @@ ParticleList::~ParticleList() {
 void ParticleList::UpdateParticles(Terrain terrainMap) {
 
     for(particleIterator = particleList.begin();particleIterator != particleList.end();particleIterator++) {
-        
+
         if (particleIterator->getParticleAge() < ageLimit){
             if (particleType == 0) {
                 newX = particleIterator->getParticlePosition()[0];
@@ -90,9 +90,9 @@ void ParticleList::UpdateParticles(Terrain terrainMap) {
                 newZ = particleIterator->getParticlePosition()[2];
             }
             if (particleType == 1) {
-                newX = particleIterator->getParticlePosition()[0] + .1;
+                newX = particleIterator->getParticlePosition()[0]+particleIterator->getParticleDirection()[0]*particleIterator->getParticleSpeed();
                 newY = particleIterator->getParticlePosition()[1]+particleIterator->getParticleDirection()[1]*particleIterator->getParticleSpeed();
-                newZ = particleIterator->getParticlePosition()[2];
+                newZ = particleIterator->getParticlePosition()[2]+particleIterator->getParticleDirection()[2]*particleIterator->getParticleSpeed();
             }
 
             //what do the braces do?
@@ -110,9 +110,9 @@ void ParticleList::UpdateParticles(Terrain terrainMap) {
                 }
 
                 else if (newY > terrainMap.getHeight(newX, newZ)) {
-                    newDirX = particleIterator->getParticleDirection()[0];
+                    newDirX = particleIterator->getParticleDirection()[0]+particleIterator->getParticleDirection()[0]*particleIterator->getParticleSpeed();
                     newDirY = particleIterator->getParticleDirection()[1] - .01;
-                    newDirZ = particleIterator->getParticleDirection()[2];
+                    newDirZ = particleIterator->getParticleDirection()[2]+particleIterator->getParticleDirection()[2]*particleIterator->getParticleSpeed();
                     particleIterator->setParticleDirection(newDirX, newDirY, newDirZ);
                 }
             }
@@ -121,7 +121,7 @@ void ParticleList::UpdateParticles(Terrain terrainMap) {
             particleIterator->setParticleAge(particleIterator->getParticleAge()+1);
 
         }
-        
+
         else {
             particleIterator = particleList.erase(particleIterator);
             particleIterator--;
@@ -141,11 +141,11 @@ void ParticleList::addParticle() {
         oneParticle.setParticleRotAngle(0,0,0);
         particleList.push_back(oneParticle);
     }
-    
+
     else if (particleType ==1) {
         oneParticle.setParticlePosition(-50,20,0);
-        oneParticle.setParticleDirection(0,.5,RandomFloatt(0,1));
-        oneParticle.setParticleSize(.85);
+        oneParticle.setParticleDirection(RandomFloatt(-.5,.5),3,RandomFloatt(-.5,.5));
+        oneParticle.setParticleSize(RandomFloatt(0,2));
         oneParticle.setParticleSpeed(.5);
         oneParticle.setParticleAge(0);
         oneParticle.setParticleRotAngle(0,0,0);
@@ -154,9 +154,9 @@ void ParticleList::addParticle() {
 }
 
 void ParticleList::DrawParticles() {
-    
+
     for(particleIterator = particleList.begin();particleIterator != particleList.end();particleIterator++){
-    
+
         glPushMatrix();
             glTranslatef(particleIterator->getParticlePosition()[0], particleIterator->getParticlePosition()[1], particleIterator->getParticlePosition()[2]);
             //glTranslatef((*particleIterator).getParticlePosition()[0], (*particleIterator).getParticlePosition()[1], (*particleIterator).getParticlePosition()[2])
@@ -174,9 +174,9 @@ void ParticleList::DrawParticles() {
 
     }
     particlesDrawn++;
-    
+
     //controls flow speed of particles drawn.
-    if(particlesDrawn == 16 && particleType==1){
+    if(particlesDrawn == 2 && particleType==1){
         addParticle();
         particlesDrawn = 0;
     }
