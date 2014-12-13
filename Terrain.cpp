@@ -50,92 +50,14 @@ Terrain::Terrain(){
 * the terrain, stored in heightMap
 **************************************/
 void Terrain::generateTerrain() {
-<<<<<<< HEAD
-
-    float volcanoHeightFactor = 50;
-    float terrainWidth = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-
-=======
     
     float terrainRadius = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-    
->>>>>>> stuart
+
     //reset heightmap
     for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++)
         for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++)
             heightMap[x][z] = 0;
 
-<<<<<<< HEAD
-    //make terrain higher in middle (volcano)
-    for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
-        for (int z = WATER_WIDTH; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
-            float distFromCenter = sqrtf((x-terrainWidth)*(x-terrainWidth) + (z-terrainWidth)*(z-terrainWidth))/75;
-            heightMap[x][z] = (1-distFromCenter)*volcanoHeightFactor;
-        }
-    }
-
-
-    //generate the terrain, making it look mountainous
-    float displacement = 1.2;
-    for (int i = 0; i < 300; i++) {
-
-        //choose random line
-        int v = rand();
-        float a = sinf(v);
-        float b = cosf(v);
-        float d = sqrtf(2.0*(TERRAIN_SIZE*TERRAIN_SIZE));
-        float c = ((double) rand()/RAND_MAX) * d - d/2.0;
-
-        //iterate over all points in heightmap (not incl. water)
-        for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
-            for (int z = WATER_WIDTH; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
-
-                //increase the height
-                if (a*x + b*z - c < 0) {
-                    heightMap[x][z] = heightMap[x][z]+displacement;
-                    if (heightMap[x][z] > volcanoPos[1]) {
-                        volcanoPos[0] = x-terrainWidth;
-                        volcanoPos[1] = heightMap[x][z];
-                        volcanoPos[2] = z-terrainWidth;
-                    }
-                }
-
-                //decrease the height
-                else
-                    heightMap[x][z] = heightMap[x][z]-displacement;
-
-                //grass
-                if (heightMap[x][z] <= 15) {
-                    materialColours[x][z][0] = 0.0;
-                    materialColours[x][z][1] = 0.3;
-                    materialColours[x][z][2] = 0.2;
-                }
-                //grass to dirt transition
-                else if (heightMap[x][z] > 15 && heightMap[x][z] <= 20) {
-                    materialColours[x][z][0] = 0.0 + ((heightMap[x][z]-20)*0.1);
-                    materialColours[x][z][1] = 0.3 - ((heightMap[x][z]-20)*0.01);
-                    materialColours[x][z][1] = 0.2 - ((heightMap[x][z]-20)*0.02);
-                }
-                //dirt
-                else if (heightMap[x][z] > 20 && heightMap[x][z] <= 30) {
-                    materialColours[x][z][0] = 0.52;
-                    materialColours[x][z][1] = 0.26;
-                    materialColours[x][z][2] = 0.08;
-                }
-                //dirt to snow transition
-                else if (heightMap[x][z] > 30 && heightMap[x][z] <= 35) {
-                    materialColours[x][z][0] = 0.52 + ((heightMap[x][z]-30)*0.1);
-                    materialColours[x][z][1] = 0.26 + ((heightMap[x][z]-30)*0.15);
-                    materialColours[x][z][2] = 0.08 + ((heightMap[x][z]-30)*0.18);
-                }
-                //snow
-                else {
-                    materialColours[x][z][0] = 1;
-                    materialColours[x][z][1] = 1;
-                    materialColours[x][z][2] = 1;
-                }
-                materialColours[x][z][3] = 1;
-=======
     //load heightmap image
     ImageLoader imgLoader = ImageLoader();
     float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap2.ppm", true,TERRAIN_SIZE);
@@ -171,7 +93,6 @@ void Terrain::generateTerrain() {
                 materialColours[x][z][0] = 0.52;
                 materialColours[x][z][1] = 0.26;
                 materialColours[x][z][2] = 0.08;
->>>>>>> stuart
             }
             //dirt to snow transition
             else if (heightMap[x][z] > 30 && heightMap[x][z] <= 35) {
@@ -190,16 +111,10 @@ void Terrain::generateTerrain() {
     }
     
     generateWater(3);
-<<<<<<< HEAD
-    smoothTerrain(0.4);
-
-    volcanoPos[1] = heightMap[(int)(volcanoPos[0]+terrainWidth)][(int)(volcanoPos[2]+terrainWidth)]-1;
-=======
     smoothTerrain(0.2);
+    calculateFaceNormals();
     
     volcanoPos[1] = heightMap[(int)(volcanoPos[0]+terrainRadius)][(int)(volcanoPos[2]+terrainRadius)]-1;
->>>>>>> stuart
-    calculateFaceNormals();
 }
 
 /***************************************

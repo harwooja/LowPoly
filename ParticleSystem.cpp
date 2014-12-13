@@ -1,29 +1,9 @@
-<<<<<<< HEAD
-/*
-<<<<<<< HEAD
- CS 3GC3 Final Assignment
- Stuart Douglas - 1214422
-
- November 6th, 2014
-
-=======
- CS 3GC3 Final Project
- 
->>>>>>> 3fdb793bbfccbf5689d160f175821ffd08081822
- ParticleSystem.cpp
- -generates particles that shoot out of the emitter position
- -particles bounce off y=0 plane, losing speed and exploding
- after a set amount of time
-*/
-=======
 // CS 3GC3 Final Project
 // 
 // ParticleSystem.cpp
 // -generates particles that shoot out of the emitter position
 // -particles bounce off y=0 plane, losing speed and exploding
 // after a set amount of time
-
->>>>>>> stuart
 
 #ifdef __APPLE__
 #  include <OpenGL/gl.h>
@@ -65,16 +45,7 @@ Terrain* terrain1;
 *******************************************/
 ParticleSystem::ParticleSystem(Terrain* t) {
 
-    //initializing public global variables
-<<<<<<< HEAD
-    emitterPos[0] = 0;
-    emitterPos[1] = 0;
-    emitterPos[2] = 0;
-
-    spawnRate = 0.05;
-=======
     spawnRate = 0.25;
->>>>>>> 3fdb793bbfccbf5689d160f175821ffd08081822
     particleSize = 1;
 
     terrain1 = t;
@@ -102,16 +73,11 @@ void ParticleSystem::drawParticles() {
         glRotatef(particles[i].xRot, 1, 0, 0);
         glRotatef(particles[i].yRot, 0, 1, 0);
         glRotatef(particles[i].zRot, 0, 0, 1);
-<<<<<<< HEAD
-
-        glutSolidCube(particleSize*particles[i].sizeMultiplier);
-=======
         
-        if (shape == 0)
+        if (shape == CUBE)
             glutSolidCube(particleSize*particles[i].sizeMultiplier);
         else
             glutSolidSphere(particleSize*particles[i].sizeMultiplier, 16, 16);
->>>>>>> 3fdb793bbfccbf5689d160f175821ffd08081822
 
         glPopMatrix();
     }
@@ -130,17 +96,10 @@ void ParticleSystem::addParticle() {
     particle.blue = 0;
 
     //start particle at position of emitter
-<<<<<<< HEAD
-    particle.x = emitterPos[0];
-    particle.y = emitterPos[1];
-    particle.z = emitterPos[2];
-
-=======
     particle.x = terrain1->volcanoPos[0];
     particle.y = terrain1->volcanoPos[1];
     particle.z = terrain1->volcanoPos[2];
     
->>>>>>> 3fdb793bbfccbf5689d160f175821ffd08081822
     //randomize x and z directions
     particle.xDir = ((double) rand()/(RAND_MAX))*0.6 - 0.3;
     particle.yDir = 6;
@@ -241,13 +200,9 @@ void ParticleSystem::moveParticles() {
 
         //bounce particle
         else if (particles[i].y+particles[i].sizeMultiplier/2.0 <= terrain1->getHeight(particles[i].x, particles[i].z)) {
-<<<<<<< HEAD
 
-            //set height to terrain height
-=======
             
             //set height to terrain height (if 0, delete particle as it's hit water)
->>>>>>> 3fdb793bbfccbf5689d160f175821ffd08081822
             particles[i].y = terrain1->getHeight(particles[i].x, particles[i].z)+particles[i].sizeMultiplier/2.0;
             if (particles[i].y == particles[i].sizeMultiplier/2.0) {
                 particles[i] = particles[particles.size()-1];
@@ -255,27 +210,7 @@ void ParticleSystem::moveParticles() {
             }
             else {
                 float* resVec = terrain1->getNormal(particles[i].x, particles[i].y);
-<<<<<<< HEAD
-                resVec = multVectorByScalar(-2*dotProduct(dirVec,terrain1->getNormal(particles[i].x, particles[i].y)),resVec);
-                resVec = subtractVectors(resVec, dirVec);
-                float resVecLength = sqrt(resVec[0]*resVec[0]+resVec[1]*resVec[1]+resVec[2]*resVec[2]);
-
-                //set reflection vector
-                particles[i].xDir = resVec[0]/(resVecLength*0.2);
-                particles[i].yDir = resVec[1]/(resVecLength*0.2);
-                particles[i].zDir = resVec[2]/(resVecLength*0.2);
-
-                terrain1->burnTerrain(particles[i].x, particles[i].z);
-            }
-
-            //decrease speed
-            particles[i].speed = particles[i].speed * 0.5;
-
-            //if stopped, delete it
-            if (particles[i].yDir < 0.5 || particles[i].speed < 0.05) {
-                particles[i] = particles[particles.size()-1];
-                particles.pop_back();
-=======
+                
                 if (resVec != NULL) {
                     
                     //calculate reflection vector. Formula taken from
@@ -292,6 +227,16 @@ void ParticleSystem::moveParticles() {
                     
                     terrain1->burnTerrain(particles[i].x, particles[i].z);
                 }
+            }
+
+            //decrease speed
+            particles[i].speed = particles[i].speed * 0.5;
+
+            //if stopped, delete it
+            if (particles[i].yDir < 0.5 || particles[i].speed < 0.05) {
+                particles[i] = particles[particles.size()-1];
+                particles.pop_back();
+
                 
                 //decrease speed
                 particles[i].speed = particles[i].speed * 0.5;
@@ -301,7 +246,6 @@ void ParticleSystem::moveParticles() {
                     particles[i] = particles[particles.size()-1];
                     particles.pop_back();
                 }
->>>>>>> 3fdb793bbfccbf5689d160f175821ffd08081822
             }
         }
     }
