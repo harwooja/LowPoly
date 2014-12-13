@@ -1,10 +1,3 @@
-// CS 3GC3 Final Project
-//
-// main.cpp
-// -program entrypoiny
-// -ViewController in MVC terms
-// -draws scene, handles interaction, etc.
-
 #ifdef __APPLE__
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
@@ -23,23 +16,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-<<<<<<< HEAD
 
 #include "Particle.h"
 #include "ParticleList.h"
 
 #include <unistd.h>
-=======
->>>>>>> stuart
 #include <string.h>
 
 #include "Camera.h"
-<<<<<<< HEAD
 using namespace std;
-=======
-#include "ImageLoader.h"
-
->>>>>>> stuart
 
 /*****************************************
 *    FUNCTION DECLARATIONS
@@ -89,11 +74,6 @@ int hudWidth = 0;
 int hudHeight = 0;
 GLubyte *hudImage;
 
-<<<<<<< HEAD
-=======
-bool birdsEyeView = false;
-bool flatShading = true;
->>>>>>> stuart
 
 /*****************************************
 * draws scene
@@ -109,23 +89,12 @@ void display(void) {
     //transform according to camera
     glRotatef(camera.rotation[0], 1, 0, 0);
     glRotatef(camera.rotation[1], 0, 1, 0);
-<<<<<<< HEAD
     glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-2, -camera.position[2]);
 
 
 
-=======
- 
-    if (!birdsEyeView) {
-        glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-3, -camera.position[2]);
-    }
-    else {
-        glTranslatef(-camera.position[0], -100, -camera.position[2]);
-    }
-    
->>>>>>> stuart
     //draw the scene
-//    drawAxes();
+    drawAxes();
     terrain.drawTerrain();
 
     fireParticles.DrawParticles();
@@ -139,7 +108,6 @@ void display(void) {
     glutSwapBuffers();
 }
 
-<<<<<<< HEAD
 //TODO: rewrite this function so it's not as ugly/messy
 GLubyte* LoadPPM(char* file, int* width, int* height) {
 
@@ -218,49 +186,26 @@ GLubyte* LoadPPM(char* file, int* width, int* height) {
 	return img;
 }
 
-=======
->>>>>>> stuart
 /********************************************
 * draws the menu for when game paused
 *******************************************/
 void drawHud() {
     glDisable(GL_DEPTH_TEST);
-<<<<<<< HEAD
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0, windowWidth, 0, windowHeight);
 
-=======
-    
-    //set projection matrix
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0, windowWidth, 0, windowHeight);
-    
-    //draw pixels of image
->>>>>>> stuart
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glRasterPos2i(windowWidth/2+hudWidth/2, windowHeight/2-hudHeight/2);
     glPixelZoom(-1,1);
-<<<<<<< HEAD
     glDrawPixels(hudWidth, hudHeight, GL_RGB, GL_UNSIGNED_BYTE, hudImage);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45, (float) windowWidth / (float) windowHeight, 1,400);
 
-=======
-    if (hudImage != NULL)
-        glDrawPixels(hudWidth, hudHeight, GL_RGB, GL_UNSIGNED_BYTE, hudImage);
-    
-    //reset projection matrixs
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(45, (float) windowWidth / (float) windowHeight, 1,300);
-    
->>>>>>> stuart
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -309,9 +254,9 @@ void keyboard(unsigned char key, int x, int y) {
         //toggle fullscreen
         case 'f':
         case 'F':
-            fullscreen = !fullscreen;
-            if (fullscreen)
+            if (!fullscreen)
                 glutFullScreen();
+            //TODO: when paused it won't exit fullscreen (it will enter it though)
             else {
                 glutPositionWindow(10, 10);
                 glutReshapeWindow(800, 600);
@@ -353,14 +298,7 @@ void keyboard(unsigned char key, int x, int y) {
     //keys that only work when not paused
     if (!paused) {
         switch (key) {
-<<<<<<< HEAD
 
-=======
-            
-            case 'b':
-                birdsEyeView = !birdsEyeView;
-                break;
->>>>>>> stuart
             case 'r':
                 terrain.generateTerrain();
                 break;
@@ -371,17 +309,10 @@ void keyboard(unsigned char key, int x, int y) {
                 glShadeModel(GL_SMOOTH);
                 break;
             case '3':
-<<<<<<< HEAD
                 //volcanoParticles.shape = 0;
                 break;
             case '4':
                 //volcanoParticles.shape = 1;
-=======
-                volcanoParticles.shape = ParticleSystem::CUBE;
-                break;
-            case '4':
-                volcanoParticles.shape = ParticleSystem::SPHERE;
->>>>>>> stuart
                 break;
 
             //move player
@@ -436,44 +367,9 @@ void passive(int x, int y) {
 
     glutPostRedisplay();
 }
-
-/********************************************
-* handles menu clicks when paused
-*******************************************/
 void mouse(int button, int state, int x, int y) {
-    
     if (state == GLUT_LEFT_BUTTON) {
-
-        //get bounds of hud
-        int leftHud = windowWidth/2 - hudWidth/2;
-        int rightHud = windowWidth/2 + hudWidth/2;
-        int bottomHud = windowHeight/2+hudHeight/2;
-        int topHud = windowHeight/2-hudHeight/2;
-
-        //click is within hud, with 20px padding
-        if (x > leftHud+20 && x < rightHud-20 && y > topHud+20 && y < bottomHud-20) {
-            
-            //top button
-            if (y > topHud+30 && y < topHud+140) {
-                flatShading = !flatShading;
-                if (!flatShading)
-                    glShadeModel(GL_SMOOTH);
-                else
-                    glShadeModel(GL_FLAT);
-            }
-            
-            //second button
-            else if (y > topHud+170 && y < topHud+280) {
-                if (volcanoParticles.shape == ParticleSystem::CUBE)
-                    volcanoParticles.shape = ParticleSystem::SPHERE;
-                else
-                    volcanoParticles.shape = ParticleSystem::CUBE;
-            }
-            
-            //bottom buton
-            else if (y <bottomHud-50 && y > bottomHud-105)
-                exit(1);
-        }
+        printf("mouse clicked at %d %d",x,y);
     }
 }
 
@@ -535,13 +431,8 @@ void reshape(int w, int h) {
         glLoadIdentity();
 
         glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-<<<<<<< HEAD
         gluPerspective(45, (GLfloat) w / (GLfloat) h, 1,400);
 
-=======
-        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1,300);
-        
->>>>>>> stuart
         windowWidth = w;
         windowHeight = h;
     }
@@ -579,18 +470,12 @@ void init() {
     //set projection matrix, using perspective w/ correct aspect ratio
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-<<<<<<< HEAD
     gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 400);
 
-=======
-    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
-    
->>>>>>> stuart
     //initialize globals
     terrain = Terrain();
 
     //setup interface image
-<<<<<<< HEAD
     char currentDir[1024];
     char* fileName = (char*) "/interface.ppm";
     if (getcwd(currentDir, sizeof(currentDir)) != NULL) {
@@ -606,11 +491,6 @@ void init() {
         printf("Error. Current directory path too long");
     }
 
-=======
-    ImageLoader imgLoader = ImageLoader();
-    hudImage = imgLoader.loadPPM((char*) "/interface.ppm", true, &hudWidth, &hudHeight);
-    
->>>>>>> stuart
     //initialize camera
     camera = Camera();
 
