@@ -1,4 +1,5 @@
 #include "Particle.h"
+#include <stdlib.h>
 
 Particle::Particle(float x, float y, float z) {
     particleX = x;
@@ -25,7 +26,11 @@ Particle::Particle() {
 
 //returns the particles x,y,z coordinates in the form of an array
 float* Particle::getParticlePosition() {
-    float a[3] = {particleX, particleY, particleZ};
+//    float a[3] = {particleX, particleY, particleZ};
+    float* a = (float*) malloc(sizeof(float)*3);
+    a[0] = particleX;
+    a[1] = particleY;
+    a[2] = particleZ;
     return a;
 }
 
@@ -37,7 +42,10 @@ void Particle::setParticlePosition(float px, float py, float pz) {
 
 //returns the particles direction coordinates in the form of an array
 float* Particle::getParticleDirection() {
-    float a[3] = {particleDirectionX, particleDirectionY, particleDirectionZ};
+    float* a = (float*) malloc(sizeof(float)*3);
+    a[0] = particleDirectionX;
+    a[1] = particleDirectionY;
+    a[2] = particleDirectionZ;
     return a;
 }
 
@@ -50,7 +58,10 @@ void Particle::setParticleDirection(float dx, float dy, float dz) {
 
 //returns for rotation angle's for each axis in the form of an array
 float* Particle::getParticleRotAngle() {
-    float a[3] = {rotationAngleX,rotationAngleY, rotationAngleZ};
+    float* a = (float*) malloc(sizeof(float)*3);
+    a[0] = rotationAngleX;
+    a[1] = rotationAngleY;
+    a[2] = rotationAngleZ;
     return a;
 }
 
@@ -73,7 +84,10 @@ void Particle::setParticleSpeed(float speed) {
 
 //returns the particle's colors (r,g,b) in the form of an array
 float* Particle::getParticleColor() {
-    float a[3] = {particleColorR, particleColorG, particleColorB};
+    float* a = (float*) malloc(sizeof(float)*3);
+    a[0] = particleColorR;
+    a[1] = particleColorG;
+    a[2] = particleColorB;
     return a;
 }
 

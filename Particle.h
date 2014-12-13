@@ -1,8 +1,5 @@
-#ifndef PARTICLE_H
-#define PARTICLE_H
+class Particle {
 
-class Particle
-{
     public:
         Particle(float x, float y, float z);
         Particle();
@@ -48,9 +45,4 @@ class Particle
 
         float particleAge;
         float particleSize;
-
-
-
 };
-
-#endif // PARTICLE_H

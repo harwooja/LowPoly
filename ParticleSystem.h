@@ -3,6 +3,11 @@
 // ParticleSystem.h
 // -public interface for particle system
 
+#ifndef __TERRAIN__
+#define __TERRAIN__
+#include "Terrain.h"
+#endif
+
 class ParticleSystem {
 
     public:
