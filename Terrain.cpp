@@ -19,7 +19,6 @@
 #  include <GL/freeglut.h>
 #endif
 
-#include <vector>
 #include <stdlib.h>
 #include <math.h>
 
@@ -30,9 +29,6 @@
 /***************************************
  *    GLOBAL VARIABLES
  **************************************/
-#define TERRAIN_SIZE 256
-#define WATER_WIDTH 4
-
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
 float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
 float materialColours[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][4];
@@ -67,7 +63,7 @@ void Terrain::generateTerrain() {
             
             //set height
             heightMap[x][z] = 40*heightmapImage[x-WATER_WIDTH][z-WATER_WIDTH];
-
+            
             //set volcano pos to highest point
             if (heightMap[x][z] > volcanoPos[1]) {
                 volcanoPos[0] = x-terrainRadius;
@@ -222,7 +218,7 @@ void Terrain::drawTerrain() {
             
             glNormal3fv(faceNormals[x][z]);
             glVertex3f(x-terrainOffset, heightMap[x][z], z-terrainOffset);
-
+            
         }
         glEnd();
     }
@@ -286,7 +282,7 @@ void Terrain::burnTerrain(float x, float z) {
     
     //coordinate (0,0) corresponds with middle of terrain map
     int xIndex = x + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-    int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+    int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0 + 1;
     
     //if outside of terrain, ignore
     if (xIndex < 0 || xIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
@@ -301,25 +297,25 @@ void Terrain::burnTerrain(float x, float z) {
 }
 
 /**************************************************************
-* makes terrain at x,z whiter
-**************************************************************/
+ * makes terrain at x,z whiter
+ **************************************************************/
 void Terrain::snowTerrain(float x, float z) {
-
+    
     //coordinate (0,0) corresponds with middle of terrain map
     int xIndex = x + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-    int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-
+    int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0 + 1;
+    
     //if outside of terrain, ignore
     if (xIndex < 0 || xIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
         return;
     if (zIndex < 0 || zIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
         return;
-
+    
     //lighten square ("snow")
-    materialColours[xIndex][zIndex][0] += 0.1;
-    materialColours[xIndex][zIndex][1] += 0.1;
-    materialColours[xIndex][zIndex][2] += 0.1;
-
+    materialColours[xIndex][zIndex][0] += 0.3;
+    materialColours[xIndex][zIndex][1] += 0.3;
+    materialColours[xIndex][zIndex][2] += 0.3;
+    
 }
 
 /**************************************************************

@@ -8,7 +8,7 @@
 //
 // This is a heavily modified version of the camera class found on:
 // r3dux.org/2012/12/a-c-camera-class-for-simple-opengl-fps-controls
-// 
+//
 // We have rewritten almost all of it to suit our needs, however we
 // wanted to cite the original source.
 
@@ -26,15 +26,16 @@
 # include <GL/freeglut.h>
 #endif
 
-#include "Camera.h"
 #include <math.h>
 #include <stdio.h>
 
-/****************************************
-* Constructor
-****************************************/
-Camera::Camera() {
+#include "Camera.h"
 
+/****************************************
+ * Constructor
+ ****************************************/
+Camera::Camera() {
+    
     //move camera slightly off center
     position[0] = 0.5;
     position[1] = 0;
@@ -42,14 +43,14 @@ Camera::Camera() {
 }
 
 /****************************************
-* rotates camera view depending on where
-* where mouse was moved
-****************************************/
+ * rotates camera view depending on where
+ * where mouse was moved
+ ****************************************/
 void Camera::mouseMoved(int deltaX, int deltaY) {
-
+    
     //rotate camera
-    rotation[0] += ((float) deltaY)*mouseSensitivity;
-    rotation[1] += ((float) deltaX)*mouseSensitivity;
+    rotation[0] += ((float) deltaY) * mouseSensitivity;
+    rotation[1] += ((float) deltaX) * mouseSensitivity;
     
     // Limit looking down to vertically down
     if (rotation[0] > 90) {
@@ -68,12 +69,12 @@ void Camera::mouseMoved(int deltaX, int deltaY) {
 }
 
 /****************************************
-* moves the camera in the direction that
-* is passed as an argument, wrt where 
-* camera is pointing
-****************************************/
-void Camera::strafe(Direction dir) {
-
+ * moves the camera in the direction that
+ * is passed as an argument, wrt where
+ * camera is pointing
+ ****************************************/
+void Camera::strafe(Direction dir, bool sprinting) {
+    
     //vector to add to our position
     float movementVec[3] = {0,0,0};
     
@@ -102,6 +103,12 @@ void Camera::strafe(Direction dir) {
     
     //calculate length of vector
     float movementVecLength = sqrtf(movementVec[0]*movementVec[0] + movementVec[1]*movementVec[1] + movementVec[2]*movementVec[2]);
+    
+    //move faster if sprinting
+    if (sprinting) {
+        movementVec[0] *= 3;
+        movementVec[2] *= 3;
+    }
     
     //normalize vector
     position[0] += (movementVec[0]/movementVecLength)*movementSpeedFactor;

@@ -22,16 +22,14 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "Particle.h"
 #include "ParticleList.h"
-#include "ParticleSystem.h"
 #include "ImageLoader.h"
 #include "Camera.h"
 
 
 /*****************************************
-*    FUNCTION DECLARATIONS
-****************************************/
+ *    FUNCTION DECLARATIONS
+ ****************************************/
 void drawAxes();
 void drawHud();
 void togglePausedScene();
@@ -42,7 +40,6 @@ void timer(int value);
  *    GLOBAL VARIABLES
  ****************************************/
 Terrain terrain;
-ParticleSystem volcanoParticles(&terrain);
 Camera camera;
 
 bool fullscreen = false;
@@ -56,11 +53,8 @@ int windowWidth = 800;
 int windowHeight = 600;
 
 //xmin,xmax,ymin,ymax,zmin,zmax
-float particleBounds[] = {-50,50,4,50,-50,50};
-
-// 0 is snow, 1 is lava, 2 is steam(still in development)
-ParticleList snowParticles(0,particleBounds,&terrain);
-ParticleList fireParticles(1,particleBounds,&terrain);
+ParticleList snowParticles = ParticleList(ParticleList::SNOW, &terrain);
+ParticleList lavaParticles = ParticleList(ParticleList::LAVA, &terrain);
 
 int hudWidth = 0;
 int hudHeight = 0;
@@ -70,16 +64,16 @@ bool birdsEyeView = false;
 bool testingVectorParticles = false;
 
 /*****************************************
-* draws scene
-****************************************/
+ * draws scene
+ ****************************************/
 void display(void) {
-
+    
     //clear bits and model view matrix
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-
+    
     //transform according to camera
     glRotatef(camera.rotation[0], 1, 0, 0);
     glRotatef(camera.rotation[1], 0, 1, 0);
@@ -88,27 +82,23 @@ void display(void) {
         glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-3, -camera.position[2]);
     else
         glTranslatef(-camera.position[0], -100, -camera.position[2]);
-
+    
     //draw the scene
     terrain.drawTerrain();
-    if (testingVectorParticles)
-        volcanoParticles.drawParticles();
-    else {
-        fireParticles.DrawParticles();
-        //snowParticles.DrawParticles();
-    }
-
+    lavaParticles.drawParticles();
+    snowParticles.drawParticles();
+    
     glTranslatef(25, 40, 58);
     
     if (paused)
         drawHud();
-
+    
     glutSwapBuffers();
 }
 
 /********************************************
-* draws the menu for when game paused
-*******************************************/
+ * draws the menu for when game paused
+ *******************************************/
 void drawHud() {
     
     glDisable(GL_DEPTH_TEST);
@@ -135,14 +125,14 @@ void drawHud() {
 }
 
 /********************************************
-* pauses or unpauses scene. If pausing, draws
-* the menu (hud) and disables interactivity
-* except with the menu or unpausing or quitting
-*******************************************/
+ * pauses or unpauses scene. If pausing, draws
+ * the menu (hud) and disables interactivity
+ * except with the menu or unpausing or quitting
+ *******************************************/
 void togglePausedScene() {
-
+    
     paused = !paused;
-
+    
     //reenable moving camera and hide cursor
     if (!paused) {
         glutPassiveMotionFunc(passive);
@@ -157,26 +147,26 @@ void togglePausedScene() {
 }
 
 /********************************************
-* handles key presses for program functions
-*******************************************/
+ * handles key presses for program functions
+ *******************************************/
 void keyboard(unsigned char key, int x, int y) {
-
+    
     //keys that are handled whether paused or not
     switch (key) {
-
-        //quit
+            
+            //quit
         case 'q':
             exit(0);
             break;
-
-        //pause
+            
+            //pause
         case 'p':
         case 'P':
         case 27:
             togglePausedScene();
             break;
-
-        //toggle fullscreen
+            
+            //toggle fullscreen
         case 'f':
         case 'F':
             fullscreen = !fullscreen;
@@ -188,12 +178,12 @@ void keyboard(unsigned char key, int x, int y) {
             }
             break;
     }
-
+    
     //keys that only work when not paused
     if (!paused) {
         switch (key) {
-            
-            //change global state
+                
+                //change global state
             case '0':
                 testingVectorParticles = !testingVectorParticles;
                 break;
@@ -206,29 +196,35 @@ void keyboard(unsigned char key, int x, int y) {
             case '2':
                 glShadeModel(GL_SMOOTH);
                 break;
-            case '3':
-                volcanoParticles.shape = ParticleSystem::CUBE;
-                break;
-            case '4':
-                volcanoParticles.shape = ParticleSystem::SPHERE;
-                break;
-
-            //move player
+                
+                //move player
             case 'w':
             case 'W':
-                camera.strafe(Camera::FORWARD);
+                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                    camera.strafe(Camera::FORWARD, true);
+                else
+                    camera.strafe(Camera::FORWARD, false);
                 break;
             case 's':
             case 'S':
-                camera.strafe(Camera::BACK);
+                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                    camera.strafe(Camera::BACK, true);
+                else
+                    camera.strafe(Camera::BACK, false);
                 break;
             case 'a':
             case 'A':
-                camera.strafe(Camera::LEFT);
+                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                    camera.strafe(Camera::LEFT, true);
+                else
+                    camera.strafe(Camera::LEFT, false);
                 break;
             case 'd':
             case 'D':
-                camera.strafe(Camera::RIGHT);
+                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                    camera.strafe(Camera::RIGHT, true);
+                else
+                    camera.strafe(Camera::RIGHT, false);
                 break;
         }
     }
@@ -236,17 +232,17 @@ void keyboard(unsigned char key, int x, int y) {
 }
 
 /********************************************
-* moves camera (First Person)
-*******************************************/
+ * moves camera (First Person)
+ *******************************************/
 void passive(int x, int y) {
-
+    
     //on first call set currX, currY
     if (!mouseCurrentInitiated) {
         currX = x;
         currY = y;
         mouseCurrentInitiated = true;
     }
-
+    
     //if cursor approaching edge, set it to middle of window
     if (x < 1 || x >= windowWidth-1) {
         glutWarpPointer(windowWidth/2.0, y);
@@ -256,12 +252,12 @@ void passive(int x, int y) {
         glutWarpPointer(x, windowHeight/2.0);
         currY = windowHeight/2.0;
     }
-
+    
     //move camera according to mouse movement
     camera.mouseMoved(x-currX, y-currY);
     currX = x;
     currY = y;
-
+    
     glutPostRedisplay();
 }
 
@@ -275,8 +271,8 @@ void mouse(int button, int state, int x, int y) {
         //get bounds of hud
         int leftHud = windowWidth/2 - hudWidth/2;
         int rightHud = windowWidth/2 + hudWidth/2;
-        int bottomHud = windowHeight/2+hudHeight/2;
-        int topHud = windowHeight/2-hudHeight/2;
+        int bottomHud = windowHeight/2 + hudHeight/2;
+        int topHud = windowHeight/2 - hudHeight/2;
         
         //click is within hud, with 20px padding
         if (x > leftHud+20 && x < rightHud-20 && y > topHud+20 && y < bottomHud-20) {
@@ -284,20 +280,11 @@ void mouse(int button, int state, int x, int y) {
             //top button
             if (y > topHud+30 && y < topHud+140) {
                 printf("top button");
-                //flatShading = !flatShading;
-                //if (!flatShading)
-                //    glShadeModel(GL_SMOOTH);
-                //else
-                //    glShadeModel(GL_FLAT);
             }
             
             //second button
             else if (y > topHud+170 && y < topHud+280) {
                 printf("2nd button");
-                //if (volcanoParticles.shape == ParticleSystem::CUBE)
-                //    volcanoParticles.shape = ParticleSystem::SPHERE;
-                //else
-                //    volcanoParticles.shape = ParticleSystem::CUBE;
             }
             
             //bottom buton
@@ -308,18 +295,14 @@ void mouse(int button, int state, int x, int y) {
 }
 
 /********************************************
-* moves volcano particles
-*******************************************/
+ * moves volcano particles
+ *******************************************/
 void timer(int value) {
-
+    
     //update particles
     if (!paused) {
-        if (testingVectorParticles)
-            volcanoParticles.moveParticles();
-        else {
-            fireParticles.UpdateParticles();
-            //snowParticles.UpdateParticles(terrain);
-        }
+        lavaParticles.updateParticles();
+        snowParticles.updateParticles();
     }
     
     //set timer function
@@ -328,10 +311,10 @@ void timer(int value) {
 }
 
 /********************************************
-* sets viewport according to window size
-*******************************************/
+ * sets viewport according to window size
+ *******************************************/
 void reshape(int w, int h) {
-
+    
     //don't let window become less than 300 x 300
     int minWindowSize = 300;
     if (w < minWindowSize || h < minWindowSize) {
@@ -344,22 +327,22 @@ void reshape(int w, int h) {
     else {
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-
+        
         glViewport(0, 0, (GLsizei) w, (GLsizei) h);
         gluPerspective(45, (GLfloat) w / (GLfloat) h, 1, 300);
-
+        
         windowWidth = w;
         windowHeight = h;
     }
-
+    
     glutPostRedisplay();
 }
 
 /*******************************************
-*initializes global variables and settings
-******************************************/
+ *initializes global variables and settings
+ ******************************************/
 void init() {
-
+    
     //enable flat shading (for artistic reasons)
     glShadeModel(GL_FLAT);
     
@@ -381,9 +364,6 @@ void init() {
     
     //initialize globals
     terrain = Terrain();
-    snowParticles = ParticleList(0,particleBounds,&terrain);
-    fireParticles = ParticleList(1,particleBounds,&terrain);
-    volcanoParticles = ParticleSystem(&terrain);
     
     //setup interface image
     ImageLoader imgLoader = ImageLoader();
@@ -391,28 +371,28 @@ void init() {
     
     //initialize camera
     camera = Camera();
-
+    
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
 }
 
 /*****************************************
-* program start point
-****************************************/
+ * program start point
+ ****************************************/
 int main(int argc, char** argv) {
-
+    
     //initializeing GLUT
     glutInit(&argc, argv);
-
+    
     //making our window
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(800, 600);
     glutInitWindowPosition(10, 10);
     glutCreateWindow("Volcano");
-
+    
     //initializing variables
     init();
-
+    
     //registering callbacks
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
@@ -420,9 +400,9 @@ int main(int argc, char** argv) {
     glutPassiveMotionFunc(passive);
     glutMouseFunc(mouse);
     glutTimerFunc(32, timer, 0);
-
+    
     //start event loop
     glutMainLoop();
-
+    
     return(0);
 }
