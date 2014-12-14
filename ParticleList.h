@@ -15,7 +15,7 @@ class ParticleList {
 public:
     
     /****************************************
-     *    CUSTOM STRUCTS
+     *    PUBLIC CUSTOM STRUCTS
      ****************************************/
     typedef struct Particle {
         
@@ -59,13 +59,18 @@ public:
      *    PUBLIC FUNCTIONS
      ****************************************/
     ParticleList(ParticleType particleType, Terrain*);
-    ~ParticleList();
     
     void addParticle();
     void updateParticles();
-    void drawParticles();
+    void drawAndAddParticles();
+    void clearParticles();
     void rotateParticle(float incrX, float incrY, float incrZ);
-    
+    void printStatus();
+    /****************************************
+     *    PUBLIC VARIABLES
+     ****************************************/
+    bool enabled = true;
+    bool paused = false;
     
 private:
     

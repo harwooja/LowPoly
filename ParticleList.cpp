@@ -46,9 +46,11 @@ ParticleList::ParticleList(ParticleType type, Terrain* terrain) {
 }
 
 /****************************************
- *       Destructor
+ * clears all particles
  ****************************************/
-ParticleList::~ParticleList() { particleList.clear(); }
+void ParticleList::clearParticles() {
+    particleList.clear();
+}
 
 
 /****************************************
@@ -150,7 +152,7 @@ void ParticleList::addParticle() {
 /****************************************
  * draws all particles in list
  ****************************************/
-void ParticleList::drawParticles() {
+void ParticleList::drawAndAddParticles() {
     
     //set colour of particles
     if (particleType == SNOW) {
@@ -176,15 +178,20 @@ void ParticleList::drawParticles() {
         glPopMatrix();
     }
     
-    particlesDrawn++;
-    
     //only adds lava particles every 8 calls
-    if (particlesDrawn == 8 && particleType == LAVA) {
-        addParticle();
-        particlesDrawn = 0;
+    if (enabled && !paused) {
+        if (particleType == SNOW)
+            addParticle();
+        else if (particleType == LAVA && rand() < RAND_MAX/4)
+            addParticle();
     }
-    else if (particleType == SNOW)
-        addParticle();
+}
+
+void ParticleList::printStatus() {
+    printf("\n\nType: %s",particleType == SNOW ? "SNOW" : "LAVA");
+    printf("\nPaused: %s",paused ? "YES" : "NO");
+    printf("\nEnabled: %s",enabled ? "YES" : "NO");
+    printf("\nNumParticles: %lul", particleList.size());
 }
 
 /****************************************

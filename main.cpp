@@ -86,8 +86,8 @@ void display(void) {
     
     //draw the scene
     terrain.drawTerrain();
-    lavaParticles.drawParticles();
-    snowParticles.drawParticles();
+    lavaParticles.drawAndAddParticles();
+    snowParticles.drawAndAddParticles();
     
     if (paused)
         drawHud();
@@ -133,15 +133,19 @@ void togglePausedScene() {
     paused = !paused;
     
     //reenable moving camera and hide cursor
-    if (!paused) {
-        glutPassiveMotionFunc(passive);
-        glutSetCursor(GLUT_CURSOR_NONE);
-    }
-    
-    //show cursor, disable movign camera
-    else {
+    if (paused) {
         glutPassiveMotionFunc(NULL);
         glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+        lavaParticles.paused = true;
+        snowParticles.paused = true;
+    }
+    
+    //show cursor, disable moving camera
+    else {
+        glutPassiveMotionFunc(passive);
+        glutSetCursor(GLUT_CURSOR_NONE);
+        lavaParticles.paused = false;
+        snowParticles.paused = false;
     }
 }
 
@@ -153,19 +157,24 @@ void keyboard(unsigned char key, int x, int y) {
     //keys that are handled whether paused or not
     switch (key) {
             
-            //quit
+        case 't':
+            lavaParticles.printStatus();
+            snowParticles.printStatus();
+            break;
+
+        //quit
         case 'q':
             exit(0);
             break;
             
-            //pause
+        //pause
         case 'p':
         case 'P':
         case 27:
             togglePausedScene();
             break;
             
-            //toggle fullscreen
+        //toggle fullscreen
         case 'f':
         case 'F':
             fullscreen = !fullscreen;
@@ -273,18 +282,34 @@ void mouse(int button, int state, int x, int y) {
         //click is within hud, with 20px padding
         if (x > leftHud+20 && x < rightHud-20 && y > topHud+20 && y < bottomHud-20) {
             
-            //top button
+            //top button - toggle lava
             if (y > topHud+30 && y < topHud+140) {
-                printf("top button");
+
+                lavaParticles.enabled = !lavaParticles.enabled;
+                
+                //clear particles or add some new ones
+                if (!lavaParticles.enabled)
+                    lavaParticles.clearParticles();
+                if (lavaParticles.enabled)
+                    for (int i = 0; i < 10; i++)
+                        lavaParticles.addParticle();
             }
             
-            //second button
+            //second button - toggle snow
             else if (y > topHud+170 && y < topHud+280) {
-                printf("2nd button");
+                
+                snowParticles.enabled = !snowParticles.enabled;
+
+                //clear particles or add some new ones
+                if (!snowParticles.enabled)
+                    snowParticles.clearParticles();
+                if (snowParticles.enabled)
+                    for (int i = 0; i < 10; i++)
+                        snowParticles.addParticle();
             }
             
             //bottom buton
-            else if (y <bottomHud-50 && y > bottomHud-105)
+            else if (y < bottomHud-50 && y > bottomHud-105)
                 exit(1);
         }
     }
