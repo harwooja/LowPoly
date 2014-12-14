@@ -75,9 +75,14 @@ void ParticleList::updateParticles() {
                 particleIterator->touchedTerrain = true;
                 newY = terrainMap->getHeight(newX, newZ);
                 
-                if (particleType == SNOW)
-                   terrainMap->snowTerrain(newX, newZ);
-                if (particleType == LAVA)
+                //delete snow when it hits
+                if (particleType == SNOW) {
+                    terrainMap->snowTerrain(newX, newZ);
+                    particleIterator = particleList.erase(particleIterator);
+                    particleIterator--;
+                    continue;
+                }
+                else if (particleType == LAVA)
                     terrainMap->burnTerrain(newX, newZ);
             }
             

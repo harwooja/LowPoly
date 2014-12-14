@@ -312,9 +312,9 @@ void Terrain::snowTerrain(float x, float z) {
         return;
 
     //lighten square ("snow")
-    materialColours[xIndex][zIndex][0] += 0.1;
-    materialColours[xIndex][zIndex][1] += 0.1;
-    materialColours[xIndex][zIndex][2] += 0.1;
+    materialColours[xIndex][zIndex][0] += 0.3;
+    materialColours[xIndex][zIndex][1] += 0.3;
+    materialColours[xIndex][zIndex][2] += 0.3;
 
 }
 
