@@ -42,26 +42,27 @@ void timer(int value);
 Terrain terrain;
 Camera camera;
 
-bool fullscreen = false;
+ParticleList snowParticles = ParticleList(ParticleList::SNOW, &terrain);
+ParticleList lavaParticles = ParticleList(ParticleList::LAVA, &terrain);
+
+//state
 bool paused = false;
+bool fullscreen = false;
+bool birdsEyeView = false;
 float lightPos[4] = {0,60,0, 1};
 
+//used for passive func
 bool mouseCurrentInitiated = false;
 int currX = 0;
 int currY = 0;
 int windowWidth = 800;
 int windowHeight = 600;
 
-//xmin,xmax,ymin,ymax,zmin,zmax
-ParticleList snowParticles = ParticleList(ParticleList::SNOW, &terrain);
-ParticleList lavaParticles = ParticleList(ParticleList::LAVA, &terrain);
-
+//pause menu
 int hudWidth = 0;
 int hudHeight = 0;
 GLubyte *hudImage;
 
-bool birdsEyeView = false;
-bool testingVectorParticles = false;
 
 /*****************************************
  * draws scene
@@ -87,8 +88,6 @@ void display(void) {
     terrain.drawTerrain();
     lavaParticles.drawParticles();
     snowParticles.drawParticles();
-    
-    glTranslatef(25, 40, 58);
     
     if (paused)
         drawHud();
@@ -183,10 +182,7 @@ void keyboard(unsigned char key, int x, int y) {
     if (!paused) {
         switch (key) {
                 
-                //change global state
-            case '0':
-                testingVectorParticles = !testingVectorParticles;
-                break;
+            //change global state
             case 'b':
                 birdsEyeView = !birdsEyeView;
                 break;
@@ -197,7 +193,7 @@ void keyboard(unsigned char key, int x, int y) {
                 glShadeModel(GL_SMOOTH);
                 break;
                 
-                //move player
+            //move player
             case 'w':
             case 'W':
                 if (glutGetModifiers() == GLUT_ACTIVE_ALT)
@@ -316,11 +312,11 @@ void timer(int value) {
 void reshape(int w, int h) {
     
     //don't let window become less than 300 x 300
-    int minWindowSize = 300;
+    int minWindowSize = 550;
     if (w < minWindowSize || h < minWindowSize) {
         glutReshapeWindow((w < minWindowSize) ? minWindowSize : w, (h < minWindowSize) ? minWindowSize : h);
-        windowWidth = (w < minWindowSize) ? 300 : w;
-        windowHeight = (h < minWindowSize) ? 300 : h;
+        windowWidth = (w < minWindowSize) ? 550 : w;
+        windowHeight = (h < minWindowSize) ? 550 : h;
     }
     
     //change projection matrix, set width & height globals
@@ -364,13 +360,13 @@ void init() {
     
     //initialize globals
     terrain = Terrain();
+
+    //initialize camera
+    camera = Camera();
     
     //setup interface image
     ImageLoader imgLoader = ImageLoader();
     hudImage = imgLoader.loadPPM((char*) "/interface.ppm", true, &hudWidth, &hudHeight);
-    
-    //initialize camera
-    camera = Camera();
     
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
