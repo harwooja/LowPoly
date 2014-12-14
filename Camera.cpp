@@ -49,8 +49,8 @@ Camera::Camera() {
 void Camera::mouseMoved(int deltaX, int deltaY) {
 
     //rotate camera
-    rotation[0] += ((float) deltaY)*mouseSensitivity;
-    rotation[1] += ((float) deltaX)*mouseSensitivity;
+    rotation[0] += ((float) deltaY) * mouseSensitivity;
+    rotation[1] += ((float) deltaX) * mouseSensitivity;
     
     // Limit looking down to vertically down
     if (rotation[0] > 90) {
@@ -73,7 +73,7 @@ void Camera::mouseMoved(int deltaX, int deltaY) {
 * is passed as an argument, wrt where 
 * camera is pointing
 ****************************************/
-void Camera::strafe(Direction dir) {
+void Camera::strafe(Direction dir, bool sprinting) {
 
     //vector to add to our position
     float movementVec[3] = {0,0,0};
@@ -103,6 +103,12 @@ void Camera::strafe(Direction dir) {
     
     //calculate length of vector
     float movementVecLength = sqrtf(movementVec[0]*movementVec[0] + movementVec[1]*movementVec[1] + movementVec[2]*movementVec[2]);
+    
+    //move faster if sprinting
+    if (sprinting) {
+        movementVec[0] *= 3;
+        movementVec[2] *= 3;
+    }
     
     //normalize vector
     position[0] += (movementVec[0]/movementVecLength)*movementSpeedFactor;

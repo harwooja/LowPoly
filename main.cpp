@@ -23,7 +23,6 @@
 #include <math.h>
 
 #include "ParticleList.h"
-#include "ParticleSystem.h"
 #include "ImageLoader.h"
 #include "Camera.h"
 
@@ -201,19 +200,31 @@ void keyboard(unsigned char key, int x, int y) {
             //move player
             case 'w':
             case 'W':
-                camera.strafe(Camera::FORWARD);
+                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                    camera.strafe(Camera::FORWARD, true);
+                else
+                    camera.strafe(Camera::FORWARD, false);
                 break;
             case 's':
             case 'S':
-                camera.strafe(Camera::BACK);
+                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                    camera.strafe(Camera::BACK, true);
+                else
+                    camera.strafe(Camera::BACK, false);
                 break;
             case 'a':
             case 'A':
-                camera.strafe(Camera::LEFT);
+                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                    camera.strafe(Camera::LEFT, true);
+                else
+                    camera.strafe(Camera::LEFT, false);
                 break;
             case 'd':
             case 'D':
-                camera.strafe(Camera::RIGHT);
+                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                    camera.strafe(Camera::RIGHT, true);
+                else
+                    camera.strafe(Camera::RIGHT, false);
                 break;
         }
     }

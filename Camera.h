@@ -23,7 +23,7 @@ public:
     *    PUBLIC FUNCTIONS
     ****************************************/
     Camera();
-    void strafe(Direction);
+    void strafe(Direction, bool);
     void mouseMoved(int deltaX, int deltaY);
 
     int midWinX = 0;
