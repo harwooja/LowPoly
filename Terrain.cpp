@@ -1,10 +1,10 @@
+// CS 3GC3 Final Project
+//
 // Terrain.cpp
-// LowPoly
-//
-// Created by Jake Harwood on 2014-11-16.
-// Copyright (c) 2014 Jake Harwood. All rights reserved.
-//
-// Stores all vertices of terrain & volcano, vertex orderings, normals, and colours
+// -stores all vertices and colours
+// -uses heightmap to generate the terrain
+// -has functions to draw terrain and get
+// important information about it
 
 #ifdef __APPLE__
 #  include <OpenGL/gl.h>
@@ -19,18 +19,16 @@
 #  include <GL/freeglut.h>
 #endif
 
-#include "Terrain.h"
-#include <vector>
 #include <stdlib.h>
 #include <math.h>
+
+#include "Terrain.h"
+#include "ImageLoader.h"
 
 
 /***************************************
  *    GLOBAL VARIABLES
  **************************************/
-#define TERRAIN_SIZE 100
-#define WATER_WIDTH 5
-
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
 float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
 float materialColours[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][4];
@@ -39,104 +37,85 @@ float materialColours[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][4];
  * Constructor
  **************************************/
 Terrain::Terrain(){
-    srand(10);
     generateTerrain();
 }
 
 /***************************************
-* uses fault line algorithm to create
-* the terrain, stored in heightMap
-**************************************/
+ * uses fault line algorithm to create
+ * the terrain, stored in heightMap
+ **************************************/
 void Terrain::generateTerrain() {
     
-    float volcanoHeightFactor = 50;
-    float terrainWidth = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+    float terrainRadius = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
     
     //reset heightmap
     for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++)
         for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++)
-            heightMap[x][z] = -10;
-
-    //make terrain higher in middle (volcano)
+            heightMap[x][z] = 0;
+    
+    //load heightmap image
+    ImageLoader imgLoader = ImageLoader();
+    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap256_6.ppm", true, TERRAIN_SIZE);
+    
+    //iterate over all points in heightmap (not incl. water)
     for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
         for (int z = WATER_WIDTH; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
-            float distFromCenter = sqrtf((x-terrainWidth)*(x-terrainWidth) + (z-terrainWidth)*(z-terrainWidth))/75;
-            heightMap[x][z] = (1-distFromCenter)*volcanoHeightFactor;
-        }
-    }
-    
-    
-    //generate the terrain, making it look mountainous
-    float displacement = 1.2;
-    for (int i = 0; i < 300; i++) {
-        
-        //choose random line
-        int v = rand();
-        float a = sinf(v);
-        float b = cosf(v);
-        float d = sqrtf(2.0*(TERRAIN_SIZE*TERRAIN_SIZE));
-        float c = ((double) rand()/RAND_MAX) * d - d/2.0;
-        
-        //iterate over all points in heightmap (not incl. water)
-        for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
-            for (int z = WATER_WIDTH; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
-
-                //increase the height
-                if (a*x + b*z - c < 0) {
-                    heightMap[x][z] = heightMap[x][z]+displacement;
-                    if (heightMap[x][z] > volcanoPos[1]) {
-                        volcanoPos[0] = x-terrainWidth;
-                        volcanoPos[1] = heightMap[x][z];
-                        volcanoPos[2] = z-terrainWidth;
-                    }
-                }
-                
-                //decrease the height
-                else
-                    heightMap[x][z] = heightMap[x][z]-displacement;
-                
-                //grass
-                if (heightMap[x][z] <= 15) {
-                    materialColours[x][z][0] = 0.0;
-                    materialColours[x][z][1] = 0.3;
-                    materialColours[x][z][2] = 0.2;
-                }
-                //grass to dirt transition
-                else if (heightMap[x][z] > 15 && heightMap[x][z] <= 20) {
-                    materialColours[x][z][0] = 0.0 + ((heightMap[x][z]-20)*0.1);
-                    materialColours[x][z][1] = 0.3 - ((heightMap[x][z]-20)*0.01);
-                    materialColours[x][z][1] = 0.2 - ((heightMap[x][z]-20)*0.02);
-                }
-                //dirt
-                else if (heightMap[x][z] > 20 && heightMap[x][z] <= 30) {
-                    materialColours[x][z][0] = 0.52;
-                    materialColours[x][z][1] = 0.26;
-                    materialColours[x][z][2] = 0.08;
-                }
-                //dirt to snow transition
-                else if (heightMap[x][z] > 30 && heightMap[x][z] <= 35) {
-                    materialColours[x][z][0] = 0.52 + ((heightMap[x][z]-30)*0.1);
-                    materialColours[x][z][1] = 0.26 + ((heightMap[x][z]-30)*0.15);
-                    materialColours[x][z][2] = 0.08 + ((heightMap[x][z]-30)*0.18);
-                }
-                //snow
-                else {
-                    materialColours[x][z][0] = 1;
-                    materialColours[x][z][1] = 1;
-                    materialColours[x][z][2] = 1;
-                }
-                materialColours[x][z][3] = 1;
+            
+            //set height
+            heightMap[x][z] = 40*heightmapImage[x-WATER_WIDTH][z-WATER_WIDTH];
+            
+            //set volcano pos to highest point
+            if (heightMap[x][z] > volcanoPos[1]) {
+                volcanoPos[0] = x-terrainRadius;
+                volcanoPos[1] = heightMap[x][z];
+                volcanoPos[2] = z-terrainRadius;
             }
+            
+            //grass
+            if (heightMap[x][z] <= 15) {
+                materialColours[x][z][0] = 0.0;
+                materialColours[x][z][1] = 0.3;
+                materialColours[x][z][2] = 0.2;
+            }
+            //grass to dirt transition
+            else if (heightMap[x][z] > 15 && heightMap[x][z] <= 20) {
+                materialColours[x][z][0] = 0.0 + ((heightMap[x][z]-20)*0.1);
+                materialColours[x][z][1] = 0.3 - ((heightMap[x][z]-20)*0.01);
+                materialColours[x][z][1] = 0.2 - ((heightMap[x][z]-20)*0.02);
+            }
+            //dirt
+            else if (heightMap[x][z] > 20 && heightMap[x][z] <= 30) {
+                materialColours[x][z][0] = 0.52;
+                materialColours[x][z][1] = 0.26;
+                materialColours[x][z][2] = 0.08;
+            }
+            //dirt to snow transition
+            else if (heightMap[x][z] > 30 && heightMap[x][z] <= 35) {
+                materialColours[x][z][0] = 0.52 + ((heightMap[x][z]-30)*0.1);
+                materialColours[x][z][1] = 0.26 + ((heightMap[x][z]-30)*0.15);
+                materialColours[x][z][2] = 0.08 + ((heightMap[x][z]-30)*0.18);
+            }
+            //snow
+            else {
+                materialColours[x][z][0] = 1;
+                materialColours[x][z][1] = 1;
+                materialColours[x][z][2] = 1;
+            }
+            materialColours[x][z][3] = 1;
         }
-        displacement = displacement > 0.2 ? displacement-0.001 : 0.2;
     }
-    generateWater(3);
-    smoothTerrain(0.4);
     
-    volcanoPos[1] = heightMap[(int)(volcanoPos[0]+terrainWidth)][(int)(volcanoPos[2]+terrainWidth)]-1;
+    generateWater(3);
+    smoothTerrain(0.2);
+    
     calculateFaceNormals();
 }
 
+/***************************************
+ * for specified waterwidth (global),
+ * creates choppy white (foaming) water
+ * around terrain. Modifies heightmap.
+ **************************************/
 void Terrain::generateWater(float choppiness) {
     
     for (int x = TERRAIN_SIZE; x < TERRAIN_SIZE+WATER_WIDTH; x++) {
@@ -220,46 +199,38 @@ void Terrain::smoothTerrain(float smooth) {
 
 
 /**************************************************************
-* draws our generated terrain
-**************************************************************/
+ * draws our generated terrain
+ **************************************************************/
 void Terrain::drawTerrain() {
-
+    
     float terrainOffset = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
     
     //iterate over all values in heightmap
     for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
-        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH-1; z++) {
+        glBegin(GL_QUAD_STRIP);
+        for (int z = 0; z < TERRAIN_SIZE+WATER_WIDTH; z++) {
             
             glMaterialfv(GL_FRONT, GL_AMBIENT, materialColours[x][z]);
             glMaterialfv(GL_FRONT, GL_DIFFUSE, materialColours[x][z]);
-        
-            //draw the quad
-            glBegin(GL_QUADS);
+            
+            glNormal3fv(faceNormals[x+1][z]);
+            glVertex3f(x+1-terrainOffset, heightMap[x+1][z], z-terrainOffset);
             
             glNormal3fv(faceNormals[x][z]);
             glVertex3f(x-terrainOffset, heightMap[x][z], z-terrainOffset);
             
-            glNormal3fv(faceNormals[x][z+1]);
-            glVertex3f(x-terrainOffset, heightMap[x][z+1], z+1-terrainOffset);
-            
-            glNormal3fv(faceNormals[x+1][z+1]);
-            glVertex3f(x+1-terrainOffset, heightMap[x+1][z+1], z+1-terrainOffset);
-            
-            glNormal3fv(faceNormals[x+1][z]);
-            glVertex3f(x+1-terrainOffset, heightMap[x+1][z], z-terrainOffset);
-
-            glEnd();
         }
+        glEnd();
     }
     
     //draw water
     float waterColour[4] = {0.1, 0.6, 1, 1};
     glMaterialfv(GL_FRONT, GL_AMBIENT, waterColour);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, waterColour);
-
+    
     glPushMatrix();
     glScalef(100, 1, 100);
-    glTranslatef(0, -3, 0);
+    glTranslatef(0, -1, 0);
     glutSolidCube(10);
     glPopMatrix();
 }
@@ -305,21 +276,64 @@ void Terrain::calculateFaceNormals() {
 }
 
 /**************************************************************
+ * darkens quad at x,z
+ **************************************************************/
+void Terrain::burnTerrain(float x, float z) {
+    
+    //coordinate (0,0) corresponds with middle of terrain map
+    int xIndex = x + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+    int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0 + 1;
+    
+    //if outside of terrain, ignore
+    if (xIndex < 0 || xIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
+        return;
+    if (zIndex < 0 || zIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
+        return;
+    
+    //darken square ("charred")
+    materialColours[xIndex][zIndex][0] -= 0.1;
+    materialColours[xIndex][zIndex][1] -= 0.1;
+    materialColours[xIndex][zIndex][2] -= 0.1;
+}
+
+/**************************************************************
+ * makes terrain at x,z whiter
+ **************************************************************/
+void Terrain::snowTerrain(float x, float z) {
+    
+    //coordinate (0,0) corresponds with middle of terrain map
+    int xIndex = x + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+    int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0 + 1;
+    
+    //if outside of terrain, ignore
+    if (xIndex < 0 || xIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
+        return;
+    if (zIndex < 0 || zIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
+        return;
+    
+    //lighten square ("snow")
+    materialColours[xIndex][zIndex][0] += 0.3;
+    materialColours[xIndex][zIndex][1] += 0.3;
+    materialColours[xIndex][zIndex][2] += 0.3;
+    
+}
+
+/**************************************************************
  * returns height of terrain at x,z using bilinear interpolation
  **************************************************************/
 float Terrain::getHeight(float x, float z) {
-
+    
     //coordinate (0,0) corresponds with middle of terrain map
     float xIndexInHeightmap = x + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
     float zIndexInHeightmap = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-
+    
     //if outside of terrain, set height to 0
     if (xIndexInHeightmap < 0 || xIndexInHeightmap >= TERRAIN_SIZE+WATER_WIDTH-2)
-        return 0;
+        return 3;
     if (zIndexInHeightmap < 0 || zIndexInHeightmap >= TERRAIN_SIZE+WATER_WIDTH-2)
-        return 0;
-    if (heightMap[(int)floor(xIndexInHeightmap)][(int)floor(zIndexInHeightmap)] < 0)
-        return 0;
+        return 3;
+    if (heightMap[(int)floor(xIndexInHeightmap)][(int)floor(zIndexInHeightmap)] < 3)
+        return 3;
     
     // B(0,1) ------ C(1,1)
     //   |      pos    |
@@ -332,35 +346,13 @@ float Terrain::getHeight(float x, float z) {
     //calculate percent position is along x and z, in [0,1]
     float xPercent = xIndexInHeightmap-floor(xIndexInHeightmap);
     float zPercent = zIndexInHeightmap-floor(zIndexInHeightmap);
-
+    
     //calculate height, interpolating between 4 points surrounding current pos
     //this formula is from wikipedia.com/Bilinear_interpolation
     float h = A*(1-xPercent)*(1-zPercent) + D*(xPercent)*(1-zPercent);
     h += B*(1-xPercent)*(zPercent)+C*(xPercent)*(zPercent);
-
+    
     return h;
-}
-
-/**************************************************************
- * darkens quad at x,z
- **************************************************************/
-void Terrain::burnTerrain(float x, float z) {
-
-    //coordinate (0,0) corresponds with middle of terrain map
-    int xIndex = x + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-    int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-    
-    //if outside of terrain, ignore
-    if (xIndex < 0 || xIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
-        return;
-    if (zIndex < 0 || zIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
-        return;
-    
-    //darken square ("charred")
-    materialColours[xIndex][zIndex][0] -= 0.1;
-    materialColours[xIndex][zIndex][1] -= 0.1;
-    materialColours[xIndex][zIndex][2] -= 0.1;
-
 }
 
 /**************************************************************
@@ -377,8 +369,6 @@ float* Terrain::getNormal(float x, float z) {
         return NULL;
     if (zIndex < 0 || zIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
         return NULL;
-
-    if (faceNormals[xIndex][zIndex] == NULL)
-        printf("OOHOHOOHH");
+    
     return faceNormals[xIndex][zIndex];
 }

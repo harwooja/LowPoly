@@ -1,3 +1,13 @@
+// CS 3GC3 Final Project
+//
+// ParticleSystem.h
+// -public interface for particle system
+
+#ifndef __TERRAIN__
+#define __TERRAIN__
+#include "Terrain.h"
+#endif
+
 class ParticleSystem {
 
     public:
@@ -31,6 +41,8 @@ class ParticleSystem {
             
         } Particle;
     
+        typedef enum {SPHERE, CUBE} Shape;
+    
         /****************************************
         *    FUNCTION DECLARATIONS
         ****************************************/
@@ -49,4 +61,5 @@ class ParticleSystem {
         ****************************************/
         float spawnRate;
         float particleSize;
+        Shape shape = CUBE;
 };
