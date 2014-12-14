@@ -31,7 +31,7 @@
  *    FUNCTION DECLARATIONS
  ****************************************/
 void drawAxes();
-void drawHud();
+void drawPauseMenu();
 void togglePausedScene();
 void passive(int x, int y);
 void timer(int value);
@@ -59,9 +59,9 @@ int windowWidth = 800;
 int windowHeight = 600;
 
 //pause menu
-int hudWidth = 0;
-int hudHeight = 0;
-GLubyte *hudImage;
+int pauseMenuWidth = 0;
+int pauseMenuHeight = 0;
+GLubyte *pauseMenuImage;
 
 
 /*****************************************
@@ -90,7 +90,7 @@ void display(void) {
     snowParticles.drawAndAddParticles();
     
     if (paused)
-        drawHud();
+        drawPauseMenu();
     
     glutSwapBuffers();
 }
@@ -98,7 +98,7 @@ void display(void) {
 /********************************************
  * draws the menu for when game paused
  *******************************************/
-void drawHud() {
+void drawPauseMenu() {
     
     glDisable(GL_DEPTH_TEST);
     
@@ -110,10 +110,10 @@ void drawHud() {
     //draw pixels of image
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glRasterPos2i(windowWidth/2+hudWidth/2, windowHeight/2-hudHeight/2);
+    glRasterPos2i(windowWidth/2+pauseMenuWidth/2, windowHeight/2-pauseMenuHeight/2);
     glPixelZoom(-1,1);
-    if (hudImage != NULL)
-        glDrawPixels(hudWidth, hudHeight, GL_RGB, GL_UNSIGNED_BYTE, hudImage);
+    if (pauseMenuImage != NULL)
+        glDrawPixels(pauseMenuWidth, pauseMenuHeight, GL_RGB, GL_UNSIGNED_BYTE, pauseMenuImage);
     
     //reset projection matrixs
     glMatrixMode(GL_PROJECTION);
@@ -274,10 +274,10 @@ void mouse(int button, int state, int x, int y) {
     if (state == GLUT_LEFT_BUTTON) {
         
         //get bounds of hud
-        int leftHud = windowWidth/2 - hudWidth/2;
-        int rightHud = windowWidth/2 + hudWidth/2;
-        int bottomHud = windowHeight/2 + hudHeight/2;
-        int topHud = windowHeight/2 - hudHeight/2;
+        int leftHud = windowWidth/2 - pauseMenuWidth/2;
+        int rightHud = windowWidth/2 + pauseMenuWidth/2;
+        int bottomHud = windowHeight/2 + pauseMenuHeight/2;
+        int topHud = windowHeight/2 - pauseMenuHeight/2;
         
         //click is within hud, with 20px padding
         if (x > leftHud+20 && x < rightHud-20 && y > topHud+20 && y < bottomHud-20) {
@@ -391,7 +391,7 @@ void init() {
     
     //setup interface image
     ImageLoader imgLoader = ImageLoader();
-    hudImage = imgLoader.loadPPM((char*) "/interface.ppm", true, &hudWidth, &hudHeight);
+    pauseMenuImage = imgLoader.loadPPM((char*) "/interface.ppm", true, &pauseMenuWidth, &pauseMenuHeight);
     
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
