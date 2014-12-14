@@ -26,9 +26,10 @@
 # include <GL/freeglut.h>
 #endif
 
-#include "Camera.h"
 #include <math.h>
 #include <stdio.h>
+
+#include "Camera.h"
 
 /****************************************
 * Constructor

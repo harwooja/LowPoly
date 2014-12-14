@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "Particle.h"
 #include "ParticleList.h"
 #include "ParticleSystem.h"
 #include "ImageLoader.h"
@@ -42,7 +41,6 @@ void timer(int value);
  *    GLOBAL VARIABLES
  ****************************************/
 Terrain terrain;
-ParticleSystem volcanoParticles(&terrain);
 Camera camera;
 
 bool fullscreen = false;
@@ -56,11 +54,8 @@ int windowWidth = 800;
 int windowHeight = 600;
 
 //xmin,xmax,ymin,ymax,zmin,zmax
-float particleBounds[] = {-50,50,4,50,-50,50};
-
-// 0 is snow, 1 is lava, 2 is steam(still in development)
-ParticleList snowParticles(0,particleBounds,&terrain);
-ParticleList fireParticles(1,particleBounds,&terrain);
+ParticleList snowParticles = ParticleList(ParticleList::SNOW, &terrain);
+ParticleList lavaParticles = ParticleList(ParticleList::LAVA, &terrain);
 
 int hudWidth = 0;
 int hudHeight = 0;
@@ -91,12 +86,8 @@ void display(void) {
 
     //draw the scene
     terrain.drawTerrain();
-    if (testingVectorParticles)
-        volcanoParticles.drawParticles();
-    else {
-        fireParticles.DrawParticles();
-        //snowParticles.DrawParticles();
-    }
+    lavaParticles.drawParticles();
+    snowParticles.drawParticles();
 
     glTranslatef(25, 40, 58);
     
@@ -206,12 +197,6 @@ void keyboard(unsigned char key, int x, int y) {
             case '2':
                 glShadeModel(GL_SMOOTH);
                 break;
-            case '3':
-                volcanoParticles.shape = ParticleSystem::CUBE;
-                break;
-            case '4':
-                volcanoParticles.shape = ParticleSystem::SPHERE;
-                break;
 
             //move player
             case 'w':
@@ -275,8 +260,8 @@ void mouse(int button, int state, int x, int y) {
         //get bounds of hud
         int leftHud = windowWidth/2 - hudWidth/2;
         int rightHud = windowWidth/2 + hudWidth/2;
-        int bottomHud = windowHeight/2+hudHeight/2;
-        int topHud = windowHeight/2-hudHeight/2;
+        int bottomHud = windowHeight/2 + hudHeight/2;
+        int topHud = windowHeight/2 - hudHeight/2;
         
         //click is within hud, with 20px padding
         if (x > leftHud+20 && x < rightHud-20 && y > topHud+20 && y < bottomHud-20) {
@@ -284,20 +269,11 @@ void mouse(int button, int state, int x, int y) {
             //top button
             if (y > topHud+30 && y < topHud+140) {
                 printf("top button");
-                //flatShading = !flatShading;
-                //if (!flatShading)
-                //    glShadeModel(GL_SMOOTH);
-                //else
-                //    glShadeModel(GL_FLAT);
             }
             
             //second button
             else if (y > topHud+170 && y < topHud+280) {
                 printf("2nd button");
-                //if (volcanoParticles.shape == ParticleSystem::CUBE)
-                //    volcanoParticles.shape = ParticleSystem::SPHERE;
-                //else
-                //    volcanoParticles.shape = ParticleSystem::CUBE;
             }
             
             //bottom buton
@@ -314,12 +290,8 @@ void timer(int value) {
 
     //update particles
     if (!paused) {
-        if (testingVectorParticles)
-            volcanoParticles.moveParticles();
-        else {
-            fireParticles.UpdateParticles();
-            //snowParticles.UpdateParticles(terrain);
-        }
+        lavaParticles.updateParticles();
+        snowParticles.updateParticles();
     }
     
     //set timer function
@@ -381,9 +353,6 @@ void init() {
     
     //initialize globals
     terrain = Terrain();
-    snowParticles = ParticleList(0,particleBounds,&terrain);
-    fireParticles = ParticleList(1,particleBounds,&terrain);
-    volcanoParticles = ParticleSystem(&terrain);
     
     //setup interface image
     ImageLoader imgLoader = ImageLoader();

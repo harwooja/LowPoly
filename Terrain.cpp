@@ -19,7 +19,6 @@
 #  include <GL/freeglut.h>
 #endif
 
-#include <vector>
 #include <stdlib.h>
 #include <math.h>
 
@@ -30,9 +29,6 @@
 /***************************************
  *    GLOBAL VARIABLES
  **************************************/
-#define TERRAIN_SIZE 256
-#define WATER_WIDTH 4
-
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
 float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
 float materialColours[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][4];
@@ -286,7 +282,7 @@ void Terrain::burnTerrain(float x, float z) {
     
     //coordinate (0,0) corresponds with middle of terrain map
     int xIndex = x + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-    int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+    int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0 + 1;
     
     //if outside of terrain, ignore
     if (xIndex < 0 || xIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
@@ -307,7 +303,7 @@ void Terrain::snowTerrain(float x, float z) {
 
     //coordinate (0,0) corresponds with middle of terrain map
     int xIndex = x + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-    int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
+    int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0 + 1;
 
     //if outside of terrain, ignore
     if (xIndex < 0 || xIndex >= TERRAIN_SIZE+WATER_WIDTH-2)

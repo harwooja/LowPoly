@@ -24,6 +24,9 @@ public:
      *    PUBLIC GLOBAL VARIABLE
      **************************************/
     float volcanoPos[3] = {0,0,0};
+    #define TERRAIN_SIZE 256
+    #define WATER_WIDTH 4
+
 
 private:
 

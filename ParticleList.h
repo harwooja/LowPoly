@@ -1,3 +1,8 @@
+// CS 3GC3 Final Project
+//
+// ParticleList.h
+// -public interface for particle list
+
 #ifndef __TERRAIN__
 #define __TERRAIN__
 #include "Terrain.h"
@@ -5,34 +10,79 @@
 
 #include <list>
 
-using namespace std;
-
 class ParticleList {
     
 public:
-    ParticleList(int particleType, float particleBounds[6], Terrain*);
+    
+    /****************************************
+    *    CUSTOM STRUCTS
+    ****************************************/
+    typedef struct Particle {
+        
+        //vector variables
+        float position[3] = {0,0,0};
+        void setPosition(float posX, float posY, float posZ) {
+            position[0] = posX;
+            position[1] = posY;
+            position[2] = posZ;
+        }
+        float direction[3] = {0,0,0};
+        void setDirection(float dirX, float dirY, float dirZ) {
+            direction[0] = dirX;
+            direction[1] = dirY;
+            direction[2] = dirZ;
+        }
+        float rotation[3] = {0,0,0};
+        void setRotation(float rotX, float rotY, float rotZ) {
+            rotation[0] = rotX;
+            rotation[1] = rotY;
+            rotation[2] = rotZ;
+        }
+        float colour[3] = {0,0,0};
+        void setColour(float colR, float colG, float colB) {
+            colour[0] = colR;
+            colour[1] = colG;
+            colour[2] = colB;
+        }
+        
+        //scalar variables
+        float age = 0;
+        float size = 1;
+        float speed = 1;
+        
+        bool touchedTerrain = false;
+        
+    } Particle;
+    typedef enum {SNOW, LAVA, FOG} ParticleType;
+    
+    /****************************************
+    *    PUBLIC FUNCTIONS
+    ****************************************/
+    ParticleList(ParticleType particleType, Terrain*);
     ~ParticleList();
-    void UpdateParticles();
-    void DrawParticles();
+    
     void addParticle();
+    void updateParticles();
+    void drawParticles();
     void rotateParticle(float incrX, float incrY, float incrZ);
     
+    
 private:
+    
+    /****************************************
+    *    PRIVATE VARIABLES
+    ****************************************/
     std::list<Particle> particleList;
-    list<Particle>::iterator particleIterator;
-    int ageLimit = 500;
-    float newX;
-    float newY;
-    float newZ;
-    float newDirX;
-    float newDirY;
-    float newDirZ;
+    std::list<Particle>::iterator particleIterator;
+
     Terrain *terrainMap;
+    ParticleType particleType;
+    
+    int ageLimit = 500;
     int particlesDrawn = 0;
     float particleBounds[6];
-    int particleType;
-    float snow[3] = {1,1,1};
-    float fire[3] = {1,0,0};
-    float amb[3] = {0,0,0};
-    float spc[3] = {0,0,0};
+    
+    float snowMaterial[3] = {1,1,1};
+    float fireMaterial[3] = {1,0,0};
+    float specMaterial[3] = {0,0,0};
 };

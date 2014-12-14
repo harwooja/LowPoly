@@ -1,3 +1,9 @@
+// CS 3GC3 Final Project
+//
+// ParticleList.cpp
+// -holds a list of snow or lava particles
+// -and has methods to move them and draw them
+
 #ifdef __APPLE__
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
@@ -11,106 +17,91 @@
 # include <GL/freeglut.h>
 #endif
 
-#include <math.h>
 #include <stdlib.h>
 
-#include "Particle.h"
 #include "ParticleList.h"
 
-float RandomFloatt(float a, float b) {
-    float random = (float) rand()/RAND_MAX;
-    float diff = b - a;
-    float r = random * diff;
-    return a + r;
-}
+/**************************************************
+ *      FUNCTION DECLARATIONS
+ **************************************************/
+float randomFloat(float,float);
 
 /**************************************************
- *Creates a list of particles of type Snow(0),
- *Lava(1), or Steam(2)
- **************************************************/
-ParticleList::ParticleList(int typeOfParticle, float boundsOfParticle[6], Terrain* terrain) {
-    
-    particleType = typeOfParticle;
-    for (int i = 0; i < 6; i++) {
-        particleBounds[i] = boundsOfParticle[i];
-    }
-    
-    terrainMap = terrain;
+*       Constructor
+**************************************************/
+ParticleList::ParticleList(ParticleType type, Terrain* terrain) {
 
+    //set globals
+    particleType = type;
+    terrainMap = terrain;
     particleIterator = particleList.end();
     
-    if (particleType == 0) {
-        particleList.push_back(Particle(RandomFloatt(particleBounds[0],particleBounds[1]),50,RandomFloatt(particleBounds[4],particleBounds[5])));
-        particleIterator++;
-        particleIterator->setParticleDirection(RandomFloatt(0,10), -1, RandomFloatt(0,1));
-        particleIterator->setParticleSize(.75);
-        particleIterator->setParticleSpeed(.5);
-        particleIterator->setParticleColor(1,1,1);
-        particleIterator->setParticleRotAngle(0,0,0);
-    }
-    else if (particleType == 1) {
-        particleList.push_back(Particle(terrainMap->volcanoPos[0],terrainMap->volcanoPos[1],terrainMap->volcanoPos[2]));
-        particleIterator++;
-        particleIterator->setParticleDirection(-50,2,RandomFloatt(0,30));
-        particleIterator->setParticleSize(.85);
-        particleIterator->setParticleSpeed(.75);
-        particleIterator->setParticleColor(1,0,0);
-        particleIterator->setParticleRotAngle(0,0,0);
-    }
-    else if (particleType == 2) {
-        particleList.push_back(Particle(RandomFloatt(particleBounds[0],particleBounds[1]),50,RandomFloatt(particleBounds[4],particleBounds[5]) ) );
-        particleIterator++;
-        particleIterator->setParticleDirection(RandomFloatt(0,1),RandomFloatt(0,1),RandomFloatt(0,1));
-        particleIterator->setParticleSize(.25);
-        particleIterator->setParticleSpeed(.5);
-        particleIterator->setParticleColor(0.5,0.5,0.5);
-        particleIterator->setParticleRotAngle(0,0,0);
-    }
+    //set bounds to entire terrain
+    particleBounds[0] = -128;
+    particleBounds[1] = 128;
+    particleBounds[2] = 0;
+    particleBounds[3] = 50;
+    particleBounds[4] = -128;
+    particleBounds[5] = 128;
 }
 
-ParticleList::~ParticleList() {
-    particleList.clear();
-}
+/****************************************
+*       Destructor
+****************************************/
+ParticleList::~ParticleList() { particleList.clear(); }
 
-void ParticleList::UpdateParticles() {
+
+/****************************************
+* moves particles and affects terrain
+* when they hit it
+****************************************/
+void ParticleList::updateParticles() {
     
-    for(particleIterator = particleList.begin();particleIterator != particleList.end();particleIterator++) {
+    float newX = 0, newY = 0, newZ = 0;
+    float newDirX = 0, newDirY = 0, newDirZ = 0;
+    
+    for (particleIterator = particleList.begin(); particleIterator != particleList.end(); particleIterator++) {
         
-        if (particleIterator->getParticleAge() < ageLimit) {
-            if (particleType == 0) {
-                newX = particleIterator->getParticlePosition()[0];
-                newY = particleIterator->getParticlePosition()[1]+particleIterator->getParticleDirection()[1]*particleIterator->getParticleSpeed();
-                newZ = particleIterator->getParticlePosition()[2];
-            }
-            if (particleType == 1) {
-                newX = particleIterator->getParticlePosition()[0]+particleIterator->getParticleDirection()[0]*particleIterator->getParticleSpeed();
-                newY = particleIterator->getParticlePosition()[1]+particleIterator->getParticleDirection()[1]*particleIterator->getParticleSpeed();
-                newZ = particleIterator->getParticlePosition()[2]+particleIterator->getParticleDirection()[2]*particleIterator->getParticleSpeed();
-            }
+        if (particleIterator->age < ageLimit) {
             
-            {
-                if (newY <= terrainMap->getHeight(newX, newZ)) {
-                    particleIterator->touchedTerrain = true;
-                    newY = terrainMap->getHeight(newX, newZ);
-                    if (particleType == 0) {
-                       terrainMap->snowTerrain(newX, newZ);
-                    }
-                    if (particleType == 1) {
-                        terrainMap->burnTerrain(newX, newZ);
-                    }
-                }
+            //calculate new position
+            newX = particleIterator->position[0] + particleIterator->direction[0] * particleIterator->speed;
+            newY = particleIterator->position[1] + particleIterator->direction[1] * particleIterator->speed;
+            newZ = particleIterator->position[2] + particleIterator->direction[2] * particleIterator->speed;
+
+            //affect terrain if particle hits
+            if (newY <= terrainMap->getHeight(newX, newZ)) {
+
+                particleIterator->touchedTerrain = true;
+                newY = terrainMap->getHeight(newX, newZ);
                 
-                else if (newY > terrainMap->getHeight(newX, newZ)) {
-                    newDirX = particleIterator->getParticleDirection()[0]+particleIterator->getParticleDirection()[0]*particleIterator->getParticleSpeed();
-                    newDirY = particleIterator->getParticleDirection()[1] - .01;
-                    newDirZ = particleIterator->getParticleDirection()[2]+particleIterator->getParticleDirection()[2]*particleIterator->getParticleSpeed();
-                    particleIterator->setParticleDirection(newDirX, newDirY, newDirZ);
-                }
+                if (particleType == SNOW)
+                   terrainMap->snowTerrain(newX, newZ);
+                if (particleType == LAVA)
+                    terrainMap->burnTerrain(newX, newZ);
             }
             
-            particleIterator->setParticlePosition(newX, newY, newZ);
-            particleIterator->setParticleAge(particleIterator->getParticleAge()+1);
+            //change direction vector if hasn't hit terrain
+            else if (newY > terrainMap->getHeight(newX, newZ)) {
+                
+                newDirX = particleIterator->direction[0];
+                
+                if (particleType == SNOW)
+                    newDirY = particleIterator->direction[1] - 0.01;
+                else if (particleType == LAVA)
+                    newDirY = particleIterator->direction[1] - 0.08;
+                
+                newDirZ = particleIterator->direction[2];
+                
+                particleIterator->setDirection(newDirX, newDirY, newDirZ);
+            }
+
+            //set its new position and age
+            particleIterator->setPosition(newX, newY, newZ);
+            particleIterator->age = particleIterator->age + 1;
         }
+        
+        //delete particle that's too old
         else {
             particleIterator = particleList.erase(particleIterator);
             particleIterator--;
@@ -118,68 +109,85 @@ void ParticleList::UpdateParticles() {
     }
 }
 
+/****************************************
+* adds a particle to the particle list
+* of type of Particle List
+****************************************/
 void ParticleList::addParticle() {
     
-    Particle oneParticle(0,0,0);
+    Particle p;
     
-    if (particleType == 0) {
-        oneParticle.setParticlePosition(RandomFloatt(particleBounds[0],particleBounds[1]),50,RandomFloatt(particleBounds[4],particleBounds[5]));
-        oneParticle.setParticleDirection(0,-.1,0);
-        oneParticle.setParticleSize(.75);
-        oneParticle.setParticleSpeed(.5);
-        oneParticle.setParticleAge(0);
-        oneParticle.setParticleRotAngle(0,0,0);
-        particleList.push_back(oneParticle);
+    if (particleType == SNOW) {
+        
+        p.setPosition(randomFloat(particleBounds[0],particleBounds[1]), 50, randomFloat(particleBounds[4],particleBounds[5]));
+        p.setDirection(0, -0.1, 0);
+        p.setRotation(0, 0, 0);
+        p.setColour(1, 1, 1);
+        p.size = 0.25;
+        p.speed = 0.5;
+        
+        particleList.push_back(p);
     }
-    else if (particleType == 1) {
-        oneParticle.setParticlePosition(terrainMap->volcanoPos[0],terrainMap->volcanoPos[1],terrainMap->volcanoPos[2]);
-        oneParticle.setParticleDirection(RandomFloatt(-.25,.25),3,RandomFloatt(-.25,.25));
-        oneParticle.setParticleSize(RandomFloatt(0,2));
-        oneParticle.setParticleSpeed(.15);
-        oneParticle.setParticleAge(0);
-        oneParticle.setParticleRotAngle(0,0,0);
-        particleList.push_back(oneParticle);
+    
+    else if (particleType == LAVA) {
+        
+        p.setPosition(terrainMap->volcanoPos[0], terrainMap->volcanoPos[1], terrainMap->volcanoPos[2]);
+        p.setDirection(randomFloat(-0.25, 0.25), 3, randomFloat(-0.25, 0.25));
+        p.setRotation(0,0,0);
+        p.setColour(1,0,0);
+        p.size = randomFloat(0.2,1.5);
+        p.speed = 0.15;
+        
+        particleList.push_back(p);
     }
 }
 
-void ParticleList::DrawParticles() {
+/****************************************
+* draws all particles in list
+****************************************/
+void ParticleList::drawParticles() {
     
-    for(particleIterator = particleList.begin();particleIterator != particleList.end();particleIterator++){
-        
+    //set colour of particles
+    if (particleType == SNOW) {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, snowMaterial);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, snowMaterial);
+    }
+    else if (particleType == LAVA) {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fireMaterial);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, fireMaterial);
+    }
+
+    //transform particle, and draw it
+    for (particleIterator = particleList.begin(); particleIterator != particleList.end(); particleIterator++) {
         glPushMatrix();
         
-        glTranslatef(particleIterator->getParticlePosition()[0], particleIterator->getParticlePosition()[1], particleIterator->getParticlePosition()[2]);
-        glRotatef(particleIterator->getParticleRotAngle()[0], 1, 0, 0);
-        glRotatef(particleIterator->getParticleRotAngle()[1], 0, 1, 0);
-        glRotatef(particleIterator->getParticleRotAngle()[2], 0, 0, 1);
+        glTranslatef(particleIterator->position[0], particleIterator->position[1], particleIterator->position[2]);
+        glRotatef(particleIterator->rotation[0], 1, 0, 0);
+        glRotatef(particleIterator->rotation[1], 0, 1, 0);
+        glRotatef(particleIterator->rotation[2], 0, 0, 1);
 
-        if (particleType == 0) {
-            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, snow);
-            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-            glutSolidSphere(particleIterator->getParticleSize(),8,4);
-        }
-        else if (particleType == 1) {
-            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fire);
-            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-            glutSolidSphere(particleIterator->getParticleSize(),8,4);
-        }
+        glutSolidSphere(particleIterator->size, 8, 4);
+        
         glPopMatrix();
     }
+    
     particlesDrawn++;
     
-    //controls flow speed of particles drawn.
-    if(particlesDrawn == 16 && particleType==1){
+    //only adds lava particles every 8 calls
+    if (particlesDrawn == 8 && particleType == LAVA) {
         addParticle();
         particlesDrawn = 0;
     }
-    else if (particleType == 0)
+    else if (particleType == SNOW)
         addParticle();
 }
 
-void ParticleList::rotateParticle(float incrX, float incrY, float incrZ) {
-    for(particleIterator = particleList.begin();particleIterator != particleList.end();particleIterator++) {
-        particleIterator->setParticleRotAngle(particleIterator->getParticleRotAngle()[0]+incrX,
-                                              particleIterator->getParticleRotAngle()[1]+incrY,
-                                              particleIterator->getParticleRotAngle()[2]+incrZ);
-    }
+/****************************************
+* returns a random float between a and br
+****************************************/
+float randomFloat(float a, float b) {
+    float random = (float) rand() / RAND_MAX;
+    float diff = b - a;
+    float r = random * diff;
+    return a + r;
 }
