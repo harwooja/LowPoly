@@ -8,6 +8,18 @@
 // Citation: http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/
 
 
+#ifdef __APPLE__
+# include <OpenGL/gl.h>
+# include <OpenGL/glu.h>
+# include <GLUT/glut.h>
+#else
+#ifdef _WIN32
+# include <windows.h>
+#endif
+# include <GL/gl.h>
+# include <GL/glu.h>
+# include <GL/freeglut.h>
+#endif
 
 
 
@@ -23,20 +35,28 @@ vector< glm::vec3 > temp_vertices;
 vector< glm::vec2 > temp_uvs;
 vector< glm::vec3 > temp_normals;
 
+// Read our .obj file
+std::vector< glm::vec3 > vertices;
+std::vector< glm::vec2 > uvs;
+std::vector< glm::vec3 > normals; // Won't be used at the moment.
 
 
 ObjLoader::ObjLoader(){
     
-    // Read our .obj file
-    std::vector< glm::vec3 > vertices;
-    std::vector< glm::vec2 > uvs;
-    std::vector< glm::vec3 > normals; // Won't be used at the moment.
-    loadOBJ("pikachu.obj", vertices, uvs, normals);
 
-    
+    loadOBJ("/Users/Harwood/Documents/GitHub/LowPoly/Pikachu.Obj", vertices, uvs, normals);
+
+
     
 }
 
+void ObjLoader::render(){
+    
+   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+    
+  
+
+}
 
 void ObjLoader::loadOBJ(const char * path, vector < glm::vec3 > & out_vertices, vector < glm::vec2 > &out_uvs, vector < glm::vec3 > &out_normals){
     
@@ -98,8 +118,6 @@ void ObjLoader::loadOBJ(const char * path, vector < glm::vec3 > & out_vertices, 
         
         
     }
-    
-    
     
     // For each vertex of each triangle
     for( unsigned int i=0; i<vertexIndices.size(); i++ ){
