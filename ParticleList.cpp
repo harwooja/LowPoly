@@ -52,7 +52,6 @@ void ParticleList::clearParticles() {
     particleList.clear();
 }
 
-
 /****************************************
  * moves particles and affects terrain
  * when they hit it

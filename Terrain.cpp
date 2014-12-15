@@ -204,7 +204,7 @@ void Terrain::smoothTerrain(float smooth) {
 void Terrain::drawTerrain() {
     
     float terrainOffset = (TERRAIN_SIZE+WATER_WIDTH)/2.0;
-    
+
     //iterate over all values in heightmap
     for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
         glBegin(GL_QUAD_STRIP);
@@ -212,7 +212,7 @@ void Terrain::drawTerrain() {
             
             glMaterialfv(GL_FRONT, GL_AMBIENT, materialColours[x][z]);
             glMaterialfv(GL_FRONT, GL_DIFFUSE, materialColours[x][z]);
-            
+
             glNormal3fv(faceNormals[x+1][z]);
             glVertex3f(x+1-terrainOffset, heightMap[x+1][z], z-terrainOffset);
             
@@ -223,16 +223,16 @@ void Terrain::drawTerrain() {
         glEnd();
     }
     
-    //draw water
-    float waterColour[4] = {0.1, 0.6, 1, 1};
-    glMaterialfv(GL_FRONT, GL_AMBIENT, waterColour);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, waterColour);
-    
-    glPushMatrix();
-    glScalef(100, 1, 100);
-    glTranslatef(0, -1, 0);
-    glutSolidCube(10);
-    glPopMatrix();
+//    //draw water
+//    float waterColour[4] = {0.1, 0.6, 1, 1};
+//    glMaterialfv(GL_FRONT, GL_AMBIENT, waterColour);
+//    glMaterialfv(GL_FRONT, GL_DIFFUSE, waterColour);
+//    
+//    glPushMatrix();
+//    glScalef(100, 1, 100);
+//    glTranslatef(0, -2, 0);
+//    glutSolidCube(10);
+//    glPopMatrix();
 }
 
 /**************************************************************
@@ -364,7 +364,7 @@ float* Terrain::getNormal(float x, float z) {
     int xIndex = x + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
     int zIndex = z + (TERRAIN_SIZE+WATER_WIDTH)/2.0;
     
-    //if outside of terrain, set height to 0
+    //if outside of terrain, return null
     if (xIndex < 0 || xIndex >= TERRAIN_SIZE+WATER_WIDTH-2)
         return NULL;
     if (zIndex < 0 || zIndex >= TERRAIN_SIZE+WATER_WIDTH-2)

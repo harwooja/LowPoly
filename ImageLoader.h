@@ -13,7 +13,8 @@ class ImageLoader {
         GLubyte* loadPPM(char* fileName, bool pathRelative, int* width, int* height);
         float** loadPPMHeightmap(char* fileName, bool pathRelative, int terrainSize);
         float** convertImageToHeightmap(GLubyte* image, int heightmapRadius);
-
+    
+        GLuint loadBMP_custom(const char* imagePath);
     
     /***************************************
     *    PRIVATE FUNCTIONS

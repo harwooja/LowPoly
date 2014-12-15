@@ -25,7 +25,7 @@ public:
      **************************************/
     float volcanoPos[3] = {0,0,0};
     #define TERRAIN_SIZE 256
-    #define WATER_WIDTH 4
+    #define WATER_WIDTH 18
     
     
 private:

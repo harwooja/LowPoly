@@ -30,11 +30,11 @@
 /*****************************************
  *    FUNCTION DECLARATIONS
  ****************************************/
-void drawAxes();
 void drawPauseMenu();
 void togglePausedScene();
 void passive(int x, int y);
 void timer(int value);
+void drawSkybox();
 
 /*****************************************
  *    GLOBAL VARIABLES
@@ -49,7 +49,7 @@ ParticleList lavaParticles = ParticleList(ParticleList::LAVA, &terrain);
 bool paused = false;
 bool fullscreen = false;
 bool birdsEyeView = false;
-float lightPos[4] = {0,60,0, 1};
+float lightPos[4] = {0,65,0, 1};
 
 //used for passive func
 bool mouseCurrentInitiated = false;
@@ -63,7 +63,10 @@ int pauseMenuWidth = 0;
 int pauseMenuHeight = 0;
 GLubyte *pauseMenuImage;
 
-
+GLubyte *frontTex;
+GLubyte *topTex;
+GLubyte *leftTex, *rightTex, *backTex;
+GLuint textures[5];
 /*****************************************
  * draws scene
  ****************************************/
@@ -88,7 +91,9 @@ void display(void) {
     terrain.drawTerrain();
     lavaParticles.drawAndAddParticles();
     snowParticles.drawAndAddParticles();
-    
+    drawSkybox();
+//    glTranslatef(0, 30, 0);
+//    glutSolidTeapot(2);
     if (paused)
         drawPauseMenu();
     
@@ -359,14 +364,149 @@ void reshape(int w, int h) {
     glutPostRedisplay();
 }
 
+/********************************************
+* draws textured skybox around scene
+*******************************************/
+void drawSkybox() {
+
+    glDisable(GL_LIGHTING);
+
+    //FRONT
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glBegin(GL_QUADS);
+    //glNormal3f(0, 0, 1);
+
+    glTexCoord2f(0, 0);
+    glVertex3f(128, 0, 128);
+    
+    glTexCoord2f(0, 1);
+    glVertex3f(128, 50, 128);
+    
+    glTexCoord2f(1, 1);
+    glVertex3f(128, 50, -128);
+    
+    glTexCoord2f(1, 0);
+    glVertex3f(128, 0, -128);
+    glEnd();
+
+    //BACK
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    glBegin(GL_QUADS);
+
+    glTexCoord2f(0, 0);
+    glVertex3f(-128, 0, -128);
+    
+    glTexCoord2f(0, 1);
+    glVertex3f(-128, 50, -128);
+    
+    glTexCoord2f(1, 1);
+    glVertex3f(-128, 50, 128);
+    
+    glTexCoord2f(1, 0);
+    glVertex3f(-128, 0, 128);
+    glEnd();
+    
+    //LEFT
+    glBindTexture(GL_TEXTURE_2D, textures[2]);
+    glBegin(GL_QUADS);
+    
+    glTexCoord2f(0, 0);
+    glVertex3f(-128, 0, 128);
+    
+    glTexCoord2f(0, 1);
+    glVertex3f(-128, 50, 128);
+
+    glTexCoord2f(1, 1);
+    glVertex3f(128, 50, 128);
+    
+    glTexCoord2f(1, 0);
+    glVertex3f(128, 0, 128);
+    glEnd();
+    
+    //RIGHT
+    glBindTexture(GL_TEXTURE_2D, textures[3]);
+    glBegin(GL_QUADS);
+    
+    glTexCoord2f(0, 0);
+    glVertex3f(128, 0, -128);
+    
+    glTexCoord2f(0, 1);
+    glVertex3f(128, 50, -128);
+    
+    glTexCoord2f(1, 1);
+    glVertex3f(-128, 50, -128);
+    
+    glTexCoord2f(1, 0);
+    glVertex3f(-128, 0, -128);
+    glEnd();
+    
+    //TOP
+    glBindTexture(GL_TEXTURE_2D, textures[4]);
+    glBegin(GL_QUADS);
+    
+    glTexCoord2f(0, 0);
+    glVertex3f(128, 50, 128);
+    
+    glTexCoord2f(0, 1);
+    glVertex3f(-128, 50, 128);
+    
+    glTexCoord2f(1, 1);
+    glVertex3f(-128, 50, -128);
+    
+    glTexCoord2f(1, 0);
+    glVertex3f(128, 50, -128);
+    glEnd();
+    
+    glEnable(GL_LIGHTING);
+    glBindTexture(GL_TEXTURE_2D, NULL);
+}
+
 /*******************************************
  *initializes global variables and settings
  ******************************************/
 void init() {
     
+    //enable textures (for skybox)
+    glEnable(GL_TEXTURE_2D);
+    glGenTextures(5, textures);
+    
+    ImageLoader imageLoader = ImageLoader();
+    int textureWidth, textureHeight;
+
+    //load textures
+    frontTex = imageLoader.loadPPM((char*)"/Front.ppm", true, &textureWidth, &textureHeight);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, frontTex);
+    
+    backTex = imageLoader.loadPPM((char*)"/Back.ppm", true, &textureWidth, &textureHeight);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, backTex);
+    
+    leftTex = imageLoader.loadPPM((char*)"/Left.ppm", true, &textureWidth, &textureHeight);
+    glBindTexture(GL_TEXTURE_2D, textures[2]);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, leftTex);
+    
+    rightTex = imageLoader.loadPPM((char*)"/Right.ppm", true, &textureWidth, &textureHeight);
+    glBindTexture(GL_TEXTURE_2D, textures[3]);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, rightTex);
+    
+    topTex = imageLoader.loadPPM((char*)"/Top.ppm", true, &textureWidth, &textureHeight);
+    glBindTexture(GL_TEXTURE_2D, textures[4]);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, topTex);
+    
     //enable flat shading (for artistic reasons)
     glShadeModel(GL_FLAT);
-    
+
     glClearColor(0.25, 0.53, 0.77, 1);
     glEnable(GL_DEPTH_TEST);
     
@@ -388,10 +528,9 @@ void init() {
 
     //initialize camera
     camera = Camera();
-    
+   
     //setup interface image
-    ImageLoader imgLoader = ImageLoader();
-    pauseMenuImage = imgLoader.loadPPM((char*) "/interface.ppm", true, &pauseMenuWidth, &pauseMenuHeight);
+    pauseMenuImage = imageLoader.loadPPM((char*) "/interface.ppm", true, &pauseMenuWidth, &pauseMenuHeight);
     
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
