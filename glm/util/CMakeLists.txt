@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/FindGLM.cmake
         DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake)
 
+=======
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/FindGLM.cmake
+        DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake)
+
+>>>>>>> JAKE

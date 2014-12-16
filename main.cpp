@@ -25,7 +25,9 @@
 #include "ParticleList.h"
 #include "ImageLoader.h"
 #include "Camera.h"
+#include "ObjLoader.h"
 
+ObjLoader pika = *new ObjLoader();
 
 /*****************************************
  *    FUNCTION DECLARATIONS
@@ -84,6 +86,7 @@ void display(void) {
     else
         glTranslatef(-camera.position[0], -100, -camera.position[2]);
     
+    pika.render();
     //draw the scene
     terrain.drawTerrain();
     lavaParticles.drawAndAddParticles();
