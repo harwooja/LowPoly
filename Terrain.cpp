@@ -55,7 +55,7 @@ void Terrain::generateTerrain() {
     
     //load heightmap image
     ImageLoader imgLoader = ImageLoader();
-    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/heightmap256_6.ppm", true, TERRAIN_SIZE);
+    float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/images/heightmap_256.ppm", true, TERRAIN_SIZE);
     
     //iterate over all points in heightmap (not incl. water)
     for (int x = WATER_WIDTH; x < TERRAIN_SIZE+WATER_WIDTH-1; x++) {
@@ -223,16 +223,16 @@ void Terrain::drawTerrain() {
         glEnd();
     }
     
-//    //draw water
-//    float waterColour[4] = {0.1, 0.6, 1, 1};
-//    glMaterialfv(GL_FRONT, GL_AMBIENT, waterColour);
-//    glMaterialfv(GL_FRONT, GL_DIFFUSE, waterColour);
-//    
-//    glPushMatrix();
-//    glScalef(100, 1, 100);
-//    glTranslatef(0, -2, 0);
-//    glutSolidCube(10);
-//    glPopMatrix();
+    //draw water
+    float waterColour[4] = {0.1, 0.6, 1, 1};
+    glMaterialfv(GL_FRONT, GL_AMBIENT, waterColour);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, waterColour);
+    
+    glPushMatrix();
+    glScalef(100, 1, 100);
+    glTranslatef(0, -2, 0);
+    glutSolidCube(10);
+    glPopMatrix();
 }
 
 /**************************************************************

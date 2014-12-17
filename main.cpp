@@ -92,8 +92,7 @@ void display(void) {
     lavaParticles.drawAndAddParticles();
     snowParticles.drawAndAddParticles();
     drawSkybox();
-//    glTranslatef(0, 30, 0);
-//    glutSolidTeapot(2);
+
     if (paused)
         drawPauseMenu();
     
@@ -123,7 +122,7 @@ void drawPauseMenu() {
     //reset projection matrixs
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45, (float) windowWidth / (float) windowHeight, 1,300);
+    gluPerspective(45, (float) windowWidth / (float) windowHeight, 1,360);
     
     glEnable(GL_DEPTH_TEST);
 }
@@ -355,7 +354,7 @@ void reshape(int w, int h) {
         glLoadIdentity();
         
         glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1, 300);
+        gluPerspective(45, (GLfloat) w / (GLfloat) h, 1, 360);
         
         windowWidth = w;
         windowHeight = h;
@@ -371,22 +370,24 @@ void drawSkybox() {
 
     glDisable(GL_LIGHTING);
 
+    int height = 128;
+    int width = 132;
+    
     //FRONT
     glBindTexture(GL_TEXTURE_2D, textures[0]);
     glBegin(GL_QUADS);
-    //glNormal3f(0, 0, 1);
 
     glTexCoord2f(0, 0);
-    glVertex3f(128, 0, 128);
+    glVertex3f(width, 0, width);
     
     glTexCoord2f(0, 1);
-    glVertex3f(128, 50, 128);
+    glVertex3f(width, height, width);
     
     glTexCoord2f(1, 1);
-    glVertex3f(128, 50, -128);
+    glVertex3f(width, height, -width);
     
     glTexCoord2f(1, 0);
-    glVertex3f(128, 0, -128);
+    glVertex3f(width, 0, -width);
     glEnd();
 
     //BACK
@@ -394,16 +395,16 @@ void drawSkybox() {
     glBegin(GL_QUADS);
 
     glTexCoord2f(0, 0);
-    glVertex3f(-128, 0, -128);
+    glVertex3f(-width, 0, -width);
     
     glTexCoord2f(0, 1);
-    glVertex3f(-128, 50, -128);
+    glVertex3f(-width, height, -width);
     
     glTexCoord2f(1, 1);
-    glVertex3f(-128, 50, 128);
+    glVertex3f(-width, height, width);
     
     glTexCoord2f(1, 0);
-    glVertex3f(-128, 0, 128);
+    glVertex3f(-width, 0, width);
     glEnd();
     
     //LEFT
@@ -411,16 +412,16 @@ void drawSkybox() {
     glBegin(GL_QUADS);
     
     glTexCoord2f(0, 0);
-    glVertex3f(-128, 0, 128);
+    glVertex3f(-width, 0, width);
     
     glTexCoord2f(0, 1);
-    glVertex3f(-128, 50, 128);
+    glVertex3f(-width, height, width);
 
     glTexCoord2f(1, 1);
-    glVertex3f(128, 50, 128);
+    glVertex3f(width, height, width);
     
     glTexCoord2f(1, 0);
-    glVertex3f(128, 0, 128);
+    glVertex3f(width, 0, width);
     glEnd();
     
     //RIGHT
@@ -428,16 +429,16 @@ void drawSkybox() {
     glBegin(GL_QUADS);
     
     glTexCoord2f(0, 0);
-    glVertex3f(128, 0, -128);
+    glVertex3f(width, 0, -width);
     
     glTexCoord2f(0, 1);
-    glVertex3f(128, 50, -128);
+    glVertex3f(width, height, -width);
     
     glTexCoord2f(1, 1);
-    glVertex3f(-128, 50, -128);
+    glVertex3f(-width, height, -width);
     
     glTexCoord2f(1, 0);
-    glVertex3f(-128, 0, -128);
+    glVertex3f(-width, 0, -width);
     glEnd();
     
     //TOP
@@ -445,16 +446,16 @@ void drawSkybox() {
     glBegin(GL_QUADS);
     
     glTexCoord2f(0, 0);
-    glVertex3f(128, 50, 128);
+    glVertex3f(width, height, width);
     
     glTexCoord2f(0, 1);
-    glVertex3f(-128, 50, 128);
+    glVertex3f(-width, height, width);
     
     glTexCoord2f(1, 1);
-    glVertex3f(-128, 50, -128);
+    glVertex3f(-width, height, -width);
     
     glTexCoord2f(1, 0);
-    glVertex3f(128, 50, -128);
+    glVertex3f(width, height, -width);
     glEnd();
     
     glEnable(GL_LIGHTING);
@@ -474,31 +475,31 @@ void init() {
     int textureWidth, textureHeight;
 
     //load textures
-    frontTex = imageLoader.loadPPM((char*)"/Front.ppm", true, &textureWidth, &textureHeight);
+    frontTex = imageLoader.loadPPM((char*)"/images/skybox_front.ppm", true, &textureWidth, &textureHeight);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, frontTex);
     
-    backTex = imageLoader.loadPPM((char*)"/Back.ppm", true, &textureWidth, &textureHeight);
+    backTex = imageLoader.loadPPM((char*)"/images/skybox_back.ppm", true, &textureWidth, &textureHeight);
     glBindTexture(GL_TEXTURE_2D, textures[1]);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, backTex);
     
-    leftTex = imageLoader.loadPPM((char*)"/Left.ppm", true, &textureWidth, &textureHeight);
+    leftTex = imageLoader.loadPPM((char*)"/images/skybox_left.ppm", true, &textureWidth, &textureHeight);
     glBindTexture(GL_TEXTURE_2D, textures[2]);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, leftTex);
     
-    rightTex = imageLoader.loadPPM((char*)"/Right.ppm", true, &textureWidth, &textureHeight);
+    rightTex = imageLoader.loadPPM((char*)"/images/skybox_right.ppm", true, &textureWidth, &textureHeight);
     glBindTexture(GL_TEXTURE_2D, textures[3]);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, rightTex);
     
-    topTex = imageLoader.loadPPM((char*)"/Top.ppm", true, &textureWidth, &textureHeight);
+    topTex = imageLoader.loadPPM((char*)"/images/skybox_top.ppm", true, &textureWidth, &textureHeight);
     glBindTexture(GL_TEXTURE_2D, textures[4]);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -507,7 +508,7 @@ void init() {
     //enable flat shading (for artistic reasons)
     glShadeModel(GL_FLAT);
 
-    glClearColor(0.25, 0.53, 0.77, 1);
+    glClearColor(0.21, 0.53, 0.77, 1);
     glEnable(GL_DEPTH_TEST);
     
     glFrontFace(GL_CCW);
@@ -530,7 +531,7 @@ void init() {
     camera = Camera();
    
     //setup interface image
-    pauseMenuImage = imageLoader.loadPPM((char*) "/interface.ppm", true, &pauseMenuWidth, &pauseMenuHeight);
+    pauseMenuImage = imageLoader.loadPPM((char*) "/images/pause_menu.ppm", true, &pauseMenuWidth, &pauseMenuHeight);
     
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
