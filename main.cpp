@@ -539,7 +539,7 @@ void init() {
     //setup death image
     
     //setup interface image
-    drawScreenImage = imageLoader.loadPPM((char*) "/images/pause_menu.ppm", true, &deathScreenWidth, &deathScreenHeight);
+    drawScreenImage = imageLoader.loadPPM((char*) "/images/deathScreen.ppm", true, &deathScreenWidth, &deathScreenHeight);
     
     
     //hide cursor
