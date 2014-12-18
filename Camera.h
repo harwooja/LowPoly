@@ -34,7 +34,7 @@ private:
     /****************************************
      *    PRIVATE GLOBAL VARIABLES
      ****************************************/
-#define TO_RADS 3.141592654/180.0
+    #define TO_RADS 3.141592654/180.0
     float movementSpeedFactor = 0.2;
     float mouseSensitivity = 0.2;
 };

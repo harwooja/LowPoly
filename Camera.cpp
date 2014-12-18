@@ -115,14 +115,13 @@ void Camera::strafe(Direction dir, bool sprinting) {
     position[2] += (movementVec[2]/movementVecLength)*movementSpeedFactor;
 
     //don't let user leave scene
-    if (position[0] > 124)
-        position[0] = 124;
-    else if (position[0] < -124)
-        position[0] = -124;
-    
-    if (position[1] > 124)
-        position[1] = 124;
-    else if (position[1] < -124)
-        position[1] = -124;
+    if (position[0] > 126)
+        position[0] = 126;
+    else if (position[0] < -126)
+        position[0] = -126;
+    if (position[2] > 126)
+        position[2] = 126;
+    else if (position[2] < -126)
+        position[2] = -126;
 
 }

@@ -23,7 +23,7 @@
 #include <math.h>
 
 #include "Terrain.h"
-#include "ImageLoader.h"
+#include "ResourceLoader.h"
 
 
 /***************************************
@@ -32,6 +32,11 @@
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
 float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
 float materialColours[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][4];
+
+std::vector<std::vector<float>> elephantVertices;
+std::vector<std::vector<float>> elephantNormals;
+std::vector<std::vector<int>> elephantFaceIndices;
+std::vector<std::vector<int>> elephantNormalIndices;
 
 /***************************************
  * Constructor
@@ -54,7 +59,7 @@ void Terrain::generateTerrain() {
             heightMap[x][z] = 0;
     
     //load heightmap image
-    ImageLoader imgLoader = ImageLoader();
+    ResourceLoader imgLoader = ResourceLoader();
     float** heightmapImage = imgLoader.loadPPMHeightmap((char*)"/images/heightmap_256.ppm", true, TERRAIN_SIZE);
     
     //iterate over all points in heightmap (not incl. water)
@@ -107,8 +112,14 @@ void Terrain::generateTerrain() {
     
     generateWater(3);
     smoothTerrain(0.2);
-    
     calculateFaceNormals();
+    
+    //load trees and rocks
+    elephantVertices.clear();
+    elephantNormals.clear();
+    elephantNormalIndices.clear();
+    elephantFaceIndices.clear();
+    imgLoader.loadObj((char*)"/images/elephant.obj", true, &elephantVertices, &elephantNormals, &elephantFaceIndices, &elephantNormalIndices);
 }
 
 /***************************************
@@ -194,9 +205,38 @@ void Terrain::smoothTerrain(float smooth) {
     for (int x = 0; x < TERRAIN_SIZE+WATER_WIDTH; x++)
         for (int z = TERRAIN_SIZE+WATER_WIDTH-2; z > -1; z--)
             heightMap[x][z] = heightMap[x][z+1]*smooth + heightMap[x][z]*(1-smooth);
-    
 }
 
+/**************************************************************
+* draws our elephant
+**************************************************************/
+void drawElephant() {
+    
+    float colour[3] = {1,1,1};
+    glMaterialfv(GL_DIFFUSE, GL_FRONT_AND_BACK, colour);
+    glMaterialfv(GL_AMBIENT, GL_FRONT_AND_BACK, colour);
+    
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    
+    glTranslatef(0, 30, -10);
+    glScalef(0.01, 0.01, 0.01);
+
+    for (int i = 0; i < elephantFaceIndices.size()-2; i++) {
+        glBegin(GL_TRIANGLES);
+        glNormal3f(elephantNormals[elephantNormalIndices[i][0]][0], elephantNormals[elephantNormalIndices[i][0]][1], elephantNormals[elephantNormalIndices[i][0]][2]);
+        glVertex3f(elephantVertices[elephantFaceIndices[i][0]][0], elephantVertices[elephantFaceIndices[i][0]][1], elephantVertices[elephantFaceIndices[i][0]][2]);
+        
+        glNormal3f(elephantNormals[elephantNormalIndices[i][1]][0], elephantNormals[elephantNormalIndices[i][1]][1], elephantNormals[elephantNormalIndices[i][1]][2]);
+        glVertex3f(elephantVertices[elephantFaceIndices[i][1]][0], elephantVertices[elephantFaceIndices[i][1]][1], elephantVertices[elephantFaceIndices[i][1]][2]);
+        
+        glNormal3f(elephantNormals[elephantNormalIndices[i][2]][0], elephantNormals[elephantNormalIndices[i][2]][1], elephantNormals[elephantNormalIndices[i][2]][2]);
+        glVertex3f(elephantVertices[elephantFaceIndices[i][2]][0], elephantVertices[elephantFaceIndices[i][2]][1], elephantVertices[elephantFaceIndices[i][2]][2]);
+        glEnd();
+    }
+    
+    glPopMatrix();
+}
 
 /**************************************************************
  * draws our generated terrain
@@ -233,6 +273,9 @@ void Terrain::drawTerrain() {
     glTranslatef(0, -2, 0);
     glutSolidCube(10);
     glPopMatrix();
+    
+    //draw elephant
+    drawElephant();
 }
 
 /**************************************************************

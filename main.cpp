@@ -21,9 +21,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
+#include <vector>
+#include <string>
 #include "ParticleList.h"
-#include "ImageLoader.h"
+#include "ResourceLoader.h"
 #include "Camera.h"
 
 
@@ -67,6 +68,8 @@ GLubyte *frontTex;
 GLubyte *topTex;
 GLubyte *leftTex, *rightTex, *backTex;
 GLuint textures[5];
+
+
 /*****************************************
  * draws scene
  ****************************************/
@@ -166,11 +169,15 @@ void keyboard(unsigned char key, int x, int y) {
             snowParticles.printStatus();
             break;
 
+        case 'y':
+            printf("\nPos: %f %f",camera.position[0], camera.position[2]);
+            break;
+
         //quit
         case 'q':
             exit(0);
             break;
-            
+
         //pause
         case 'p':
         case 'P':
@@ -373,75 +380,47 @@ void drawSkybox() {
     int height = 128;
     int width = 132;
     
-    //FRONT
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-    glBegin(GL_QUADS);
+    //FRONT (0) and BACK (1)
+    for (int i = 0; i < 2; i++) {
+        glBindTexture(GL_TEXTURE_2D, textures[i]);
+        glBegin(GL_QUADS);
 
-    glTexCoord2f(0, 0);
-    glVertex3f(width, 0, width);
-    
-    glTexCoord2f(0, 1);
-    glVertex3f(width, height, width);
-    
-    glTexCoord2f(1, 1);
-    glVertex3f(width, height, -width);
-    
-    glTexCoord2f(1, 0);
-    glVertex3f(width, 0, -width);
-    glEnd();
+        glTexCoord2f(0, 0);
+        glVertex3f(width*pow(-1,i), 0, width*pow(-1,i));
+        
+        glTexCoord2f(0, 1);
+        glVertex3f(width*pow(-1,i), height, width*pow(-1,i));
+        
+        glTexCoord2f(1, 1);
+        glVertex3f(width*pow(-1,i), height, -width*pow(-1,i));
+        
+        glTexCoord2f(1, 0);
+        glVertex3f(width*pow(-1,i), 0, -width*pow(-1,i));
 
-    //BACK
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
-    glBegin(GL_QUADS);
+        glEnd();
+    }
+    
+    //LEFT (2) and RIGHT (3)
+    for (int i = 2; i < 4; i++) {
+        glBindTexture(GL_TEXTURE_2D, textures[i]);
+        glBegin(GL_QUADS);
+        
+        glTexCoord2f(0, 0);
+        glVertex3f(-width*pow(-1,i), 0, width*pow(-1,i));
+        
+        glTexCoord2f(0, 1);
+        glVertex3f(-width*pow(-1,i), height, width*pow(-1,i));
+        
+        glTexCoord2f(1, 1);
+        glVertex3f(width*pow(-1,i), height, width*pow(-1,i));
+        
+        glTexCoord2f(1, 0);
+        glVertex3f(width*pow(-1,i), 0, width*pow(-1,i));
+        glEnd();
 
-    glTexCoord2f(0, 0);
-    glVertex3f(-width, 0, -width);
+    }
     
-    glTexCoord2f(0, 1);
-    glVertex3f(-width, height, -width);
-    
-    glTexCoord2f(1, 1);
-    glVertex3f(-width, height, width);
-    
-    glTexCoord2f(1, 0);
-    glVertex3f(-width, 0, width);
-    glEnd();
-    
-    //LEFT
-    glBindTexture(GL_TEXTURE_2D, textures[2]);
-    glBegin(GL_QUADS);
-    
-    glTexCoord2f(0, 0);
-    glVertex3f(-width, 0, width);
-    
-    glTexCoord2f(0, 1);
-    glVertex3f(-width, height, width);
-
-    glTexCoord2f(1, 1);
-    glVertex3f(width, height, width);
-    
-    glTexCoord2f(1, 0);
-    glVertex3f(width, 0, width);
-    glEnd();
-    
-    //RIGHT
-    glBindTexture(GL_TEXTURE_2D, textures[3]);
-    glBegin(GL_QUADS);
-    
-    glTexCoord2f(0, 0);
-    glVertex3f(width, 0, -width);
-    
-    glTexCoord2f(0, 1);
-    glVertex3f(width, height, -width);
-    
-    glTexCoord2f(1, 1);
-    glVertex3f(-width, height, -width);
-    
-    glTexCoord2f(1, 0);
-    glVertex3f(-width, 0, -width);
-    glEnd();
-    
-    //TOP
+    //TOP (4)
     glBindTexture(GL_TEXTURE_2D, textures[4]);
     glBegin(GL_QUADS);
     
@@ -463,48 +442,22 @@ void drawSkybox() {
 }
 
 /*******************************************
- *initializes global variables and settings
- ******************************************/
+* initializes global variables and settings
+******************************************/
 void init() {
     
     //enable textures (for skybox)
     glEnable(GL_TEXTURE_2D);
     glGenTextures(5, textures);
     
-    ImageLoader imageLoader = ImageLoader();
-    int textureWidth, textureHeight;
-
     //load textures
-    frontTex = imageLoader.loadPPM((char*)"/images/skybox_front.ppm", true, &textureWidth, &textureHeight);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, frontTex);
-    
-    backTex = imageLoader.loadPPM((char*)"/images/skybox_back.ppm", true, &textureWidth, &textureHeight);
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, backTex);
-    
-    leftTex = imageLoader.loadPPM((char*)"/images/skybox_left.ppm", true, &textureWidth, &textureHeight);
-    glBindTexture(GL_TEXTURE_2D, textures[2]);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, leftTex);
-    
-    rightTex = imageLoader.loadPPM((char*)"/images/skybox_right.ppm", true, &textureWidth, &textureHeight);
-    glBindTexture(GL_TEXTURE_2D, textures[3]);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, rightTex);
-    
-    topTex = imageLoader.loadPPM((char*)"/images/skybox_top.ppm", true, &textureWidth, &textureHeight);
-    glBindTexture(GL_TEXTURE_2D, textures[4]);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, topTex);
-    
+    ResourceLoader imageLoader = ResourceLoader();
+    imageLoader.loadPPMTexture((char*)"/images/skybox_front.ppm", true, &textures[0]);
+    imageLoader.loadPPMTexture((char*)"/images/skybox_back.ppm", true, &textures[1]);
+    imageLoader.loadPPMTexture((char*)"/images/skybox_left.ppm", true, &textures[2]);
+    imageLoader.loadPPMTexture((char*)"/images/skybox_right.ppm", true, &textures[3]);
+    imageLoader.loadPPMTexture((char*)"/images/skybox_top.ppm", true, &textures[4]);
+
     //enable flat shading (for artistic reasons)
     glShadeModel(GL_FLAT);
 
@@ -535,6 +488,8 @@ void init() {
     
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
+    
+
 }
 
 /*****************************************
