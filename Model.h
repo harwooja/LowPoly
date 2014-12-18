@@ -23,8 +23,14 @@ public:
     std::vector<std::vector<int>> normalIndices;
 
     float colour[4] = {1,1,1, 1};
+    float scale = 1;
+    
     float xPos = 0;
     float yPos = 0;
     float zPos = 0;
-    float scale = 1;
+    
+    float rotation = 0;
+    float xRot = 0;
+    float yRot = 0;
+    float zRot = 0;
 };

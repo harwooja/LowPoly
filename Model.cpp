@@ -20,6 +20,7 @@
 #endif
 
 #include <vector>
+#include <stdlib.h>
 
 #include "Model.h"
 #include "ResourceLoader.h"
@@ -52,10 +53,15 @@ Model::Model(char* fileName, bool pathRelative, float scaleFactor, float x, floa
     colour[2] = modelColour[2];
     colour[3] = modelColour[3];
     
+    //generate a random rotation
+    rotation = ((double) rand()/RAND_MAX)*360;
+    xRot = ((double) rand()/RAND_MAX);
+    yRot = ((double) rand()/RAND_MAX);
+    zRot = ((double) rand()/RAND_MAX);
+
     //load object file
     ResourceLoader objLoader = ResourceLoader();
     objLoader.loadObj(fileName, pathRelative, &vertices, &normals, &faceIndices, &normalIndices);
-    
 }
 
 /*****************************************
@@ -63,6 +69,10 @@ Model::Model(char* fileName, bool pathRelative, float scaleFactor, float x, floa
 * and scaling
 ****************************************/
 void Model::drawModel() {
+
+    //even though normals are unit vectors, the scaling affects
+    //them so we need to normalize
+    glEnable(GL_NORMALIZE);
     
     //set colour
     glMaterialfv(GL_FRONT, GL_AMBIENT, colour);
@@ -73,6 +83,7 @@ void Model::drawModel() {
     //transform
     glTranslatef(xPos, yPos, zPos);
     glScalef(scale, scale, scale);
+    glRotatef(rotation, xRot, yRot, zRot);
     
     //draw all vertices (with vertex normals)
     for (int i = 0; i < faceIndices.size(); i++) {
@@ -91,4 +102,6 @@ void Model::drawModel() {
     }
     
     glPopMatrix();
+    
+    glDisable(GL_NORMALIZE);
 }

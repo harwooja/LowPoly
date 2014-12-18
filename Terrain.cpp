@@ -111,7 +111,7 @@ void Terrain::generateTerrain() {
     calculateFaceNormals();
     
     //load rocks
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 20; i++) {
         
         //randomize attributes
         float xRand = ((double) rand()/RAND_MAX)*TERRAIN_SIZE - TERRAIN_SIZE/2.0;
@@ -120,7 +120,7 @@ void Terrain::generateTerrain() {
         float modelColour[4] = {0.6, 0.6, 0.7, 1};
         
         //add model
-        Model rock = Model((char*)"/images/rock.obj", true, scaleRand, xRand, getHeight(xRand,zRand)-scaleRand*scaleRand, zRand, modelColour);
+        Model rock = Model((i % 2 == 0) ? (char*)"/images/rock_1.obj" : (char*)"/images/rock_2.obj", true, scaleRand, xRand, getHeight(xRand,zRand)-scaleRand*scaleRand*0.5, zRand, modelColour);
         models.push_back(rock);
     }
 }
