@@ -212,30 +212,29 @@ void ResourceLoader::loadObj(char *fileName, bool pathRelative, std::vector<std:
         //index
         else if (strcmp(line, "f") == 0) {
             
+            //load the data
             matches = fscanf(objectFile, "%d//%d %d//%d %d//%d\n", &faceIndex[0], &normalIndex[0], &faceIndex[1], &normalIndex[1], &faceIndex[2], &normalIndex[2]);
-            if (matches != 6)
-                printf("check out");
+
+            //check that .obj file is in right format
+            if (matches != 6) {
+                printf("Error. Object file %s must have only face and normal indices", fileName);
+                exit(1);
+            }
             
-            indexTemp.push_back(faceIndex[0]);
-            indexTemp.push_back(faceIndex[1]);
-            indexTemp.push_back(faceIndex[2]);
+            indexTemp.push_back(faceIndex[0]-1);
+            indexTemp.push_back(faceIndex[1]-1);
+            indexTemp.push_back(faceIndex[2]-1);
             faceIndices->push_back(indexTemp);
             indexTemp.clear();
             
-            indexTemp.push_back(normalIndex[0]);
-            indexTemp.push_back(normalIndex[1]);
-            indexTemp.push_back(normalIndex[2]);
+            indexTemp.push_back(normalIndex[0]-1);
+            indexTemp.push_back(normalIndex[1]-1);
+            indexTemp.push_back(normalIndex[2]-1);
             normalIndices->push_back(indexTemp);
             indexTemp.clear();
         }
         
     }
-    
-    printf("\nvertices size: %lu",vertices->size());
-    printf("\nnormal size: %lu",normals->size());
-    printf("\nvert index size: %lu",faceIndices->size());
-    printf("\nnorm index size: %lu",normalIndices->size());
-    
     fclose(objectFile);
 }
 
