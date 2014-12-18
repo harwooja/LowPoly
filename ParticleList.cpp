@@ -199,24 +199,28 @@ bool ParticleList::deathCollision(float x, float y, float z){
         
         if (particleType == LAVA){
             
-            paddingX[0]= particleIterator->position[0] - particleIterator->size;
-            paddingX[1] = particleIterator->position[0] + particleIterator->size;
+            paddingXlow= particleIterator->position[0] - particleIterator->size;
+            paddingXhigh = particleIterator->position[0] + particleIterator->size;
       
-            paddingZ[0] = particleIterator->position[2] - particleIterator->size;
-            paddingZ[1] = particleIterator->position[2] + particleIterator->size;
+            paddingZlow = particleIterator->position[2] - particleIterator->size;
+            paddingZhigh = particleIterator->position[2] + particleIterator->size;
             
-            printf("position: %f", particleIterator->position[0]);
+    
+            
+   /**
+            printf("position: %f \n", particleIterator->position[0]);
             printf("size %f \n", particleIterator->size);
-            printf("padding0: %f \n", paddingX[0]);
-            printf("padding1: %f \n", paddingX[1]);
+            printf("padding0: %f \n", paddingXlow);
+            printf("padding1: %f \n", paddingXhigh);
+            printf("x-coord: %f \n", x);
             printf("\n");
-          
-        /**
-            for (float x = paddingX[1]; x > paddingX[0]; x = x - 1){
-                
-                printf("hey");
+          **/
+        
+            if ( (x > paddingXlow) && (x < paddingXhigh) ){
+                if ( (z < paddingZhigh) && ( z > paddingZlow)){
+                    return true;
+                }
             }
-           **/
             
             
         }

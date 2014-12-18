@@ -89,8 +89,10 @@ private:
     int ageLimit = 500;
     int particlesDrawn = 0;
     float particleBounds[6];
-    float paddingX[1];
-    float paddingZ[1];
+    double paddingXlow;
+    double paddingXhigh;
+    double paddingZlow;
+    double paddingZhigh;
     
     float snowMaterial[3] = {1,1,1};
     float fireMaterial[3] = {1,0,0};
