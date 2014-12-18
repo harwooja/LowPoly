@@ -20,7 +20,7 @@ public:
     typedef struct Particle {
         
         //vector variables
-        float position[3] = {0,0,0};
+        double position[3] = {0,0,0};
         void setPosition(float posX, float posY, float posZ) {
             position[0] = posX;
             position[1] = posY;
@@ -59,6 +59,7 @@ public:
      *    PUBLIC FUNCTIONS
      ****************************************/
     ParticleList(ParticleType particleType, Terrain*);
+    ParticleList(); // collision constructor
     
     void addParticle();
     void updateParticles();
@@ -66,6 +67,7 @@ public:
     void clearParticles();
     void rotateParticle(float incrX, float incrY, float incrZ);
     void printStatus();
+    bool deathCollision(float x, float y, float z);
     /****************************************
      *    PUBLIC VARIABLES
      ****************************************/
@@ -79,6 +81,7 @@ private:
      ****************************************/
     std::list<Particle> particleList;
     std::list<Particle>::iterator particleIterator;
+
     
     Terrain *terrainMap;
     ParticleType particleType;
@@ -86,6 +89,8 @@ private:
     int ageLimit = 500;
     int particlesDrawn = 0;
     float particleBounds[6];
+    float paddingX[1];
+    float paddingZ[1];
     
     float snowMaterial[3] = {1,1,1};
     float fireMaterial[3] = {1,0,0};

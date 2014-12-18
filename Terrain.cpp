@@ -119,7 +119,7 @@ void Terrain::generateTerrain() {
     elephantNormals.clear();
     elephantNormalIndices.clear();
     elephantFaceIndices.clear();
-    imgLoader.loadObj((char*)"/images/elephant.obj", true, &elephantVertices, &elephantNormals, &elephantFaceIndices, &elephantNormalIndices);
+    //imgLoader.loadObj((char*)"/images/elephant.obj", true, &elephantVertices, &elephantNormals, &elephantFaceIndices, &elephantNormalIndices);
 }
 
 /***************************************
@@ -210,6 +210,8 @@ void Terrain::smoothTerrain(float smooth) {
 /**************************************************************
 * draws our elephant
 **************************************************************/
+
+/**
 void drawElephant() {
     
     float colour[3] = {1,1,1};
@@ -237,6 +239,8 @@ void drawElephant() {
     
     glPopMatrix();
 }
+ **/
+
 
 /**************************************************************
  * draws our generated terrain
@@ -275,7 +279,7 @@ void Terrain::drawTerrain() {
     glPopMatrix();
     
     //draw elephant
-    drawElephant();
+   // drawElephant();
 }
 
 /**************************************************************

@@ -28,8 +28,11 @@
 
 #include <math.h>
 #include <stdio.h>
-
 #include "Camera.h"
+
+
+
+
 
 /****************************************
  * Constructor
@@ -40,6 +43,8 @@ Camera::Camera() {
     position[0] = 0.5;
     position[1] = 0;
     position[2] = 20;
+   
+   
 }
 
 /****************************************
@@ -125,3 +130,6 @@ void Camera::strafe(Direction dir, bool sprinting) {
         position[2] = -126;
 
 }
+ 
+
+

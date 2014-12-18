@@ -45,6 +45,8 @@ ParticleList::ParticleList(ParticleType type, Terrain* terrain) {
     particleBounds[5] = 128;
 }
 
+ParticleList::ParticleList(){}
+
 /****************************************
  * clears all particles
  ****************************************/
@@ -63,6 +65,7 @@ void ParticleList::updateParticles() {
     
     for (particleIterator = particleList.begin(); particleIterator != particleList.end(); particleIterator++) {
         
+    
         if (particleIterator->age < ageLimit) {
             
             //calculate new position
@@ -184,7 +187,48 @@ void ParticleList::drawAndAddParticles() {
         else if (particleType == LAVA && rand() < RAND_MAX/4)
             addParticle();
     }
+    
+   
 }
+
+
+bool ParticleList::deathCollision(float x, float y, float z){
+    
+    
+    for (particleIterator = particleList.begin(); particleIterator != particleList.end(); particleIterator++) {
+        
+        if (particleType == LAVA){
+            
+            paddingX[0]= particleIterator->position[0] - particleIterator->size;
+            paddingX[1] = particleIterator->position[0] + particleIterator->size;
+      
+            paddingZ[0] = particleIterator->position[2] - particleIterator->size;
+            paddingZ[1] = particleIterator->position[2] + particleIterator->size;
+            
+            printf("position: %f", particleIterator->position[0]);
+            printf("size %f \n", particleIterator->size);
+            printf("padding0: %f \n", paddingX[0]);
+            printf("padding1: %f \n", paddingX[1]);
+            printf("\n");
+          
+        /**
+            for (float x = paddingX[1]; x > paddingX[0]; x = x - 1){
+                
+                printf("hey");
+            }
+           **/
+            
+            
+        }
+
+    
+    
+    }
+
+    return false;
+}
+
+
 
 void ParticleList::printStatus() {
     printf("\n\nType: %s",particleType == SNOW ? "SNOW" : "LAVA");
@@ -202,3 +246,6 @@ float randomFloat(float a, float b) {
     float r = random * diff;
     return a + r;
 }
+
+
+

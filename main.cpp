@@ -36,6 +36,8 @@ void togglePausedScene();
 void passive(int x, int y);
 void timer(int value);
 void drawSkybox();
+void drawDeath();
+void toggleDeathScene();
 
 /*****************************************
  *    GLOBAL VARIABLES
@@ -51,6 +53,7 @@ bool paused = false;
 bool fullscreen = false;
 bool birdsEyeView = false;
 float lightPos[4] = {0,65,0, 1};
+bool death = false;
 
 //used for passive func
 bool mouseCurrentInitiated = false;
@@ -64,6 +67,11 @@ int pauseMenuWidth = 0;
 int pauseMenuHeight = 0;
 GLubyte *pauseMenuImage;
 
+// death
+int deathScreenWidth = 0;
+int deathScreenHeight = 0;
+GLubyte *drawScreenImage;
+
 GLubyte *frontTex;
 GLubyte *topTex;
 GLubyte *leftTex, *rightTex, *backTex;
@@ -75,7 +83,7 @@ GLuint textures[5];
  ****************************************/
 void display(void) {
     
-    //clear bits and model view matrix
+    //clear bits and model view matr camera.collision();ix
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     glMatrixMode(GL_MODELVIEW);
@@ -90,14 +98,23 @@ void display(void) {
     else
         glTranslatef(-camera.position[0], -100, -camera.position[2]);
     
+    
     //draw the scene
     terrain.drawTerrain();
     lavaParticles.drawAndAddParticles();
     snowParticles.drawAndAddParticles();
     drawSkybox();
-
+    death = lavaParticles.deathCollision(camera.position[0], camera.position[1], camera.position[2]);
+   
+   
+    
     if (paused)
         drawPauseMenu();
+    
+
+    if (death)
+        drawDeath();
+    
     
     glutSwapBuffers();
 }
@@ -156,6 +173,36 @@ void togglePausedScene() {
     }
 }
 
+
+/********************************************
+ * draws the death screen
+ *******************************************/
+void drawDeath() {
+    
+    glDisable(GL_DEPTH_TEST);
+    
+    //set projection matrix
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, windowWidth, 0, windowHeight);
+    
+    //draw pixels of image
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glRasterPos2i(windowWidth/2+deathScreenWidth/2, windowHeight/2-deathScreenHeight/2);
+    glPixelZoom(-1,1);
+    if (drawScreenImage != NULL)
+        glDrawPixels(deathScreenWidth, deathScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, drawScreenImage);
+    
+    //reset projection matrixs
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45, (float) windowWidth / (float) windowHeight, 1,300);
+    
+    glEnable(GL_DEPTH_TEST);
+}
+
+
 /********************************************
  * handles key presses for program functions
  *******************************************/
@@ -168,24 +215,24 @@ void keyboard(unsigned char key, int x, int y) {
             lavaParticles.printStatus();
             snowParticles.printStatus();
             break;
-
+            
         case 'y':
             printf("\nPos: %f %f",camera.position[0], camera.position[2]);
             break;
-
-        //quit
+            
+            //quit
         case 'q':
             exit(0);
             break;
-
-        //pause
+            
+            //pause
         case 'p':
         case 'P':
         case 27:
             togglePausedScene();
             break;
             
-        //toggle fullscreen
+            //toggle fullscreen
         case 'f':
         case 'F':
             fullscreen = !fullscreen;
@@ -196,13 +243,16 @@ void keyboard(unsigned char key, int x, int y) {
                 glutReshapeWindow(800, 600);
             }
             break;
+            
+            
+            
     }
     
     //keys that only work when not paused
     if (!paused) {
         switch (key) {
                 
-            //change global state
+                //change global state
             case 'b':
                 birdsEyeView = !birdsEyeView;
                 break;
@@ -213,7 +263,7 @@ void keyboard(unsigned char key, int x, int y) {
                 glShadeModel(GL_SMOOTH);
                 break;
                 
-            //move player
+                //move player
             case 'w':
             case 'W':
                 if (glutGetModifiers() == GLUT_ACTIVE_ALT)
@@ -295,7 +345,7 @@ void mouse(int button, int state, int x, int y) {
             
             //top button - toggle lava
             if (y > topHud+30 && y < topHud+140) {
-
+                
                 lavaParticles.enabled = !lavaParticles.enabled;
                 
                 //clear particles or add some new ones
@@ -310,7 +360,7 @@ void mouse(int button, int state, int x, int y) {
             else if (y > topHud+170 && y < topHud+280) {
                 
                 snowParticles.enabled = !snowParticles.enabled;
-
+                
                 //clear particles or add some new ones
                 if (!snowParticles.enabled)
                     snowParticles.clearParticles();
@@ -371,12 +421,12 @@ void reshape(int w, int h) {
 }
 
 /********************************************
-* draws textured skybox around scene
-*******************************************/
+ * draws textured skybox around scene
+ *******************************************/
 void drawSkybox() {
-
+    
     glDisable(GL_LIGHTING);
-
+    
     int height = 128;
     int width = 132;
     
@@ -384,7 +434,7 @@ void drawSkybox() {
     for (int i = 0; i < 2; i++) {
         glBindTexture(GL_TEXTURE_2D, textures[i]);
         glBegin(GL_QUADS);
-
+        
         glTexCoord2f(0, 0);
         glVertex3f(width*pow(-1,i), 0, width*pow(-1,i));
         
@@ -396,7 +446,7 @@ void drawSkybox() {
         
         glTexCoord2f(1, 0);
         glVertex3f(width*pow(-1,i), 0, -width*pow(-1,i));
-
+        
         glEnd();
     }
     
@@ -417,7 +467,7 @@ void drawSkybox() {
         glTexCoord2f(1, 0);
         glVertex3f(width*pow(-1,i), 0, width*pow(-1,i));
         glEnd();
-
+        
     }
     
     //TOP (4)
@@ -442,8 +492,8 @@ void drawSkybox() {
 }
 
 /*******************************************
-* initializes global variables and settings
-******************************************/
+ * initializes global variables and settings
+ ******************************************/
 void init() {
     
     //enable textures (for skybox)
@@ -457,10 +507,10 @@ void init() {
     imageLoader.loadPPMTexture((char*)"/images/skybox_left.ppm", true, &textures[2]);
     imageLoader.loadPPMTexture((char*)"/images/skybox_right.ppm", true, &textures[3]);
     imageLoader.loadPPMTexture((char*)"/images/skybox_top.ppm", true, &textures[4]);
-
+    
     //enable flat shading (for artistic reasons)
     glShadeModel(GL_FLAT);
-
+    
     glClearColor(0.21, 0.53, 0.77, 1);
     glEnable(GL_DEPTH_TEST);
     
@@ -479,17 +529,23 @@ void init() {
     
     //initialize globals
     terrain = Terrain();
-
+    
     //initialize camera
     camera = Camera();
-   
+    
     //setup interface image
     pauseMenuImage = imageLoader.loadPPM((char*) "/images/pause_menu.ppm", true, &pauseMenuWidth, &pauseMenuHeight);
+    
+    //setup death image
+    
+    //setup interface image
+    drawScreenImage = imageLoader.loadPPM((char*) "/images/pause_menu.ppm", true, &deathScreenWidth, &deathScreenHeight);
+    
     
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
     
-
+    
 }
 
 /*****************************************
