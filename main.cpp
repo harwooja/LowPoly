@@ -112,16 +112,14 @@ void display(void) {
 
     if (!death)
         death = lavaParticles.deathCollision(camera.position[0], camera.position[1], camera.position[2]);
-    else {
+    else
         drawDeath();
-//        toggleDeath();
-    }
     
     if ((terrain.getHeight(camera.position[0], camera.position[2]) <= 1)) {
         waterDeath = true;
         death = true;
     }
-    
+    printf("\n %f %f", camera.position[0], camera.position[2]);
     glutSwapBuffers();
 }
 
