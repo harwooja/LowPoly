@@ -92,6 +92,8 @@ GLubyte *leftTex, *rightTex, *backTex;
 GLuint textures[5];
 
 
+bool perspectiveMode = true;
+
 
 
 
@@ -247,23 +249,27 @@ void toggleDeath(){
     }
 }
 
-/********************************************
- * changes projection matrix, to show diff.
- * between orthographic and perspective projections
- *******************************************/
+/*** changes projection matrix, to show diff.
+* between orthographic and perspective projections
+*******************************************/
+
 void toggleProjectionMatrix() {
     
-    perspectiveProjection = !perspectiveProjection;
+        perspectiveProjection = !perspectiveProjection;
     
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
     
-    //change matrix
-    if (perspectiveProjection)
-        glOrtho(-200, 200, -200, 200, -200, 200);
-    else
-        gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
-}
+        //change matrix
+        if (perspectiveProjection)
+                glOrtho(-200, 200, -200, 200, -200, 200);
+        else
+                gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
+    }
+
+/********************************************
+  * handles key presses for program functions
+  *******************************************/
 
 /********************************************
  * handles key presses for program functions
