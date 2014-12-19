@@ -49,6 +49,9 @@ ParticleList lavaParticles = ParticleList(ParticleList::LAVA, &terrain);
 //state
 bool paused = false;
 bool fullscreen = false;
+bool perspectiveProjection = true;
+bool fog = false;
+
 float lightPos[4] = {0,65,0, 1};
 
 //used for passive func
@@ -68,11 +71,6 @@ GLubyte *topTex;
 GLubyte *leftTex, *rightTex, *backTex;
 GLuint textures[5];
 
-GLuint fogMode[] = { GL_EXP, GL_EXP2, GL_LINEAR }; //storage for three types of fog
-int fogfilter = -1; //which fog to use
-float fogColor[4] = {0.5,0.5,0.5, 1.0}; //fog colour
-
-bool perspectiveMode = true;
 
 /*****************************************
  * draws scene
@@ -101,20 +99,7 @@ void display(void) {
 
     glutSwapBuffers();
 }
-void orthoDisplay()
-{
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-200, 200, -200, 200, -200, 200);
-}
-void perspectiveDisplay()
-{
-    //change to projection matrix mode, set the extents of our viewing volume
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
 
-}
 /********************************************
  * draws the menu for when game paused
  *******************************************/
@@ -170,6 +155,24 @@ void togglePausedScene() {
 }
 
 /********************************************
+ * changes projection matrix, to show diff.
+ * between orthographic and perspective projections
+ *******************************************/
+void toggleProjectionMatrix() {
+    
+    perspectiveProjection = !perspectiveProjection;
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    
+    //change matrix
+    if (perspectiveProjection)
+        glOrtho(-200, 200, -200, 200, -200, 200);
+    else
+        gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
+}
+
+/********************************************
  * handles key presses for program functions
  *******************************************/
 void keyboard(unsigned char key, int x, int y) {
@@ -204,24 +207,20 @@ void keyboard(unsigned char key, int x, int y) {
         //fog
         case 'g':
         case 'G':
-            fogfilter += 1;
-            if (fogfilter > -1 && fogfilter < 2) {
+            fog = !fog;
+            if (fog) {
                 glEnable(GL_FOG);
-                glFogi(GL_FOG_MODE, fogMode[fogfilter]);
+                glFogi(GL_FOG_MODE, GL_EXP);
             }
-            else if (fogfilter > 2)
-                fogfilter = -1;
-
-            if (fogfilter==-1)
+            else
                 glDisable(GL_FOG);
             break;
 
+        //projection matrix
         case 'm':
         case 'M':
-            if(perspectiveMode == true) orthoDisplay();
-            else if (perspectiveMode == false) perspectiveDisplay();
-            perspectiveMode = !perspectiveMode;
-
+            toggleProjectionMatrix();
+            break;
     }
 
     //keys that only work when not paused
@@ -489,24 +488,16 @@ void init() {
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 
     //fog not enabled by default
-    glFogfv(GL_FOG_COLOR, fogColor);
+    float fogColour[4] = {0.5,0.5,0.5, 1.0};
+    glFogfv(GL_FOG_COLOR, fogColour);
     glFogf(GL_FOG_DENSITY, 0.05);
     glFogf(GL_FOG_START, 3.0);
     glFogf(GL_FOG_END, 10.0);
-
-
-    //messing around with blending just ignore this
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-
 
     //set projection matrix, using perspective w/ correct aspect ratio
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
-
-    //initialize globals
-    terrain = Terrain();
 
     //initialize camera
     camera = Camera();

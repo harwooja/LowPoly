@@ -213,7 +213,7 @@ void ParticleList::drawAndAddParticles() {
     if (enabled && !paused) {
         if (particleType == SNOW)
             addParticle();
-        else if (particleType == LAVA )
+        else if (particleType == LAVA && rand() > RAND_MAX/2)
             addParticle();
     }
 }
