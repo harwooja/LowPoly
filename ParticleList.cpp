@@ -192,30 +192,23 @@ void ParticleList::drawAndAddParticles() {
 }
 
 
+// detect collision with lava particles, return true/false
 bool ParticleList::deathCollision(float x, float y, float z){
     
-    
+// scan each particle
     for (particleIterator = particleList.begin(); particleIterator != particleList.end(); particleIterator++) {
         
+        // if our particle is lava
         if (particleType == LAVA){
             
+            // create a synthetic padding, size matching of our particle (sphere)
             paddingXlow= particleIterator->position[0] - particleIterator->size;
             paddingXhigh = particleIterator->position[0] + particleIterator->size;
       
             paddingZlow = particleIterator->position[2] - particleIterator->size;
             paddingZhigh = particleIterator->position[2] + particleIterator->size;
             
-    
-            
-   /**
-            printf("position: %f \n", particleIterator->position[0]);
-            printf("size %f \n", particleIterator->size);
-            printf("padding0: %f \n", paddingXlow);
-            printf("padding1: %f \n", paddingXhigh);
-            printf("x-coord: %f \n", x);
-            printf("\n");
-          **/
-        
+            // if we intersect with the coordinates of our padding, the user has died
             if ( (x > paddingXlow) && (x < paddingXhigh) ){
                 if ( (z < paddingZhigh) && ( z > paddingZlow)){
                     return true;
@@ -228,8 +221,6 @@ bool ParticleList::deathCollision(float x, float y, float z){
     
     
     }
-    
-    printf("%f", y);
 
     return false;
 }

@@ -105,15 +105,16 @@ void display(void) {
     snowParticles.drawAndAddParticles();
     drawSkybox();
     
-    if (death == false)
+   // printf(camera.position[0], )
+    
+    if (!death)
         death = lavaParticles.deathCollision(camera.position[0], camera.position[1], camera.position[2]);
    
-   
-    
     if (paused)
         drawPauseMenu();
     
     if (death)
+        drawDeath();
         toggleDeath();
     
     
@@ -205,11 +206,10 @@ void drawDeath() {
 
 void toggleDeath(){
     
-    drawDeath();
     
     if (death) {
-        glutPassiveMotionFunc(passive);
-        glutSetCursor(GLUT_CURSOR_NONE);
+        glutPassiveMotionFunc(NULL);
+        glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
         lavaParticles.paused = true;
         snowParticles.paused = true;
     }
@@ -263,7 +263,7 @@ void keyboard(unsigned char key, int x, int y) {
     }
     
     //keys that only work when not paused
-    if (!paused) {
+    if (!(paused || death)) {
         switch (key) {
                 
                 //change global state
