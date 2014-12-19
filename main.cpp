@@ -380,34 +380,41 @@ void mouse(int button, int state, int x, int y) {
         //click is within hud, with 20px padding
         if (x > leftHud+20 && x < rightHud-20 && y > topHud+20 && y < bottomHud-20) {
 
-            //top button - toggle lava
-            if (y > topHud+30 && y < topHud+140) {
-                
-                lavaParticles.enabled = !lavaParticles.enabled;
+            if (paused && !death) {
 
-                //clear particles or add some new ones
-                if (!lavaParticles.enabled)
-                    lavaParticles.clearParticles();
-                if (lavaParticles.enabled)
-                    for (int i = 0; i < 10; i++)
-                        lavaParticles.addParticle();
+                //top button - toggle lava
+                if (y > topHud+30 && y < topHud+140) {
+                    
+                    lavaParticles.enabled = !lavaParticles.enabled;
+
+                    //clear particles or add some new ones
+                    if (!lavaParticles.enabled)
+                        lavaParticles.clearParticles();
+                    if (lavaParticles.enabled)
+                        for (int i = 0; i < 10; i++)
+                            lavaParticles.addParticle();
+                }
+
+                //second button - toggle snow
+                else if (y > topHud+170 && y < topHud+280) {
+
+                    snowParticles.enabled = !snowParticles.enabled;
+                    
+                    //clear particles or add some new ones
+                    if (!snowParticles.enabled)
+                        snowParticles.clearParticles();
+                    if (snowParticles.enabled)
+                        for (int i = 0; i < 10; i++)
+                            snowParticles.addParticle();
+                }
             }
-
-            //second button - toggle snow
-            else if (y > topHud+170 && y < topHud+280) {
-
-                snowParticles.enabled = !snowParticles.enabled;
-                
-                //clear particles or add some new ones
-                if (!snowParticles.enabled)
-                    snowParticles.clearParticles();
-                if (snowParticles.enabled)
-                    for (int i = 0; i < 10; i++)
-                        snowParticles.addParticle();
+            
+            if (death) {
+                    //restart button here
             }
 
             //bottom buton
-            else if (y < bottomHud-50 && y > bottomHud-105)
+            if (y < bottomHud-50 && y > bottomHud-105)
                 exit(1);
         }
     }
