@@ -95,7 +95,10 @@ private:
     double paddingZlow;
     double paddingZhigh;
     
-    float snowMaterial[3] = {1,1,1};
-    float fireMaterial[3] = {1,0,0};
-    float specMaterial[3] = {0,0,0};
+
+    float snowMaterial[4] = {1,1,1,1};
+    float fireMaterial[4] = {1,0,0,1};
+    float specMaterial[4] = {0.5,0.5,0.5,1};
+    float steamMaterial[4] = {0.7,0.7,0.7,0.75};
+
 };

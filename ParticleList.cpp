@@ -64,8 +64,7 @@ void ParticleList::updateParticles() {
     float newDirX = 0, newDirY = 0, newDirZ = 0;
 
     for (particleIterator = particleList.begin(); particleIterator != particleList.end(); particleIterator++) {
-        
-    
+
         if (particleIterator->age < ageLimit) {
 
             //calculate new position

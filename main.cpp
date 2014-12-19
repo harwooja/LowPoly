@@ -94,8 +94,6 @@ float fogColor[4] = {0.5,0.5,0.5, 1.0}; //fog colour
 
 bool perspectiveMode = true;
 
-using namespace std;
-
 
 
 
@@ -105,9 +103,8 @@ using namespace std;
  * draws scene
  ****************************************/
 void display(void) {
-    
-    
-    //clear bits and model view matr camera.collision();ix
+
+    //clear bits and model view matrix
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_MODELVIEW);
@@ -116,13 +113,8 @@ void display(void) {
     //transform according to camera
     glRotatef(camera.rotation[0], 1, 0, 0);
     glRotatef(camera.rotation[1], 0, 1, 0);
-    
-    if (!birdsEyeView)
-        glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-3, -camera.position[2]);
-    else
-        glTranslatef(-camera.position[0], -100, -camera.position[2]);
-    
-    
+    glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-3, -camera.position[2]);
+
     //draw the scene
     terrain.drawTerrain();
     lavaParticles.drawAndAddParticles();
@@ -277,17 +269,8 @@ void keyboard(unsigned char key, int x, int y) {
 
     //keys that are handled whether paused or not
     switch (key) {
-            
-        case 't':
-            lavaParticles.printStatus();
-            snowParticles.printStatus();
-            break;
-            
-        case 'y':
-            printf("\nPos: %f %f",camera.position[0], camera.position[2]);
-            break;
-            
-            //quit
+
+        //quit
         case 'q':
             exit(0);
             break;
@@ -313,27 +296,35 @@ void keyboard(unsigned char key, int x, int y) {
             if (death)
                 glutPostRedisplay();
             break;
-            
-            
-            
+
+        //fog
+        case 'g':
+        case 'G':
+            fogfilter += 1;
+            if (fogfilter > -1 && fogfilter < 2) {
+                glEnable(GL_FOG);
+                glFogi(GL_FOG_MODE, fogMode[fogfilter]);
+            }
+            else if (fogfilter > 2)
+                fogfilter = -1;
+
+            if (fogfilter==-1)
+                glDisable(GL_FOG);
+            break;
+
+        case 'm':
+        case 'M':
+            if(perspectiveMode == true) orthoDisplay();
+            else if (perspectiveMode == false) perspectiveDisplay();
+            perspectiveMode = !perspectiveMode;
+
     }
 
     //keys that only work when not paused
     if (!(paused || death)) {
         switch (key) {
-                
-                //change global state
-            case 'b':
-                birdsEyeView = !birdsEyeView;
-                break;
-            case '1':
-                glShadeModel(GL_FLAT);
-                break;
-            case '2':
-                glShadeModel(GL_SMOOTH);
-                break;
-                
-                //move player
+
+            //move player
             case 'w':
             case 'W':
                 if (glutGetModifiers() == GLUT_ACTIVE_SHIFT)
@@ -362,7 +353,7 @@ void keyboard(unsigned char key, int x, int y) {
                 else
                     camera.strafe(Camera::RIGHT, false);
                 break;
-       
+
         }
     }
     glutPostRedisplay();
@@ -617,7 +608,7 @@ void init() {
     
     //initialize camera
     camera = Camera();
-    
+
     //setup interface image
     pauseMenuImage = imageLoader.loadPPM((char*) "/images/pause_menu.ppm", true, &pauseMenuWidth, &pauseMenuHeight);
     
@@ -626,7 +617,7 @@ void init() {
     //setup interface image
     drawScreenImage = imageLoader.loadPPM((char*) "/images/deathScreen.ppm", true, &deathScreenWidth, &deathScreenHeight);
     
-    drawWDScreenImage = imageLoader.loadPPM((char*) "/images/deathScreen.ppm", true, &waterdeathScreenWidth, &waterdeathScreenHeight);
+    drawWDScreenImage = imageLoader.loadPPM((char*) "/images/waterdeath.ppm", true, &waterdeathScreenWidth, &waterdeathScreenHeight);
     
     
     //hide cursor
