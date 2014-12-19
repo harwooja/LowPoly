@@ -23,6 +23,10 @@
 #include <math.h>
 #include <vector>
 #include <string>
+
+#include <chrono>
+#include <pthread.h>
+
 #include "ParticleList.h"
 #include "ResourceLoader.h"
 #include "Camera.h"
@@ -38,6 +42,7 @@ void timer(int value);
 void drawSkybox();
 void drawDeath();
 void toggleDeath();
+void output();
 
 /*****************************************
  *    GLOBAL VARIABLES
@@ -53,7 +58,9 @@ bool paused = false;
 bool fullscreen = false;
 bool birdsEyeView = false;
 float lightPos[4] = {0,65,0, 1};
-bool death = false;
+bool death = false; // if user is dead state
+bool inWater = false;
+int secondsOfBreath = 10; // time user has in water (seconds)
 
 //used for passive func
 bool mouseCurrentInitiated = false;
@@ -78,10 +85,16 @@ GLubyte *leftTex, *rightTex, *backTex;
 GLuint textures[5];
 
 
+using namespace std;
+
+
+
+
 /*****************************************
  * draws scene
  ****************************************/
 void display(void) {
+    
     
     //clear bits and model view matr camera.collision();ix
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -117,6 +130,8 @@ void display(void) {
         drawDeath();
         toggleDeath();
     
+    if (inWater)
+        output();
     
     glutSwapBuffers();
 }
@@ -306,6 +321,11 @@ void keyboard(unsigned char key, int x, int y) {
                 else
                     camera.strafe(Camera::RIGHT, false);
                 break;
+       
+            case 'c':
+            case 'C':
+                inWater = true;
+                break;
         }
     }
     glutPostRedisplay();
@@ -389,6 +409,50 @@ void mouse(int button, int state, int x, int y) {
         }
     }
 }
+
+
+
+void output()
+{
+    
+   
+ 
+
+
+    
+    
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, windowWidth, 0.0, windowHeight);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+   
+    glRasterPos2f(windowWidth/3, windowHeight/1.3);
+    string s = "You can't swim! Seconds left till death: ";
+    s = s + to_string(secondsOfBreath);
+    void *font = GLUT_BITMAP_TIMES_ROMAN_24;
+    
+    for (string::iterator i = s.begin(); i != s.end(); ++i)
+    {
+        char c = *i;
+
+        glutBitmapCharacter(font, c);
+    }
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
+
+    
+
+    
+    
+    
+    }
+
 
 /********************************************
  * moves volcano particles
@@ -559,6 +623,8 @@ void init() {
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
     
+    
+  
     
 }
 
