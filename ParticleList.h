@@ -66,7 +66,7 @@ public:
     void drawAndAddParticles();
     void clearParticles();
     void rotateParticle(float incrX, float incrY, float incrZ);
-    void printStatus();
+
     /****************************************
      *    PUBLIC VARIABLES
      ****************************************/
@@ -91,6 +91,6 @@ private:
     float snowMaterial[4] = {1,1,1,1};
     float fireMaterial[4] = {1,0,0,1};
     float specMaterial[4] = {0.5,0.5,0.5,1};
-    float steamMaterial[4] = {0.5,0.5,0.5,0.75};
+    float steamMaterial[4] = {0.7,0.7,0.7,0.75};
 
 };
