@@ -24,7 +24,7 @@
 
 #include "Terrain.h"
 #include "ResourceLoader.h"
-
+#include "Model.h"
 
 /***************************************
  *    GLOBAL VARIABLES
@@ -32,11 +32,7 @@
 float heightMap[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH];
 float faceNormals[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][3];
 float materialColours[TERRAIN_SIZE+WATER_WIDTH][TERRAIN_SIZE+WATER_WIDTH][4];
-
-std::vector<std::vector<float>> elephantVertices;
-std::vector<std::vector<float>> elephantNormals;
-std::vector<std::vector<int>> elephantFaceIndices;
-std::vector<std::vector<int>> elephantNormalIndices;
+std::vector<Model> models;
 
 /***************************************
  * Constructor

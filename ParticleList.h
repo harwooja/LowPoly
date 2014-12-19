@@ -11,14 +11,14 @@
 #include <list>
 
 class ParticleList {
-    
+
 public:
-    
+
     /****************************************
      *    PUBLIC CUSTOM STRUCTS
      ****************************************/
     typedef struct Particle {
-        
+
         //vector variables
         double position[3] = {0,0,0};
         void setPosition(float posX, float posY, float posZ) {
@@ -44,17 +44,18 @@ public:
             colour[1] = colG;
             colour[2] = colB;
         }
-        
+
         //scalar variables
         float age = 0;
         float size = 1;
         float speed = 1;
-        
+
         bool touchedTerrain = false;
-        
+        bool touchedWater = false;
+
     } Particle;
     typedef enum {SNOW, LAVA, FOG} ParticleType;
-    
+
     /****************************************
      *    PUBLIC FUNCTIONS
      ****************************************/
@@ -73,9 +74,9 @@ public:
      ****************************************/
     bool enabled = true;
     bool paused = false;
-    
+
 private:
-    
+
     /****************************************
      *    PRIVATE VARIABLES
      ****************************************/
@@ -85,7 +86,7 @@ private:
     
     Terrain *terrainMap;
     ParticleType particleType;
-    
+
     int ageLimit = 500;
     int particlesDrawn = 0;
     float particleBounds[6];
