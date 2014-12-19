@@ -215,14 +215,13 @@ void keyboard(unsigned char key, int x, int y) {
             if (fogfilter==-1)
                 glDisable(GL_FOG);
             break;
-<<<<<<< HEAD
+
         case 'm':
         case 'M':
             if(perspectiveMode == true) orthoDisplay();
             else if (perspectiveMode == false) perspectiveDisplay();
             perspectiveMode = !perspectiveMode;
-=======
->>>>>>> e0d29611993d7926a55f888413d8a6a4dc13015b
+
     }
 
     //keys that only work when not paused
