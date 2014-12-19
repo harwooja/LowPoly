@@ -135,10 +135,6 @@ void Terrain::generateTerrain() {
         Model tree = Model((char*)"/images/tree.obj", true, scaleRand, xRand, getHeight(xRand, zRand), zRand, false, treeColour);
         models.push_back(tree);
     }
-    
-    printf("models.size: %lu",models.size());
-    
-    
 }
 
 /***************************************
