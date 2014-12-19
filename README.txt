@@ -1,4 +1,4 @@
-CS 3GC3 Final Project - LowPoly Volcano
+﻿CS 3GC3 Final Project - LowPoly Volcano
 December 20th, 2014
 
 Anagh Goswami - 1217426
@@ -15,7 +15,7 @@ We’ve created a volcanic and mountainous island landscape. Lava shoots out of 
 
 RUNNING / COMPILING 
 
-Included is a .exe file that should work on Windows. If not, just run “make” to use the makefile provided. Tested (successfully) on OS X, Windows 7, and Linux.
+Included is a .exe file that should work on Windows. If not, just run “make” to use the makefile provided. Tested (successfully) on OS X, Windows 7, Windows 8.1 and Linux.
 
 ADDITIONAL GRAPHICS FEATURES
 
