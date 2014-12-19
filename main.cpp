@@ -36,6 +36,7 @@ void togglePausedScene();
 void passive(int x, int y);
 void timer(int value);
 void drawSkybox();
+void drawCrosshairs();
 
 /*****************************************
  *    GLOBAL VARIABLES
@@ -100,11 +101,51 @@ void display(void) {
     lavaParticles.drawAndAddParticles();
     snowParticles.drawAndAddParticles();
     drawSkybox();
+	drawCrosshairs();
 
     if (paused)
         drawPauseMenu();
 
     glutSwapBuffers();
+}
+
+void drawCrosshairs(){
+    //clear matrix
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    
+    //change projection to gluOrtho2D temporarily (text drawn in 2d)
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, glutGet(GLUT_WINDOW_WIDTH), 0, glutGet(GLUT_WINDOW_HEIGHT));
+    	
+	//disable lighting (Crosshair should not be affected by light)
+	glDisable(GL_LIGHTING);
+	
+	/* set up string to print */
+	char formatStr[] = "%s";
+	char outputStr[11];
+	
+	#ifdef __APPLE__
+		sprintf(outputStr, formatStr, "(__(_O_)__)");
+	#ifdef __WIN32
+		sprintf_s(outputStr, formatStr, "(__(_O_)__)");
+	#endif
+	#endif
+	/* set the 2D drawing position, and draw the mask */
+	glRasterPos2i(windowHeight/2, windowWidth/2);
+	for (int i = 0; i< strlen(outputStr); i++)
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, outputStr[i]);
+	
+	//revert previous matrices
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	
+	//enable lighting after Crosshair has been printed
+	glEnable(GL_LIGHTING);
 }
 
 /********************************************
