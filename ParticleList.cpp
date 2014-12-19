@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "ParticleList.h"
 
 /**************************************************
@@ -216,10 +217,40 @@ void ParticleList::drawAndAddParticles() {
         else if (particleType == LAVA && rand() > RAND_MAX/2)
             addParticle();
     }
+    
+   
 }
 
 /****************************************
- * returns a random float between a and br
+ * returns true if particle collides with
+ * passed coordinate
+ ****************************************/
+bool ParticleList::deathCollision(float x, float y, float z){
+
+    if (particleType == LAVA) {
+        
+        // scan each particle
+        for (particleIterator = particleList.begin(); particleIterator != particleList.end(); particleIterator++) {
+            
+            // create a synthetic padding, size matching of our particle (sphere)
+            paddingXlow= particleIterator->position[0] - particleIterator->size;
+            paddingXhigh = particleIterator->position[0] + particleIterator->size;
+      
+            paddingZlow = particleIterator->position[2] - particleIterator->size;
+            paddingZhigh = particleIterator->position[2] + particleIterator->size;
+            
+            //if we intersect with the coordinates of our padding, the user has died
+            if (x > paddingXlow && x < paddingXhigh)
+                if (z < paddingZhigh && z > paddingZlow)
+                    return true;
+        }
+    }
+    
+    return false;
+}
+
+/****************************************
+ * returns a random float between a and b
  ****************************************/
 float randomFloat(float a, float b) {
     float random = (float) rand() / RAND_MAX;

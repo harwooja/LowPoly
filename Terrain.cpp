@@ -135,10 +135,6 @@ void Terrain::generateTerrain() {
         Model tree = Model((char*)"/images/tree.obj", true, scaleRand, xRand, getHeight(xRand, zRand), zRand, false, treeColour);
         models.push_back(tree);
     }
-    
-    printf("models.size: %lu",models.size());
-    
-    
 }
 
 /***************************************
@@ -364,8 +360,8 @@ float Terrain::getHeight(float x, float z) {
         return 3;
     if (zIndexInHeightmap < 0 || zIndexInHeightmap >= TERRAIN_SIZE+WATER_WIDTH-2)
         return 3;
-    if (heightMap[(int)floor(xIndexInHeightmap)][(int)floor(zIndexInHeightmap)] < 3)
-        return 3;
+    if (heightMap[(int)floor(xIndexInHeightmap)][(int)floor(zIndexInHeightmap)] < 1)
+        return 1;
     
     // B(0,1) ------ C(1,1)
     //   |      pos    |

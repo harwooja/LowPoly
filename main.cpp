@@ -21,8 +21,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <vector>
 #include <string>
+
 #include "ParticleList.h"
 #include "ResourceLoader.h"
 #include "Camera.h"
@@ -36,6 +36,7 @@ void togglePausedScene();
 void passive(int x, int y);
 void timer(int value);
 void drawSkybox();
+void drawDeath();
 
 /*****************************************
  *    GLOBAL VARIABLES
@@ -51,6 +52,8 @@ bool paused = false;
 bool fullscreen = false;
 bool perspectiveProjection = true;
 bool fog = false;
+bool death = false;
+bool waterDeath = false;
 
 float lightPos[4] = {0,65,0, 1};
 
@@ -65,6 +68,16 @@ int windowHeight = 600;
 int pauseMenuWidth = 0;
 int pauseMenuHeight = 0;
 GLubyte *pauseMenuImage;
+
+// death
+int deathScreenWidth = 0;
+int deathScreenHeight = 0;
+GLubyte *drawScreenImage;
+
+// water death
+int waterdeathScreenWidth = 0;
+int waterdeathScreenHeight = 0;
+GLubyte *drawWDScreenImage;
 
 GLubyte *frontTex;
 GLubyte *topTex;
@@ -97,6 +110,18 @@ void display(void) {
     if (paused)
         drawPauseMenu();
 
+    if (!death)
+        death = lavaParticles.deathCollision(camera.position[0], camera.position[1], camera.position[2]);
+    else {
+        drawDeath();
+//        toggleDeath();
+    }
+    
+    if ((terrain.getHeight(camera.position[0], camera.position[2]) <= 1)) {
+        waterDeath = true;
+        death = true;
+    }
+    
     glutSwapBuffers();
 }
 
@@ -155,21 +180,68 @@ void togglePausedScene() {
 }
 
 /********************************************
- * changes projection matrix, to show diff.
- * between orthographic and perspective projections
+ * draws the death screen and disables interaction
  *******************************************/
-void toggleProjectionMatrix() {
+void drawDeath() {
+
+    glutPassiveMotionFunc(NULL);
+    glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+    lavaParticles.paused = true;
+    snowParticles.paused = true;
+    glColor3f(1.0, 0, 0);
     
-    perspectiveProjection = !perspectiveProjection;
-    
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+   
+    //set projection matrix
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+    gluOrtho2D(0, windowWidth, 0, windowHeight);
     
-    //change matrix
-    if (perspectiveProjection)
-        glOrtho(-200, 200, -200, 200, -200, 200);
-    else
-        gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
+    //draw pixels of image
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    
+    // if death from water, draw certain ppm
+    if (waterDeath) {
+        glRasterPos2i(windowWidth/2+waterdeathScreenWidth/2, windowHeight/2-waterdeathScreenHeight/2);
+        glPixelZoom(-1,1);
+        if (drawScreenImage != NULL)
+            glDrawPixels(waterdeathScreenWidth, waterdeathScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, drawWDScreenImage);
+    }
+    // if death from lava, draw certain ppm
+    else {
+        glRasterPos2i(windowWidth/2+deathScreenWidth/2, windowHeight/2-deathScreenHeight/2);
+        glPixelZoom(-1,1);
+        if (drawScreenImage != NULL)
+            glDrawPixels(deathScreenWidth, deathScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, drawScreenImage);
+    }
+    
+    //reset projection matrixs
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45, (float) windowWidth / (float) windowHeight, 1,300);
+    
+    glEnable(GL_DEPTH_TEST);
+}
+
+/******************************************
+* changes projection matrix, to show diff.
+* between orthographic and perspective projections
+*******************************************/
+
+void toggleProjectionMatrix() {
+    
+        perspectiveProjection = !perspectiveProjection;
+    
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+    
+        //change matrix
+        if (perspectiveProjection)
+                glOrtho(-200, 200, -200, 200, -200, 200);
+        else
+                gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
 }
 
 /********************************************
@@ -184,14 +256,14 @@ void keyboard(unsigned char key, int x, int y) {
         case 'q':
             exit(0);
             break;
-
+            
         //pause
         case 'p':
         case 'P':
         case 27:
             togglePausedScene();
             break;
-
+            
         //toggle fullscreen
         case 'f':
         case 'F':
@@ -224,7 +296,7 @@ void keyboard(unsigned char key, int x, int y) {
     }
 
     //keys that only work when not paused
-    if (!paused) {
+    if (!(paused || death)) {
         switch (key) {
 
             //move player
@@ -308,38 +380,46 @@ void mouse(int button, int state, int x, int y) {
         //click is within hud, with 20px padding
         if (x > leftHud+20 && x < rightHud-20 && y > topHud+20 && y < bottomHud-20) {
 
-            //top button - toggle lava
-            if (y > topHud+30 && y < topHud+140) {
+            if (paused && !death) {
 
-                lavaParticles.enabled = !lavaParticles.enabled;
+                //top button - toggle lava
+                if (y > topHud+30 && y < topHud+140) {
+                    
+                    lavaParticles.enabled = !lavaParticles.enabled;
 
-                //clear particles or add some new ones
-                if (!lavaParticles.enabled)
-                    lavaParticles.clearParticles();
-                if (lavaParticles.enabled)
-                    for (int i = 0; i < 10; i++)
-                        lavaParticles.addParticle();
+                    //clear particles or add some new ones
+                    if (!lavaParticles.enabled)
+                        lavaParticles.clearParticles();
+                    if (lavaParticles.enabled)
+                        for (int i = 0; i < 10; i++)
+                            lavaParticles.addParticle();
+                }
+
+                //second button - toggle snow
+                else if (y > topHud+170 && y < topHud+280) {
+
+                    snowParticles.enabled = !snowParticles.enabled;
+                    
+                    //clear particles or add some new ones
+                    if (!snowParticles.enabled)
+                        snowParticles.clearParticles();
+                    if (snowParticles.enabled)
+                        for (int i = 0; i < 10; i++)
+                            snowParticles.addParticle();
+                }
             }
-
-            //second button - toggle snow
-            else if (y > topHud+170 && y < topHud+280) {
-
-                snowParticles.enabled = !snowParticles.enabled;
-
-                //clear particles or add some new ones
-                if (!snowParticles.enabled)
-                    snowParticles.clearParticles();
-                if (snowParticles.enabled)
-                    for (int i = 0; i < 10; i++)
-                        snowParticles.addParticle();
+            
+            if (death) {
+                    //restart button here
             }
 
             //bottom buton
-            else if (y < bottomHud-50 && y > bottomHud-105)
+            if (y < bottomHud-50 && y > bottomHud-105)
                 exit(1);
         }
     }
 }
+
 
 /********************************************
  * moves volcano particles
@@ -386,12 +466,12 @@ void reshape(int w, int h) {
 }
 
 /********************************************
-* draws textured skybox around scene
-*******************************************/
+ * draws textured skybox around scene
+ *******************************************/
 void drawSkybox() {
-
+    
     glDisable(GL_LIGHTING);
-
+    
     int height = 128;
     int width = 132;
 
@@ -399,7 +479,7 @@ void drawSkybox() {
     for (int i = 0; i < 2; i++) {
         glBindTexture(GL_TEXTURE_2D, textures[i]);
         glBegin(GL_QUADS);
-
+        
         glTexCoord2f(0, 0);
         glVertex3f(width*pow(-1,i), 0, width*pow(-1,i));
 
@@ -411,7 +491,7 @@ void drawSkybox() {
 
         glTexCoord2f(1, 0);
         glVertex3f(width*pow(-1,i), 0, -width*pow(-1,i));
-
+        
         glEnd();
     }
 
@@ -432,7 +512,7 @@ void drawSkybox() {
         glTexCoord2f(1, 0);
         glVertex3f(width*pow(-1,i), 0, width*pow(-1,i));
         glEnd();
-
+        
     }
 
     //TOP (4)
@@ -456,9 +536,10 @@ void drawSkybox() {
     glBindTexture(GL_TEXTURE_2D, NULL);
 }
 
+
 /*******************************************
-* initializes global variables and settings
-******************************************/
+ * initializes global variables and settings
+ ******************************************/
 void init() {
 
     //enable textures (for skybox)
@@ -472,10 +553,10 @@ void init() {
     imageLoader.loadPPMTexture((char*)"/images/skybox_left.ppm", true, &textures[2]);
     imageLoader.loadPPMTexture((char*)"/images/skybox_right.ppm", true, &textures[3]);
     imageLoader.loadPPMTexture((char*)"/images/skybox_top.ppm", true, &textures[4]);
-
+    
     //enable flat shading (for artistic reasons)
     glShadeModel(GL_FLAT);
-
+    
     glClearColor(0.21, 0.53, 0.77, 1);
     glEnable(GL_DEPTH_TEST);
 
@@ -499,13 +580,17 @@ void init() {
     glLoadIdentity();
     gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
 
-    //initialize camera & terrain
+    //initialize globals
     terrain = Terrain();
+    
+    //initialize camera
     camera = Camera();
     
     //setup interface image
     pauseMenuImage = imageLoader.loadPPM((char*) "/images/pause_menu.ppm", true, &pauseMenuWidth, &pauseMenuHeight);
-
+    drawScreenImage = imageLoader.loadPPM((char*) "/images/deathScreen.ppm", true, &deathScreenWidth, &deathScreenHeight);
+    drawWDScreenImage = imageLoader.loadPPM((char*) "/images/waterdeath.ppm", true, &waterdeathScreenWidth, &waterdeathScreenHeight);
+    
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
 }

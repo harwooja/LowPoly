@@ -20,7 +20,7 @@ public:
     typedef struct Particle {
 
         //vector variables
-        float position[3] = {0,0,0};
+        double position[3] = {0,0,0};
         void setPosition(float posX, float posY, float posZ) {
             position[0] = posX;
             position[1] = posY;
@@ -60,12 +60,12 @@ public:
      *    PUBLIC FUNCTIONS
      ****************************************/
     ParticleList(ParticleType particleType, Terrain*);
-
+    
     void addParticle();
     void updateParticles();
     void drawAndAddParticles();
     void clearParticles();
-    void rotateParticle(float incrX, float incrY, float incrZ);
+    bool deathCollision(float x, float y, float z);
 
     /****************************************
      *    PUBLIC VARIABLES
@@ -87,7 +87,11 @@ private:
     int ageLimit = 700;
     int particlesDrawn = 0;
     float particleBounds[6];
-
+    double paddingXlow;
+    double paddingXhigh;
+    double paddingZlow;
+    double paddingZhigh;
+    
     float snowMaterial[4] = {1,1,1,1};
     float fireMaterial[4] = {1,0,0,1};
     float specMaterial[4] = {0.5,0.5,0.5,1};
