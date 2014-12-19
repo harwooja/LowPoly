@@ -37,7 +37,7 @@ void passive(int x, int y);
 void timer(int value);
 void drawSkybox();
 void drawDeath();
-void toggleDeathScene();
+void toggleDeath();
 
 /*****************************************
  *    GLOBAL VARIABLES
@@ -104,16 +104,17 @@ void display(void) {
     lavaParticles.drawAndAddParticles();
     snowParticles.drawAndAddParticles();
     drawSkybox();
-    death = lavaParticles.deathCollision(camera.position[0], camera.position[1], camera.position[2]);
+    
+    if (death == false)
+        death = lavaParticles.deathCollision(camera.position[0], camera.position[1], camera.position[2]);
    
    
     
     if (paused)
         drawPauseMenu();
     
-
     if (death)
-        drawDeath();
+        toggleDeath();
     
     
     glutSwapBuffers();
@@ -202,6 +203,19 @@ void drawDeath() {
     glEnable(GL_DEPTH_TEST);
 }
 
+void toggleDeath(){
+    
+    drawDeath();
+    
+    if (death) {
+        glutPassiveMotionFunc(passive);
+        glutSetCursor(GLUT_CURSOR_NONE);
+        lavaParticles.paused = true;
+        snowParticles.paused = true;
+    }
+    
+    
+}
 
 /********************************************
  * handles key presses for program functions

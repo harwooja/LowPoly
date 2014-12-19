@@ -228,6 +228,8 @@ bool ParticleList::deathCollision(float x, float y, float z){
     
     
     }
+    
+    printf("%f", y);
 
     return false;
 }
