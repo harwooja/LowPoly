@@ -70,7 +70,7 @@ GLubyte *leftTex, *rightTex, *backTex;
 GLuint textures[5];
 
 
-GLuint filter;                      // Which Filter To Use
+GLint filter;                      // Which Filter To Use
 GLuint fogMode[]= { GL_EXP, GL_EXP2, GL_LINEAR };   // Storage For Three Types Of Fog
 GLuint fogfilter= -1;                    // Which Fog To Use
 GLfloat fogColor[4]= {0.5f, 0.5f, 0.5f, 1.0f};      // Fog Color

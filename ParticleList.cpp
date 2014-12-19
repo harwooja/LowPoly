@@ -156,8 +156,8 @@ void ParticleList::addParticle() {
         p.setDirection(randomFloat(-0.25, 0.25), 3, randomFloat(-0.25, 0.25));
         p.setRotation(0,0,0);
         p.setColour(1,0,0);
-        p.size = randomFloat(0.2,3);
-        p.speed = 0.25;
+        p.size = randomFloat(0.2,2.5);
+        p.speed = 0.75;
 
         particleList.push_back(p);
     }
@@ -187,14 +187,19 @@ void ParticleList::drawAndAddParticles() {
             if (particleIterator->touchedWater == true) {
                 glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, steamMaterial);
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, steamMaterial);
+                for (int i = 0;i<10;i++){
+                    glTranslatef(randomFloat(0,0.5),randomFloat(0,0.5),randomFloat(0,0.5));
+                    glutSolidSphere(particleIterator->size/2, 8, 4);
+                }
             }
             else {
                 glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fireMaterial);
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, fireMaterial);
+                glutSolidSphere(particleIterator->size, 8, 4);
             }
         }
 
-        glutSolidSphere(particleIterator->size, 8, 4);
+
 
         glPopMatrix();
     }
