@@ -1,7 +1,7 @@
 // CS 3GC3 Final Project
 //
 // main.cpp
-// -program entrypoiny
+// -program entry-point
 // -ViewController in MVC terms
 // -draws scene, handles interaction, etc.
 
