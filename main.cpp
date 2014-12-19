@@ -75,6 +75,8 @@ GLuint fogMode[]= { GL_EXP, GL_EXP2, GL_LINEAR };   // Storage For Three Types O
 GLuint fogfilter= -1;                    // Which Fog To Use
 GLfloat fogColor[4]= {0.5f, 0.5f, 0.5f, 1.0f};      // Fog Color
 
+bool perspectiveMode = true;
+
 /*****************************************
  * draws scene
  ****************************************/
@@ -106,7 +108,20 @@ void display(void) {
 
     glutSwapBuffers();
 }
+void orthoDisplay()
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-200, 200, -200, 200, -200, 200);
+}
+void perspectiveDisplay()
+{
+    //change to projection matrix mode, set the extents of our viewing volume
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+    gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
 
+}
 /********************************************
  * draws the menu for when game paused
  *******************************************/
@@ -212,7 +227,11 @@ void keyboard(unsigned char key, int x, int y) {
                 glDisable(GL_FOG);
             glFogi(GL_FOG_MODE, fogMode[fogfilter]);
             break;
-
+        case 'm':
+        case 'M':
+            if(perspectiveMode == true) orthoDisplay();
+            else if (perspectiveMode == false) perspectiveDisplay();
+            perspectiveMode = !perspectiveMode;
     }
 
     //keys that only work when not paused
@@ -496,6 +515,9 @@ void init() {
     glFogf(GL_FOG_START, 1.0f);
     glFogf(GL_FOG_END, 5.0f);
 
+    //messing around with blending just ignore this
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
     //set projection matrix, using perspective w/ correct aspect ratio
     glMatrixMode(GL_PROJECTION);
