@@ -87,7 +87,7 @@ private:
     Terrain *terrainMap;
     ParticleType particleType;
 
-    int ageLimit = 500;
+    int ageLimit = 700;
     int particlesDrawn = 0;
     float particleBounds[6];
     double paddingXlow;
