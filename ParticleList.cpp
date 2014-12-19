@@ -83,13 +83,14 @@ void ParticleList::updateParticles() {
                     particleIterator--;
                     continue;
                 }
+                //make steam if lava hits water
                 else if (particleType == LAVA){
-                    if (terrainMap->getHeight(newX,newZ) <= 3){
+                    if (terrainMap->getHeight(newX,newZ) <= 3) {
                         particleIterator->touchedWater = true;
                         particleIterator->setDirection(0,3,0);
                         newY = particleIterator->position[1] + particleIterator->direction[1] * particleIterator->speed;
                     }
-                    else if (particleIterator->touchedWater == false)
+                    else// if (particleIterator->touchedWater == false)
                         terrainMap->burnTerrain(newX, newZ);
                 }
             }
@@ -98,21 +99,23 @@ void ParticleList::updateParticles() {
             //change direction vector if hasn't hit terrain
             else if (newY > terrainMap->getHeight(newX, newZ)) {
 
+                //x
                 newDirX = particleIterator->direction[0];
 
+                //y
                 if (particleType == SNOW)
                     newDirY = particleIterator->direction[1] - 0.01;
-                else if (particleType == LAVA){
-
+                
+                else if (particleType == LAVA) {
                     if (particleIterator->touchedWater == false)
                         newDirY = particleIterator->direction[1] - 0.08;
                     else if (particleIterator->touchedWater == true)
                         newDirY = particleIterator->direction[1];
                 }
 
-
+                //z
                 newDirZ = particleIterator->direction[2];
-
+                
                 particleIterator->setDirection(newDirX, newDirY, newDirZ);
             }
 
@@ -145,7 +148,7 @@ void ParticleList::addParticle() {
         p.setRotation(0, 0, 0);
         p.setColour(1, 1, 1);
         p.size = 0.25;
-        p.speed = 0.5;
+        p.speed = 0.25;
 
         particleList.push_back(p);
     }
@@ -157,7 +160,7 @@ void ParticleList::addParticle() {
         p.setRotation(0,0,0);
         p.setColour(1,0,0);
         p.size = randomFloat(0.2,2.5);
-        p.speed = 0.75;
+        p.speed = 0.4;
 
         particleList.push_back(p);
     }
@@ -173,37 +176,39 @@ void ParticleList::drawAndAddParticles() {
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, snowMaterial);
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, snowMaterial);
     }
+    else if (particleType == LAVA) {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fireMaterial);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, fireMaterial);
+    }
 
     //transform particle, and draw it
     for (particleIterator = particleList.begin(); particleIterator != particleList.end(); particleIterator++) {
+        
         glPushMatrix();
-
         glTranslatef(particleIterator->position[0], particleIterator->position[1], particleIterator->position[2]);
         glRotatef(particleIterator->rotation[0], 1, 0, 0);
         glRotatef(particleIterator->rotation[1], 0, 1, 0);
         glRotatef(particleIterator->rotation[2], 0, 0, 1);
 
-        if (particleType == LAVA){
-            if (particleIterator->touchedWater == true) {
-                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, steamMaterial);
-                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, steamMaterial);
-                for (int i = 0;i<10;i++){
-                    glTranslatef(randomFloat(0,0.5),randomFloat(0,0.5),randomFloat(0,0.5));
-                    glutSolidSphere(particleIterator->size/2, 8, 4);
-                }
+        //steam
+        if (particleIterator->touchedWater == true) {
+            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, steamMaterial);
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, steamMaterial);
+            for (int i = 0; i < 10; i++) {
+                glTranslatef(randomFloat(0,0.5),randomFloat(0,0.5),randomFloat(0,0.5));
+                glutSolidSphere(particleIterator->size/2, 8, 4);
             }
-            else {
-                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fireMaterial);
-                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, fireMaterial);
-                glutSolidSphere(particleIterator->size, 8, 4);
-            }
+            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, fireMaterial);
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, fireMaterial);
         }
-
-
-
-        glPopMatrix();
+        
+        //lava or snow
+        else
+            glutSolidSphere(particleIterator->size, 8, 4);
+        
+       glPopMatrix();
     }
-
+    
     //only adds lava particles every 8 calls
     if (enabled && !paused) {
         if (particleType == SNOW)
@@ -211,13 +216,6 @@ void ParticleList::drawAndAddParticles() {
         else if (particleType == LAVA && rand() < RAND_MAX/4)
             addParticle();
     }
-}
-
-void ParticleList::printStatus() {
-    printf("\n\nType: %s",particleType == SNOW ? "SNOW" : "LAVA");
-    printf("\nPaused: %s",paused ? "YES" : "NO");
-    printf("\nEnabled: %s",enabled ? "YES" : "NO");
-    printf("\nNumParticles: %lul", particleList.size());
 }
 
 /****************************************

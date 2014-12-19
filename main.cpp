@@ -49,7 +49,6 @@ ParticleList lavaParticles = ParticleList(ParticleList::LAVA, &terrain);
 //state
 bool paused = false;
 bool fullscreen = false;
-bool birdsEyeView = false;
 float lightPos[4] = {0,65,0, 1};
 
 //used for passive func
@@ -69,11 +68,9 @@ GLubyte *topTex;
 GLubyte *leftTex, *rightTex, *backTex;
 GLuint textures[5];
 
-
-GLint filter;                      // Which Filter To Use
-GLuint fogMode[]= { GL_EXP, GL_EXP2, GL_LINEAR };   // Storage For Three Types Of Fog
-GLuint fogfilter= -1;                    // Which Fog To Use
-GLfloat fogColor[4]= {0.5f, 0.5f, 0.5f, 1.0f};      // Fog Color
+GLuint fogMode[] = { GL_EXP, GL_EXP2, GL_LINEAR }; //storage for three types of fog
+int fogfilter = -1; //which fog to use
+float fogColor[4] = {0.5,0.5,0.5, 1.0}; //fog colour
 
 /*****************************************
  * draws scene
@@ -89,11 +86,7 @@ void display(void) {
     //transform according to camera
     glRotatef(camera.rotation[0], 1, 0, 0);
     glRotatef(camera.rotation[1], 0, 1, 0);
-
-    if (!birdsEyeView)
-        glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-3, -camera.position[2]);
-    else
-        glTranslatef(-camera.position[0], -100, -camera.position[2]);
+    glTranslatef(-camera.position[0], -terrain.getHeight(camera.position[0], camera.position[2])-3, -camera.position[2]);
 
     //draw the scene
     terrain.drawTerrain();
@@ -169,15 +162,6 @@ void keyboard(unsigned char key, int x, int y) {
     //keys that are handled whether paused or not
     switch (key) {
 
-        case 't':
-            lavaParticles.printStatus();
-            snowParticles.printStatus();
-            break;
-
-        case 'y':
-            printf("\nPos: %f %f",camera.position[0], camera.position[2]);
-            break;
-
         //quit
         case 'q':
             exit(0);
@@ -201,60 +185,52 @@ void keyboard(unsigned char key, int x, int y) {
                 glutReshapeWindow(800, 600);
             }
             break;
+       
+        //fog
         case 'g':
         case 'G':
-            fogfilter+=1;
-            if (fogfilter == 0)
+            fogfilter += 1;
+            if (fogfilter > -1 && fogfilter < 2) {
                 glEnable(GL_FOG);
-            if (fogfilter>2)
-                fogfilter=-1;
+                glFogi(GL_FOG_MODE, fogMode[fogfilter]);
+            }
+            else if (fogfilter > 2)
+                fogfilter = -1;
+            
             if (fogfilter==-1)
                 glDisable(GL_FOG);
-            glFogi(GL_FOG_MODE, fogMode[fogfilter]);
             break;
-
     }
 
     //keys that only work when not paused
     if (!paused) {
         switch (key) {
 
-            //change global state
-            case 'b':
-                birdsEyeView = !birdsEyeView;
-                break;
-            case '1':
-                glShadeModel(GL_FLAT);
-                break;
-            case '2':
-                glShadeModel(GL_SMOOTH);
-                break;
-
             //move player
             case 'w':
             case 'W':
-                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                if (glutGetModifiers() == GLUT_ACTIVE_SHIFT)
                     camera.strafe(Camera::FORWARD, true);
                 else
                     camera.strafe(Camera::FORWARD, false);
                 break;
             case 's':
             case 'S':
-                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                if (glutGetModifiers() == GLUT_ACTIVE_SHIFT)
                     camera.strafe(Camera::BACK, true);
                 else
                     camera.strafe(Camera::BACK, false);
                 break;
             case 'a':
             case 'A':
-                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                if (glutGetModifiers() == GLUT_ACTIVE_SHIFT)
                     camera.strafe(Camera::LEFT, true);
                 else
                     camera.strafe(Camera::LEFT, false);
                 break;
             case 'd':
             case 'D':
-                if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+                if (glutGetModifiers() == GLUT_ACTIVE_SHIFT)
                     camera.strafe(Camera::RIGHT, true);
                 else
                     camera.strafe(Camera::RIGHT, false);
@@ -490,12 +466,11 @@ void init() {
     glEnable(GL_LIGHT0);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 
+    //fog not enabled by default
     glFogfv(GL_FOG_COLOR, fogColor);
-    glFogf(GL_FOG_DENSITY, 0.05f);
-    glHint(GL_FOG_HINT, GL_DONT_CARE);
-    glFogf(GL_FOG_START, 1.0f);
-    glFogf(GL_FOG_END, 5.0f);
-
+    glFogf(GL_FOG_DENSITY, 0.05);
+    glFogf(GL_FOG_START, 3.0);
+    glFogf(GL_FOG_END, 10.0);
 
     //set projection matrix, using perspective w/ correct aspect ratio
     glMatrixMode(GL_PROJECTION);
@@ -513,8 +488,6 @@ void init() {
 
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
-
-
 }
 
 /*****************************************
