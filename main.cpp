@@ -414,7 +414,7 @@ void mouse(int button, int state, int x, int y) {
             }
 
             //bottom buton
-            if (y < bottomHud-50 && y > bottomHud-105)
+            if ((paused || death) && y < bottomHud-50 && y > bottomHud-105)
                 exit(1);
         }
     }
