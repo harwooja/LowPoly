@@ -10,7 +10,7 @@ public:
     /***************************************
     *    PUBLIC FUNCTIONS
     **************************************/
-    Model(char* fileName, bool pathRelative, float scaleFactor, float x, float y, float z, float* modelColour);
+    Model(char* fileName, bool pathRelative, float scaleFactor, float x, float y, float z, bool randomizeRot, float* modelColour);
     void drawModel();
 
 

@@ -35,7 +35,7 @@
 * Loads the .obj file using ResourceLoader
 * and sets state accordingly
 ****************************************/
-Model::Model(char* fileName, bool pathRelative, float scaleFactor, float x, float y, float z, float* modelColour) {
+Model::Model(char* fileName, bool pathRelative, float scaleFactor, float x, float y, float z, bool randomizeRot, float* modelColour) {
     
     //clear all existing data
     vertices.clear();
@@ -54,11 +54,13 @@ Model::Model(char* fileName, bool pathRelative, float scaleFactor, float x, floa
     colour[3] = modelColour[3];
     
     //generate a random rotation
-    rotation = ((double) rand()/RAND_MAX)*360;
-    xRot = ((double) rand()/RAND_MAX);
-    yRot = ((double) rand()/RAND_MAX);
-    zRot = ((double) rand()/RAND_MAX);
-
+    if (randomizeRot) {
+        rotation = ((double) rand()/RAND_MAX)*360;
+        xRot = ((double) rand()/RAND_MAX);
+        yRot = ((double) rand()/RAND_MAX);
+        zRot = ((double) rand()/RAND_MAX);
+    }
+    
     //load object file
     ResourceLoader objLoader = ResourceLoader();
     objLoader.loadObj(fileName, pathRelative, &vertices, &normals, &faceIndices, &normalIndices);
@@ -79,7 +81,7 @@ void Model::drawModel() {
     glMaterialfv(GL_FRONT, GL_DIFFUSE, colour);
     
     glPushMatrix();
-    
+
     //transform
     glTranslatef(xPos, yPos, zPos);
     glScalef(scale, scale, scale);
@@ -87,6 +89,7 @@ void Model::drawModel() {
     
     //draw all vertices (with vertex normals)
     for (int i = 0; i < faceIndices.size(); i++) {
+
         glBegin(GL_TRIANGLES);
         
         glNormal3f(normals[normalIndices[i][0]][0], normals[normalIndices[i][0]][1], normals[normalIndices[i][0]][2]);

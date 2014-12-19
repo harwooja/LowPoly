@@ -110,19 +110,35 @@ void Terrain::generateTerrain() {
     smoothTerrain(0.2);
     calculateFaceNormals();
     
+    models.clear();
+    
     //load rocks
     for (int i = 0; i < 20; i++) {
         
-        //randomize attributes
+        //randomize rock attributes
         float xRand = ((double) rand()/RAND_MAX)*TERRAIN_SIZE - TERRAIN_SIZE/2.0;
         float zRand = ((double) rand()/RAND_MAX)*TERRAIN_SIZE - TERRAIN_SIZE/2.0;
         float scaleRand = ((double) rand()/RAND_MAX)*4;
-        float modelColour[4] = {0.6, 0.6, 0.7, 1};
+        float rockColour[4] = {0.6, 0.6, 0.7, 1};
         
-        //add model
-        Model rock = Model((i % 2 == 0) ? (char*)"/images/rock_1.obj" : (char*)"/images/rock_2.obj", true, scaleRand, xRand, getHeight(xRand,zRand)-scaleRand*scaleRand*0.5, zRand, modelColour);
+        //add rock
+        Model rock = Model((i % 2 == 0) ? (char*)"/images/rock_1.obj" : (char*)"/images/rock_2.obj", true, scaleRand, xRand, getHeight(xRand,zRand)-scaleRand*scaleRand*0.5, zRand, true, rockColour);
         models.push_back(rock);
+
+        //randomize tree attributes
+        xRand = ((double) rand()/RAND_MAX)*TERRAIN_SIZE - TERRAIN_SIZE/2.0;
+        zRand = ((double) rand()/RAND_MAX)*TERRAIN_SIZE - TERRAIN_SIZE/2.0;
+        scaleRand = ((double) rand()/RAND_MAX)*2;
+        float treeColour[4] = {0.2, 0.6, 0.2, 1};
+        
+        //add tree
+        Model tree = Model((char*)"/images/tree.obj", true, scaleRand, xRand, getHeight(xRand, zRand), zRand, false, treeColour);
+        models.push_back(tree);
     }
+    
+    printf("models.size: %lu",models.size());
+    
+    
 }
 
 /***************************************
@@ -247,9 +263,8 @@ void Terrain::drawTerrain() {
     glPopMatrix();
     
     //draw models
-    for (int i = 0; i < models.size(); i++) {
+    for (int i = 0; i < models.size(); i++)
         models[i].drawModel();
-    }
 }
 
 /**************************************************************

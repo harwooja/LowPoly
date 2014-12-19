@@ -499,9 +499,10 @@ void init() {
     glLoadIdentity();
     gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
 
-    //initialize camera
+    //initialize camera & terrain
+    terrain = Terrain();
     camera = Camera();
-
+    
     //setup interface image
     pauseMenuImage = imageLoader.loadPPM((char*) "/images/pause_menu.ppm", true, &pauseMenuWidth, &pauseMenuHeight);
 
