@@ -60,15 +60,13 @@ public:
      *    PUBLIC FUNCTIONS
      ****************************************/
     ParticleList(ParticleType particleType, Terrain*);
-    ParticleList(); // collision constructor
     
     void addParticle();
     void updateParticles();
     void drawAndAddParticles();
     void clearParticles();
-    void rotateParticle(float incrX, float incrY, float incrZ);
-    void printStatus();
     bool deathCollision(float x, float y, float z);
+
     /****************************************
      *    PUBLIC VARIABLES
      ****************************************/
@@ -83,7 +81,6 @@ private:
     std::list<Particle> particleList;
     std::list<Particle>::iterator particleIterator;
 
-    
     Terrain *terrainMap;
     ParticleType particleType;
 
@@ -95,7 +92,6 @@ private:
     double paddingZlow;
     double paddingZhigh;
     
-
     float snowMaterial[4] = {1,1,1,1};
     float fireMaterial[4] = {1,0,0,1};
     float specMaterial[4] = {0.5,0.5,0.5,1};

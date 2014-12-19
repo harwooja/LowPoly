@@ -21,11 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <vector>
 #include <string>
-
-#include <chrono>
-#include <thread>
 
 #include "ParticleList.h"
 #include "ResourceLoader.h"
@@ -41,9 +37,6 @@ void passive(int x, int y);
 void timer(int value);
 void drawSkybox();
 void drawDeath();
-void toggleDeath();
-void swimOutput();
-
 
 /*****************************************
  *    GLOBAL VARIABLES
@@ -59,10 +52,10 @@ bool paused = false;
 bool fullscreen = false;
 bool perspectiveProjection = true;
 bool fog = false;
+bool death = false;
+bool waterDeath = false;
 
 float lightPos[4] = {0,65,0, 1};
-bool death = false; // if user is dead state
-bool waterdeath = false; // if user is water dead state
 
 //used for passive func
 bool mouseCurrentInitiated = false;
@@ -92,13 +85,6 @@ GLubyte *leftTex, *rightTex, *backTex;
 GLuint textures[5];
 
 
-bool perspectiveMode = true;
-
-
-
-
-
-
 /*****************************************
  * draws scene
  ****************************************/
@@ -120,22 +106,19 @@ void display(void) {
     lavaParticles.drawAndAddParticles();
     snowParticles.drawAndAddParticles();
     drawSkybox();
-    
-   // printf(camera.position[0], )
-    
-    if (!death){
-        death = lavaParticles.deathCollision(camera.position[0], camera.position[1], camera.position[2]);
-    } else{
-        drawDeath();
-        toggleDeath();
-    }
-   
+
     if (paused)
         drawPauseMenu();
-    
 
-    if ((terrain.getHeight(camera.position[0], camera.position[2]) == 1)) {
-        waterdeath = true;
+    if (!death)
+        death = lavaParticles.deathCollision(camera.position[0], camera.position[1], camera.position[2]);
+    else {
+        drawDeath();
+//        toggleDeath();
+    }
+    
+    if ((terrain.getHeight(camera.position[0], camera.position[2]) <= 1)) {
+        waterDeath = true;
         death = true;
     }
     
@@ -196,14 +179,20 @@ void togglePausedScene() {
     }
 }
 
-
 /********************************************
- * draws the death screen
+ * draws the death screen and disables interaction
  *******************************************/
 void drawDeath() {
+
+    glutPassiveMotionFunc(NULL);
+    glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+    lavaParticles.paused = true;
+    snowParticles.paused = true;
+    glColor3f(1.0, 0, 0);
     
+    glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
-    
+   
     //set projection matrix
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -213,21 +202,19 @@ void drawDeath() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
-    
     // if death from water, draw certain ppm
-    if (waterdeath){
+    if (waterDeath) {
         glRasterPos2i(windowWidth/2+waterdeathScreenWidth/2, windowHeight/2-waterdeathScreenHeight/2);
         glPixelZoom(-1,1);
         if (drawScreenImage != NULL)
             glDrawPixels(waterdeathScreenWidth, waterdeathScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, drawWDScreenImage);
-        
+    }
     // if death from lava, draw certain ppm
-    } else if (!(waterdeath)) {
+    else {
         glRasterPos2i(windowWidth/2+deathScreenWidth/2, windowHeight/2-deathScreenHeight/2);
         glPixelZoom(-1,1);
         if (drawScreenImage != NULL)
             glDrawPixels(deathScreenWidth, deathScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, drawScreenImage);
-        
     }
     
     //reset projection matrixs
@@ -238,18 +225,8 @@ void drawDeath() {
     glEnable(GL_DEPTH_TEST);
 }
 
-void toggleDeath(){
-    if (death) {
-        glutPassiveMotionFunc(NULL);
-        glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
-        lavaParticles.paused = true;
-        snowParticles.paused = true;
-        glColor3f(1.0f, 0, 0);
-        glDisable(GL_LIGHTING);
-    }
-}
-
-/*** changes projection matrix, to show diff.
+/******************************************
+* changes projection matrix, to show diff.
 * between orthographic and perspective projections
 *******************************************/
 
@@ -265,11 +242,7 @@ void toggleProjectionMatrix() {
                 glOrtho(-200, 200, -200, 200, -200, 200);
         else
                 gluPerspective(45,(GLfloat) glutGet(GLUT_WINDOW_WIDTH) / (GLfloat) glutGet(GLUT_WINDOW_HEIGHT), 1, 300);
-    }
-
-/********************************************
-  * handles key presses for program functions
-  *******************************************/
+}
 
 /********************************************
  * handles key presses for program functions
@@ -284,14 +257,14 @@ void keyboard(unsigned char key, int x, int y) {
             exit(0);
             break;
             
-            //pause
+        //pause
         case 'p':
         case 'P':
         case 27:
             togglePausedScene();
             break;
             
-            //toggle fullscreen
+        //toggle fullscreen
         case 'f':
         case 'F':
             fullscreen = !fullscreen;
@@ -301,9 +274,6 @@ void keyboard(unsigned char key, int x, int y) {
                 glutPositionWindow(10, 10);
                 glutReshapeWindow(800, 600);
             }
-            
-            if (death)
-                glutPostRedisplay();
             break;
 
         //fog
@@ -611,21 +581,11 @@ void init() {
     
     //setup interface image
     pauseMenuImage = imageLoader.loadPPM((char*) "/images/pause_menu.ppm", true, &pauseMenuWidth, &pauseMenuHeight);
-    
-    //setup death image
-    
-    //setup interface image
     drawScreenImage = imageLoader.loadPPM((char*) "/images/deathScreen.ppm", true, &deathScreenWidth, &deathScreenHeight);
-    
     drawWDScreenImage = imageLoader.loadPPM((char*) "/images/waterdeath.ppm", true, &waterdeathScreenWidth, &waterdeathScreenHeight);
-    
     
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
-    
-    
-    
-    
 }
 
 /*****************************************

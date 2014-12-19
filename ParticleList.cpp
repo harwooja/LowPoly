@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "ParticleList.h"
 
 /**************************************************
@@ -44,8 +45,6 @@ ParticleList::ParticleList(ParticleType type, Terrain* terrain) {
     particleBounds[4] = -128;
     particleBounds[5] = 128;
 }
-
-ParticleList::ParticleList(){}
 
 /****************************************
  * clears all particles
@@ -222,15 +221,16 @@ void ParticleList::drawAndAddParticles() {
    
 }
 
-
-// detect collision with lava particles, return true/false
+/****************************************
+ * returns true if particle collides with
+ * passed coordinate
+ ****************************************/
 bool ParticleList::deathCollision(float x, float y, float z){
-    
-// scan each particle
-    for (particleIterator = particleList.begin(); particleIterator != particleList.end(); particleIterator++) {
+
+    if (particleType == LAVA) {
         
-        // if our particle is lava
-        if (particleType == LAVA){
+        // scan each particle
+        for (particleIterator = particleList.begin(); particleIterator != particleList.end(); particleIterator++) {
             
             // create a synthetic padding, size matching of our particle (sphere)
             paddingXlow= particleIterator->position[0] - particleIterator->size;
@@ -239,30 +239,18 @@ bool ParticleList::deathCollision(float x, float y, float z){
             paddingZlow = particleIterator->position[2] - particleIterator->size;
             paddingZhigh = particleIterator->position[2] + particleIterator->size;
             
-            // if we intersect with the coordinates of our padding, the user has died
-            if ( (x > paddingXlow) && (x < paddingXhigh) ){
-                if ( (z < paddingZhigh) && ( z > paddingZlow)){
+            //if we intersect with the coordinates of our padding, the user has died
+            if (x > paddingXlow && x < paddingXhigh)
+                if (z < paddingZhigh && z > paddingZlow)
                     return true;
-                }
-            }
-            
         }
     }
-
+    
     return false;
 }
 
-
-
-void ParticleList::printStatus() {
-    printf("\n\nType: %s",particleType == SNOW ? "SNOW" : "LAVA");
-    printf("\nPaused: %s",paused ? "YES" : "NO");
-    printf("\nEnabled: %s",enabled ? "YES" : "NO");
-    printf("\nNumParticles: %lul", particleList.size());
-}
-
 /****************************************
- * returns a random float between a and br
+ * returns a random float between a and b
  ****************************************/
 float randomFloat(float a, float b) {
     float random = (float) rand() / RAND_MAX;
@@ -270,6 +258,3 @@ float randomFloat(float a, float b) {
     float r = random * diff;
     return a + r;
 }
-
-
-
