@@ -608,7 +608,7 @@ void init() {
     
     //initialize camera
     camera = Camera();
-
+    
     //setup interface image
     pauseMenuImage = imageLoader.loadPPM((char*) "/images/pause_menu.ppm", true, &pauseMenuWidth, &pauseMenuHeight);
     
