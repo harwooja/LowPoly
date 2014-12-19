@@ -25,7 +25,7 @@
 #include <string>
 
 #include <chrono>
-#include <pthread.h>
+#include <thread>
 
 #include "ParticleList.h"
 #include "ResourceLoader.h"
@@ -42,7 +42,8 @@ void timer(int value);
 void drawSkybox();
 void drawDeath();
 void toggleDeath();
-void output();
+void swimOutput();
+
 
 /*****************************************
  *    GLOBAL VARIABLES
@@ -59,8 +60,7 @@ bool fullscreen = false;
 bool birdsEyeView = false;
 float lightPos[4] = {0,65,0, 1};
 bool death = false; // if user is dead state
-bool inWater = false;
-int secondsOfBreath = 10; // time user has in water (seconds)
+bool waterdeath = false; // if user is water dead state
 
 //used for passive func
 bool mouseCurrentInitiated = false;
@@ -79,6 +79,11 @@ int deathScreenWidth = 0;
 int deathScreenHeight = 0;
 GLubyte *drawScreenImage;
 
+// water death
+int waterdeathScreenWidth = 0;
+int waterdeathScreenHeight = 0;
+GLubyte *drawWDScreenImage;
+
 GLubyte *frontTex;
 GLubyte *topTex;
 GLubyte *leftTex, *rightTex, *backTex;
@@ -86,6 +91,8 @@ GLuint textures[5];
 
 
 using namespace std;
+
+
 
 
 
@@ -120,18 +127,21 @@ void display(void) {
     
    // printf(camera.position[0], )
     
-    if (!death)
+    if (!death){
         death = lavaParticles.deathCollision(camera.position[0], camera.position[1], camera.position[2]);
+    } else{
+        drawDeath();
+        toggleDeath();
+    }
    
     if (paused)
         drawPauseMenu();
     
-    if (death)
-        drawDeath();
-        toggleDeath();
-    
-    if (inWater)
-        output();
+
+    if ((terrain.getHeight(camera.position[0], camera.position[2]) == 1)) {
+        waterdeath = true;
+        death = true;
+    }
     
     glutSwapBuffers();
 }
@@ -206,10 +216,23 @@ void drawDeath() {
     //draw pixels of image
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glRasterPos2i(windowWidth/2+deathScreenWidth/2, windowHeight/2-deathScreenHeight/2);
-    glPixelZoom(-1,1);
-    if (drawScreenImage != NULL)
-        glDrawPixels(deathScreenWidth, deathScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, drawScreenImage);
+    
+    
+    // if death from water, draw certain ppm
+    if (waterdeath){
+        glRasterPos2i(windowWidth/2+waterdeathScreenWidth/2, windowHeight/2-waterdeathScreenHeight/2);
+        glPixelZoom(-1,1);
+        if (drawScreenImage != NULL)
+            glDrawPixels(waterdeathScreenWidth, waterdeathScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, drawWDScreenImage);
+        
+    // if death from lava, draw certain ppm
+    } else if (!(waterdeath)) {
+        glRasterPos2i(windowWidth/2+deathScreenWidth/2, windowHeight/2-deathScreenHeight/2);
+        glPixelZoom(-1,1);
+        if (drawScreenImage != NULL)
+            glDrawPixels(deathScreenWidth, deathScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, drawScreenImage);
+        
+    }
     
     //reset projection matrixs
     glMatrixMode(GL_PROJECTION);
@@ -220,16 +243,14 @@ void drawDeath() {
 }
 
 void toggleDeath(){
-    
-    
     if (death) {
         glutPassiveMotionFunc(NULL);
         glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
         lavaParticles.paused = true;
         snowParticles.paused = true;
+        glColor3f(1.0f, 0, 0);
+        glDisable(GL_LIGHTING);
     }
-    
-    
 }
 
 /********************************************
@@ -271,6 +292,9 @@ void keyboard(unsigned char key, int x, int y) {
                 glutPositionWindow(10, 10);
                 glutReshapeWindow(800, 600);
             }
+            
+            if (death)
+                glutPostRedisplay();
             break;
             
             
@@ -322,10 +346,6 @@ void keyboard(unsigned char key, int x, int y) {
                     camera.strafe(Camera::RIGHT, false);
                 break;
        
-            case 'c':
-            case 'C':
-                inWater = true;
-                break;
         }
     }
     glutPostRedisplay();
@@ -409,49 +429,6 @@ void mouse(int button, int state, int x, int y) {
         }
     }
 }
-
-
-
-void output()
-{
-    
-   
- 
-
-
-    
-    
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    gluOrtho2D(0.0, windowWidth, 0.0, windowHeight);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-   
-    glRasterPos2f(windowWidth/3, windowHeight/1.3);
-    string s = "You can't swim! Seconds left till death: ";
-    s = s + to_string(secondsOfBreath);
-    void *font = GLUT_BITMAP_TIMES_ROMAN_24;
-    
-    for (string::iterator i = s.begin(); i != s.end(); ++i)
-    {
-        char c = *i;
-
-        glutBitmapCharacter(font, c);
-    }
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glEnable(GL_TEXTURE_2D);
-
-    
-
-    
-    
-    
-    }
 
 
 /********************************************
@@ -569,6 +546,7 @@ void drawSkybox() {
     glBindTexture(GL_TEXTURE_2D, NULL);
 }
 
+
 /*******************************************
  * initializes global variables and settings
  ******************************************/
@@ -619,12 +597,14 @@ void init() {
     //setup interface image
     drawScreenImage = imageLoader.loadPPM((char*) "/images/deathScreen.ppm", true, &deathScreenWidth, &deathScreenHeight);
     
+    drawWDScreenImage = imageLoader.loadPPM((char*) "/images/deathScreen.ppm", true, &waterdeathScreenWidth, &waterdeathScreenHeight);
+    
     
     //hide cursor
     glutSetCursor(GLUT_CURSOR_NONE);
     
     
-  
+    
     
 }
 

@@ -215,11 +215,7 @@ bool ParticleList::deathCollision(float x, float y, float z){
                 }
             }
             
-            
         }
-
-    
-    
     }
 
     return false;
