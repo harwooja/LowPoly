@@ -32,12 +32,6 @@ public:
             direction[1] = dirY;
             direction[2] = dirZ;
         }
-        float rotation[3] = {0,0,0};
-        void setRotation(float rotX, float rotY, float rotZ) {
-            rotation[0] = rotX;
-            rotation[1] = rotY;
-            rotation[2] = rotZ;
-        }
         float colour[3] = {0,0,0};
         void setColour(float colR, float colG, float colB) {
             colour[0] = colR;

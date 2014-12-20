@@ -39,6 +39,7 @@ std::vector<Model> models;
  **************************************/
 Terrain::Terrain(){
     generateTerrain();
+    srand(13);
 }
 
 /***************************************
