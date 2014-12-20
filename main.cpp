@@ -119,7 +119,7 @@ void display(void) {
         waterDeath = true;
         death = true;
     }
-    printf("\n %f %f", camera.position[0], camera.position[2]);
+    
     glutSwapBuffers();
 }
 
