@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <string>
 #include <stdio.h>
+#include <cstring>
 
 #include "ResourceLoader.h"
 

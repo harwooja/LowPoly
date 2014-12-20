@@ -423,6 +423,7 @@ void mouse(int button, int state, int x, int y) {
                     camera.position[1] = 0;
                     camera.position[2] = 20;
                     
+
                 }
             }
 
