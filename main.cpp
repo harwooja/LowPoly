@@ -108,7 +108,7 @@ void display(void) {
 
     if (paused)
         drawPauseMenu();
-
+  
     if (!death)
         death = lavaParticles.deathCollision(camera.position[0], camera.position[1], camera.position[2]);
     else
@@ -175,6 +175,8 @@ void togglePausedScene() {
         snowParticles.paused = false;
     }
 }
+
+
 
 /********************************************
 * draws the death screen and disables interaction
@@ -406,7 +408,22 @@ void mouse(int button, int state, int x, int y) {
             }
             
             if (death) {
-                    //restart button here
+                if (y > topHud+170 && y < topHud+280) {
+                    glutPassiveMotionFunc(passive);
+                    glutSetCursor(GLUT_CURSOR_NONE);
+                    lavaParticles.paused = false;
+                    snowParticles.paused = false;
+    
+                    lavaParticles.paused = false;
+                    snowParticles.paused = false;
+                    death = false;
+                    waterDeath = false;
+                
+                    camera.position[0] = 0.5;
+                    camera.position[1] = 0;
+                    camera.position[2] = 20;
+                    
+                }
             }
 
             //bottom buton
