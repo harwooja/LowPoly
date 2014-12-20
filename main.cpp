@@ -378,6 +378,7 @@ void mouse(int button, int state, int x, int y) {
         //click is within hud, with 20px padding
         if (x > leftHud+20 && x < rightHud-20 && y > topHud+20 && y < bottomHud-20) {
 
+            //pause screen
             if (paused && !death) {
 
                 //top button - toggle lava
@@ -407,13 +408,11 @@ void mouse(int button, int state, int x, int y) {
                 }
             }
             
+            //restart button on death screen
             if (death) {
                 if (y < bottomHud-135 && y > bottomHud-195) {
                     glutPassiveMotionFunc(passive);
                     glutSetCursor(GLUT_CURSOR_NONE);
-                    lavaParticles.paused = false;
-                    snowParticles.paused = false;
-    
                     lavaParticles.paused = false;
                     snowParticles.paused = false;
                     death = false;
@@ -422,12 +421,10 @@ void mouse(int button, int state, int x, int y) {
                     camera.position[0] = 0.5;
                     camera.position[1] = 0;
                     camera.position[2] = 20;
-                    
-
                 }
             }
 
-            //bottom buton
+            //quit button
             if ((paused || death) && y < bottomHud-50 && y > bottomHud-105)
                 exit(1);
         }
