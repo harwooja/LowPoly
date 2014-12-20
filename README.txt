@@ -11,11 +11,11 @@ Stuart Douglas - 1214422
 
 SUMMARY
 
-We’ve created a volcanic and mountainous island landscape, with rocks, trees, and a monkey statue. Lava shoots out of the volcano and slides down it, charring the ground beneath it. If it hits water, steam shoots upwards. Snow also falls upon the land, turning it white upon landing. Both the snow and lava can be toggled from the pause menu. Upon going underwater or hitting lava, your character dies and a screen with options to restart or quit appears. 
+We’ve created a volcanic and mountainous island landscape, with rocks, trees, and a monkey statue. Lava shoots out of the volcano and slides down it, charring the ground beneath it. If it hits water, steam shoots upwards. Snow also falls upon the land, turning it white upon landing. Both the snow and lava can be toggled from the pause menu. Upon going underwater or hitting lava, your character dies and a screen with options to restart or quit appears. Restarting will bring you back to the island but it has a hellish red tone.
 
 RUNNING / COMPILING 
 
-Included is a .exe file that should work on Windows. If not, just run “make” to use the makefile provided. Tested (successfully) on OS X, Windows 7, Windows 8.1 and Linux.
+Included is a .exe file that should work on Windows. If not, just run “make” to use the makefile provided. Tested (successfully) on OS X, Windows 7, Windows 8.1 and Linux. Note that the “images” folder needs to be in the same directory you’re running the application from.
 
 ADDITIONAL GRAPHICS FEATURES
 
