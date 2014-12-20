@@ -39,6 +39,7 @@ std::vector<Model> models;
  **************************************/
 Terrain::Terrain(){
     generateTerrain();
+    srand(13);
 }
 
 /***************************************
@@ -112,7 +113,7 @@ void Terrain::generateTerrain() {
     
     models.clear();
     
-    //load rocks
+    //load rocks and trees
     for (int i = 0; i < 20; i++) {
         
         //randomize rock attributes
@@ -135,6 +136,11 @@ void Terrain::generateTerrain() {
         Model tree = Model((char*)"/images/tree.obj", true, scaleRand, xRand, getHeight(xRand, zRand), zRand, false, treeColour);
         models.push_back(tree);
     }
+    
+    //load monkey statue
+    float monkeyColour[4] = {0.8, 0.9, 0.8, 1};
+    Model monkey = Model((char*)"/images/monkey.obj", true, 1.5, -3.2, getHeight(-3.2, -35), -35, false, monkeyColour);
+    models.push_back(monkey);
 }
 
 /***************************************

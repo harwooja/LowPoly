@@ -1,4 +1,4 @@
-﻿CS 3GC3 Final Project - LowPoly Volcano
+CS 3GC3 Final Project - LowPoly Volcano
 December 20th, 2014
 
 Anagh Goswami - 1217426
@@ -11,7 +11,7 @@ Stuart Douglas - 1214422
 
 SUMMARY
 
-We’ve created a volcanic and mountainous island landscape. Lava shoots out of the volcano and slides down it, charring the ground beneath it. If it hits water, steam shoots upwards. Snow also falls upon the land, turning it white upon landing. Both the snow and lava can be toggled from the pause menu.
+We’ve created a volcanic and mountainous island landscape, with rocks, trees, and a monkey statue. Lava shoots out of the volcano and slides down it, charring the ground beneath it. If it hits water, steam shoots upwards. Snow also falls upon the land, turning it white upon landing. Both the snow and lava can be toggled from the pause menu. Upon going underwater or hitting lava, your character dies and a screen with options to restart or quit appears. 
 
 RUNNING / COMPILING 
 
@@ -22,9 +22,9 @@ ADDITIONAL GRAPHICS FEATURES
 Lighting : lighting is implemented
 Textures : our skybox is textured with images we Photoshopped using screenshots from the project to look like similar islands far off
 Particle Systems : we used our particle systems for the lava, snow and steam
-Non-Geometric primitives : we made a ppm image for the pause menu
+Non-Geometric primitives : we made a ppm image for the pause menu and the death menu
 Advanced Camera Control : our camera system is FPS style
-Object Loader : we modelled the rocks in Blender and created an object loader to load them into the scene
+Object Loader : we modelled the rocks, trees, and monkey statue in Blender and created an object loader to load them into the scene
 
 CONTROLS
 
@@ -32,5 +32,6 @@ WASD : walk around (hint: hold down SHIFT to sprint)
 mouse : look around (FPS style)
 p : pause or unpause (escape also works). A pause menu will be presented on pausing
 g : toggle fog (default off)
+m : toggle projection matrix as orthogonal or perspective (default perspective)
 f : toggle fullscreen (default on)
 q : quit

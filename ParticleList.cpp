@@ -96,7 +96,6 @@ void ParticleList::updateParticles() {
                 }
             }
 
-
             //change direction vector if hasn't hit terrain
             else if (newY > terrainMap->getHeight(newX, newZ)) {
 
@@ -146,7 +145,6 @@ void ParticleList::addParticle() {
 
         p.setPosition(randomFloat(particleBounds[0],particleBounds[1]), 50, randomFloat(particleBounds[4],particleBounds[5]));
         p.setDirection(0, -0.1, 0);
-        p.setRotation(0, 0, 0);
         p.setColour(1, 1, 1);
         p.size = 0.25;
         p.speed = 0.25;
@@ -158,7 +156,6 @@ void ParticleList::addParticle() {
 
         p.setPosition(terrainMap->volcanoPos[0], terrainMap->volcanoPos[1], terrainMap->volcanoPos[2]);
         p.setDirection(randomFloat(-0.25, 0.25), 3, randomFloat(-0.25, 0.25));
-        p.setRotation(0,0,0);
         p.setColour(1,0,0);
         p.size = randomFloat(0.2,2.5);
         p.speed = 0.4;
@@ -187,9 +184,6 @@ void ParticleList::drawAndAddParticles() {
         
         glPushMatrix();
         glTranslatef(particleIterator->position[0], particleIterator->position[1], particleIterator->position[2]);
-        glRotatef(particleIterator->rotation[0], 1, 0, 0);
-        glRotatef(particleIterator->rotation[1], 0, 1, 0);
-        glRotatef(particleIterator->rotation[2], 0, 0, 1);
 
         //steam
         if (particleIterator->touchedWater == true) {

@@ -84,7 +84,6 @@ GLubyte *topTex;
 GLubyte *leftTex, *rightTex, *backTex;
 GLuint textures[5];
 
-
 /*****************************************
  * draws scene
  ****************************************/
@@ -95,7 +94,7 @@ void display(void) {
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-
+    
     //transform according to camera
     glRotatef(camera.rotation[0], 1, 0, 0);
     glRotatef(camera.rotation[1], 0, 1, 0);
@@ -112,10 +111,8 @@ void display(void) {
 
     if (!death)
         death = lavaParticles.deathCollision(camera.position[0], camera.position[1], camera.position[2]);
-    else {
+    else
         drawDeath();
-//        toggleDeath();
-    }
     
     if ((terrain.getHeight(camera.position[0], camera.position[2]) <= 1)) {
         waterDeath = true;
@@ -180,8 +177,8 @@ void togglePausedScene() {
 }
 
 /********************************************
- * draws the death screen and disables interaction
- *******************************************/
+* draws the death screen and disables interaction
+*******************************************/
 void drawDeath() {
 
     glutPassiveMotionFunc(NULL);
@@ -229,7 +226,6 @@ void drawDeath() {
 * changes projection matrix, to show diff.
 * between orthographic and perspective projections
 *******************************************/
-
 void toggleProjectionMatrix() {
     
         perspectiveProjection = !perspectiveProjection;
@@ -414,12 +410,11 @@ void mouse(int button, int state, int x, int y) {
             }
 
             //bottom buton
-            if (y < bottomHud-50 && y > bottomHud-105)
+            if ((paused || death) && y < bottomHud-50 && y > bottomHud-105)
                 exit(1);
         }
     }
 }
-
 
 /********************************************
  * moves volcano particles
@@ -535,7 +530,6 @@ void drawSkybox() {
     glEnable(GL_LIGHTING);
     glBindTexture(GL_TEXTURE_2D, NULL);
 }
-
 
 /*******************************************
  * initializes global variables and settings
