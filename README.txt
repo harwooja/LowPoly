@@ -15,7 +15,7 @@ We’ve created a volcanic and mountainous island landscape, with rocks, trees, 
 
 RUNNING / COMPILING 
 
-Included is a .exe file that should work on Windows. If not, just run “make” to use the makefile provided. Tested (successfully) on OS X, Windows 7, Windows 8.1 and Linux. Note that the “images” folder needs to be in the same directory you’re running the application from.
+Included is an .exe file that may work on Windows, it worked on one of our computers but not another.  If it doesn’t work, just run “make” from the project folder to use the makefile provided. Tested (successfully) on OS X, Windows 7, Windows 8.1 and Linux. Note that the “images” folder needs to be in the same directory you’re running the application from.
 
 ADDITIONAL GRAPHICS FEATURES
 
