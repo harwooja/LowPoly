@@ -408,7 +408,7 @@ void mouse(int button, int state, int x, int y) {
             }
             
             if (death) {
-                if (y > topHud+170 && y < topHud+280) {
+                if (y < bottomHud-135 && y > bottomHud-195) {
                     glutPassiveMotionFunc(passive);
                     glutSetCursor(GLUT_CURSOR_NONE);
                     lavaParticles.paused = false;
